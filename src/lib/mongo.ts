@@ -1,56 +1,50 @@
 import mongoose from "mongoose";
 
-const {
+let cached = (global as any).mongoose;
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
+
+function getMongoUri() {
+  const {
     NODE_ENV,
     MONGO_INITDB_ROOT_USERNAME,
     MONGO_INITDB_ROOT_PASSWORD,
     MONGO_DB_NAME,
-} = process.env;
+  } = process.env;
 
-const isDev = NODE_ENV !== "production";
+  const isDev = NODE_ENV !== "production";
+  const host = isDev ? "origin.a-warded.org" : "lifelines_mongo";
+  const port = 202;
+  const dbName = MONGO_DB_NAME || "hackdb";
 
-// lifelines_mongo is the container name that resolves via Docker's internal DNS thingy
-// origin.a-warded.org is the prod url
-// yes I test in prod like a true sigma 
-const host = isDev ? "origin.a-warded.org" : "lifelines_mongo";
+  // ✅ Only error at runtime when you actually try to connect
+  if (!MONGO_INITDB_ROOT_USERNAME) {
+    throw new Error("Missing MONGO_INITDB_ROOT_USERNAME");
+  }
+  if (!MONGO_INITDB_ROOT_PASSWORD) {
+    throw new Error("Missing MONGO_INITDB_ROOT_PASSWORD");
+  }
 
-// sigma port
-const port = 202;
+  const user = encodeURIComponent(MONGO_INITDB_ROOT_USERNAME);
+  const pass = encodeURIComponent(MONGO_INITDB_ROOT_PASSWORD);
 
-const dbName = MONGO_DB_NAME || "lifelines";
-
-if (!MONGO_INITDB_ROOT_USERNAME) {
-    throw new Error("Missing MONGO_INITDB_ROOT_USERNAME (rip)");
-}
-
-if (!MONGO_INITDB_ROOT_PASSWORD) {
-    throw new Error("Missing MONGO_INITDB_ROOT_PASSWORD (rip)");
-}
-
-// build connection string from parts
-const MONGODB_URI = `mongodb://${encodeURIComponent(
-    MONGO_INITDB_ROOT_USERNAME,
-)}:${encodeURIComponent(
-    MONGO_INITDB_ROOT_PASSWORD,
-)}@${host}:${port}/${dbName}?authSource=admin`;
-
-let cached = (global as any).mongoose;
-
-if (!cached) {
-    cached = (global as any).mongoose = { conn: null, promise: null };
+  return `mongodb://${user}:${pass}@${host}:${port}/${dbName}?authSource=admin`;
 }
 
 export async function connectMongo() {
-    if (cached.conn) return cached.conn;
+  if (cached.conn) return cached.conn;
 
-    if (!cached.promise) {
-        cached.promise = mongoose
-            .connect(MONGODB_URI, {
-                serverSelectionTimeoutMS: 8000,
-            })
-            .then((m) => m);
-    }
+  const uri = getMongoUri();
 
-    cached.conn = await cached.promise;
-    return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(uri, {
+        serverSelectionTimeoutMS: 8000,
+      })
+      .then((m) => m);
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
 }
