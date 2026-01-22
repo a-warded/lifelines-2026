@@ -1,7 +1,9 @@
-import { auth } from "@/lib/auth";
+"use client";
 
-export default async function ProfilePage() {
-  const session = await auth();
+import { useSession } from "next-auth/react";
+
+export default function ProfilePage() {
+  const { data: session } = useSession();
 
   return (
     <div className="space-y-6">
