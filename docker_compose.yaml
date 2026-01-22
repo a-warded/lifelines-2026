@@ -1,0 +1,31 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lifelines_web
+    ports:
+      - "201:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    depends_on:
+      - lifelines_mongo
+    restart: unless-stopped
+
+  lifelines_mongo:
+    image: mongo:8.2.3
+    container_name: lifelines_mongo
+    ports:
+      - "202:27017"
+    volumes:
+      - lifelines_mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    restart: unless-stopped
+
+volumes:
+  lifelines_mongo_data:
