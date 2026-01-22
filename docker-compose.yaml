@@ -11,6 +11,7 @@ services:
       NEXT_TELEMETRY_DISABLED: "1"
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      AUTH_SECRET: ${AUTH_SECRET}
       MONGO_DB_NAME: lifelines
     depends_on:
       - lifelines_mongo
