@@ -18,19 +18,12 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const result = await signIn("credentials", {
+            await signIn("credentials", {
                 email,
                 password,
                 redirect: true,
                 redirectTo: "/dashboard",
             });
-
-            if (result?.error) {
-                setError("Invalid email or password");
-            } else {
-                router.push("/dashboard");
-                router.refresh();
-            }
         } catch {
             setError("Something went wrong");
         } finally {
