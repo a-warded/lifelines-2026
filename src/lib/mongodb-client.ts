@@ -26,42 +26,25 @@ function getMongoUri() {
   return `mongodb://${user}:${pass}@${host}:${port}/${dbName}?authSource=admin`;
 }
 
+const uri = getMongoUri();
 const options = {};
 
-let client: MongoClient | null = null;
-let clientPromise: Promise<MongoClient> | null = null;
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
 
-function getClientPromise(): Promise<MongoClient> {
-  if (clientPromise) {
-    return clientPromise;
-  }
+if (process.env.NODE_ENV === "development") {
+  const globalWithMongo = global as typeof globalThis & {
+    _mongoClientPromise?: Promise<MongoClient>;
+  };
 
-  const uri = getMongoUri();
-
-  if (process.env.NODE_ENV === "development") {
-    const globalWithMongo = global as typeof globalThis & {
-      _mongoClientPromise?: Promise<MongoClient>;
-    };
-
-    if (!globalWithMongo._mongoClientPromise) {
-      client = new MongoClient(uri, options);
-      globalWithMongo._mongoClientPromise = client.connect();
-    }
-    clientPromise = globalWithMongo._mongoClientPromise;
-  } else {
+  if (!globalWithMongo._mongoClientPromise) {
     client = new MongoClient(uri, options);
-    clientPromise = client.connect();
+    globalWithMongo._mongoClientPromise = client.connect();
   }
-
-  return clientPromise;
+  clientPromise = globalWithMongo._mongoClientPromise;
+} else {
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
 }
 
-// Export a proxy that lazily creates the connection
-const clientPromiseProxy = new Proxy({} as Promise<MongoClient>, {
-  get(_, prop) {
-    const promise = getClientPromise();
-    return Reflect.get(promise, prop, promise);
-  },
-});
-
-export default clientPromiseProxy;
+export default clientPromise;
