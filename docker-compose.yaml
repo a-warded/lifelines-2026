@@ -13,6 +13,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_URL: ${AUTH_URL}
+      AUTH_TRUST_HOST: "TRUE"
       MONGO_DB_NAME: lifelines
     depends_on:
       - lifelines_mongo
