@@ -1,11 +1,15 @@
 "use client";
 
 import {
+    Droplets,
     Home,
     LayoutDashboard,
     LogOut,
     Menu,
+    MessageCircle,
+    RefreshCw,
     Settings,
+    Sprout,
     User,
     X,
 } from "lucide-react";
@@ -16,6 +20,10 @@ import { useState } from "react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/plan/new", label: "Get Farming Plan", icon: Sprout },
+  { href: "/dashboard/exchange", label: "Exchange", icon: RefreshCw },
+  { href: "/dashboard/water", label: "Water Calculator", icon: Droplets },
+  { href: "/dashboard/assistant", label: "Assistant", icon: MessageCircle },
   { href: "/dashboard/profile", label: "Profile", icon: User },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
@@ -61,7 +69,8 @@ export function Sidebar() {
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-3 py-4">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || 
+                (item.href !== "/dashboard" && pathname.startsWith(item.href));
               const Icon = item.icon;
 
               return (
