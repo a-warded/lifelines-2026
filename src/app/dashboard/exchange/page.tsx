@@ -1,575 +1,714 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
-    Badge,
-    Button,
-    Card,
-    CardContent,
-    Input,
-    Modal,
-    OfflineBadge,
-    Select,
-    Textarea,
-} from "@/components/ui";
-import {
-    ArrowLeft,
-    Filter,
-    Leaf,
-    Loader2,
-    MapPin,
-    Package,
-    Phone,
-    Plus,
-    Wrench,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+    formatPrice,
+    GeoLocation,
+    getCountryFromCoords,
+    getCountryName,
+    getUserLocation,
+} from "@/lib/geo";
+import { getPlantOptions } from "@/lib/plants";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface Listing {
-  id: string;
-  userId: string;
-  type: "seed" | "surplus" | "tool";
-  title: string;
-  description: string;
-  quantity: number;
-  unit: string;
-  condition?: "fresh" | "unknown" | "old";
-  locationArea: string;
-  contact: string;
-  status: "open" | "claimed" | "completed" | "cancelled";
-  createdAt: string;
-  isOwner: boolean;
+    id: string;
+    userId: string;
+    userName?: string;
+    type: string;
+    plantId?: string;
+    title: string;
+    description: string;
+    quantity?: string;
+    mode: "offering" | "seeking";
+    dealType: "price" | "trade" | "donation";
+    price?: number;
+    currencyCountry?: string;
+    tradeItems?: string[];
+    country: string;
+    locationLabel?: string;
+    distance?: number;
+    status: string;
+    createdAt: string;
+    isOwner: boolean;
 }
 
-type ListingType = "all" | "seed" | "surplus" | "tool";
-type StatusFilter = "all" | "open" | "claimed" | "completed";
+type ListingType = "seeds" | "produce" | "tools" | "other";
+type ListingMode = "offering" | "seeking";
+type DealType = "price" | "trade" | "donation";
 
 export default function ExchangePage() {
-    const router = useRouter();
+    const { t } = useTranslation();
+    const plantOptions = useMemo(() => getPlantOptions(), []);
+
+    // Location state
+    const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
+    const [userCountry, setUserCountry] = useState<string>("");
+    const [locationStatus, setLocationStatus] = useState<"idle" | "detecting" | "success" | "error">("idle");
+    const [locationError, setLocationError] = useState<string>("");
+
+    // Listings state
     const [listings, setListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);
-    const [typeFilter, setTypeFilter] = useState<ListingType>("all");
-    const [statusFilter, setStatusFilter] = useState<StatusFilter>("open");
+    const [error, setError] = useState("");
 
-    // Create listing modal
+    // Filters
+    const [filterType, setFilterType] = useState<string>("");
+    const [filterStatus, setFilterStatus] = useState<string>("available");
+    const [filterMode, setFilterMode] = useState<string>("");
+
+    // Create modal state
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [createForm, setCreateForm] = useState({
+        mode: "offering" as ListingMode,
+        type: "seeds" as ListingType,
+        plantId: "",
+        title: "",
+        description: "",
+        quantity: "",
+        dealType: "donation" as DealType,
+        price: "",
+        tradeItems: [] as string[],
+        newTradeItem: "",
+    });
+    const [creating, setCreating] = useState(false);
 
-    // Claim modal
-    const [claimModal, setClaimModal] = useState<{
-    listing: Listing | null;
-    name: string;
-    contact: string;
-    loading: boolean;
-  }>({ listing: null, name: "", contact: "", loading: false });
+    // Claim modal state
+    const [showClaimModal, setShowClaimModal] = useState(false);
+    const [claimListing, setClaimListing] = useState<Listing | null>(null);
+    const [claimMessage, setClaimMessage] = useState("");
+    const [claimTradeOffer, setClaimTradeOffer] = useState("");
+    const [claiming, setClaiming] = useState(false);
 
-    const fetchListings = useCallback(async () => {
+    // Get user's country on mount
+    useEffect(() => {
+        fetchUserCountry();
+    }, []);
+
+    // Fetch listings when location is available
+    useEffect(() => {
+        if (userCountry) {
+            fetchListings();
+        }
+    }, [userCountry, filterType, filterStatus, filterMode]);
+
+    const fetchUserCountry = async () => {
+        try {
+            // First try to get from API (Cloudflare header)
+            const response = await fetch("/api/geo");
+            const data = await response.json();
+            setUserCountry(data.country);
+        } catch {
+            setUserCountry("US"); // Fallback
+        }
+    };
+
+    const detectLocation = async () => {
+        setLocationStatus("detecting");
+        setLocationError("");
+
+        try {
+            const location = await getUserLocation();
+            const country = await getCountryFromCoords(location.latitude, location.longitude);
+            
+            setUserLocation({
+                ...location,
+                country,
+            });
+            setUserCountry(country);
+            setLocationStatus("success");
+            
+            // Refetch listings with new location
+            fetchListings();
+        } catch (err) {
+            setLocationStatus("error");
+            setLocationError(err instanceof Error ? err.message : "Location error");
+            // Keep using country from IP
+        }
+    };
+
+    const fetchListings = async () => {
         setLoading(true);
         try {
             const params = new URLSearchParams();
-            if (typeFilter !== "all") params.set("type", typeFilter);
-            if (statusFilter !== "all") params.set("status", statusFilter);
+            if (filterType) params.set("type", filterType);
+            if (filterStatus) params.set("status", filterStatus);
+            if (filterMode) params.set("mode", filterMode);
+            if (userCountry) params.set("country", userCountry);
+            if (userLocation) {
+                params.set("lat", userLocation.latitude.toString());
+                params.set("lon", userLocation.longitude.toString());
+            }
 
-            const res = await fetch(`/api/exchange?${params.toString()}`);
-            if (res.ok) {
-                const data = await res.json();
+            const response = await fetch(`/api/exchange?${params}`);
+            const data = await response.json();
+
+            if (data.listings) {
                 setListings(data.listings);
             }
-        } catch (error) {
-            console.error("Failed to fetch listings:", error);
+        } catch (err) {
+            setError("Failed to load listings");
         } finally {
             setLoading(false);
         }
-    }, [typeFilter, statusFilter]);
+    };
 
-    useEffect(() => {
-        fetchListings();
-    }, [fetchListings]);
+    const handleCreateListing = async () => {
+        if (!createForm.title.trim()) return;
 
-    const handleClaim = async () => {
-        if (!claimModal.listing || !claimModal.name || !claimModal.contact) return;
-
-        setClaimModal((prev) => ({ ...prev, loading: true }));
+        setCreating(true);
         try {
-            const res = await fetch("/api/exchange/claim", {
+            const response = await fetch("/api/exchange", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    listingId: claimModal.listing.id,
-                    claimerName: claimModal.name,
-                    claimerContact: claimModal.contact,
+                    mode: createForm.mode,
+                    type: createForm.type,
+                    plantId: createForm.plantId || undefined,
+                    title: createForm.title,
+                    description: createForm.description,
+                    quantity: createForm.quantity,
+                    dealType: createForm.dealType,
+                    price: createForm.dealType === "price" ? parseFloat(createForm.price) : undefined,
+                    tradeItems: createForm.dealType === "trade" ? createForm.tradeItems : undefined,
+                    latitude: userLocation?.latitude,
+                    longitude: userLocation?.longitude,
+                    country: userCountry,
+                    locationLabel: userLocation ? `${userLocation.latitude.toFixed(2)}, ${userLocation.longitude.toFixed(2)}` : undefined,
                 }),
             });
 
-            if (res.ok) {
-                setClaimModal({ listing: null, name: "", contact: "", loading: false });
+            if (response.ok) {
+                setShowCreateModal(false);
+                resetCreateForm();
                 fetchListings();
             }
-        } catch (error) {
-            console.error("Claim failed:", error);
+        } catch (err) {
+            console.error("Create error:", err);
         } finally {
-            setClaimModal((prev) => ({ ...prev, loading: false }));
+            setCreating(false);
         }
     };
 
-    const handleUpdateStatus = async (listingId: string, action: string) => {
+    const resetCreateForm = () => {
+        setCreateForm({
+            mode: "offering",
+            type: "seeds",
+            plantId: "",
+            title: "",
+            description: "",
+            quantity: "",
+            dealType: "donation",
+            price: "",
+            tradeItems: [],
+            newTradeItem: "",
+        });
+    };
+
+    const addTradeItem = () => {
+        if (createForm.newTradeItem.trim()) {
+            setCreateForm({
+                ...createForm,
+                tradeItems: [...createForm.tradeItems, createForm.newTradeItem.trim()],
+                newTradeItem: "",
+            });
+        }
+    };
+
+    const removeTradeItem = (index: number) => {
+        setCreateForm({
+            ...createForm,
+            tradeItems: createForm.tradeItems.filter((_, i) => i !== index),
+        });
+    };
+
+    const handleClaim = async () => {
+        if (!claimListing) return;
+
+        setClaiming(true);
         try {
-            const res = await fetch("/api/exchange", {
-                method: "PATCH",
+            const response = await fetch("/api/exchange/claim", {
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ listingId, action }),
+                body: JSON.stringify({
+                    listingId: claimListing.id,
+                    message: claimMessage,
+                    tradeOffer: claimListing.dealType === "trade" ? claimTradeOffer : undefined,
+                }),
             });
 
-            if (res.ok) {
+            if (response.ok) {
+                setShowClaimModal(false);
+                setClaimListing(null);
+                setClaimMessage("");
+                setClaimTradeOffer("");
                 fetchListings();
             }
-        } catch (error) {
-            console.error("Update failed:", error);
+        } catch (err) {
+            console.error("Claim error:", err);
+        } finally {
+            setClaiming(false);
         }
     };
 
-    const typeIcons = {
-        seed: Leaf,
-        surplus: Package,
-        tool: Wrench,
+    const getDealTypeBadge = (listing: Listing) => {
+        switch (listing.dealType) {
+        case "price":
+            return (
+                <Badge className="bg-blue-100 text-blue-800">
+                    {formatPrice(listing.price || 0, listing.currencyCountry || userCountry)}
+                </Badge>
+            );
+        case "trade":
+            return <Badge className="bg-purple-100 text-purple-800">{t("exchange.dealType.trade")}</Badge>;
+        case "donation":
+            return <Badge className="bg-green-100 text-green-800">{t("exchange.dealType.donation")}</Badge>;
+        }
     };
 
-    const typeColors = {
-        seed: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-        surplus: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
-        tool: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+    const getModeBadge = (mode: string) => {
+        return mode === "seeking" ? (
+            <Badge className="bg-orange-100 text-orange-800">{t("exchange.mode.seeking")}</Badge>
+        ) : (
+            <Badge className="bg-teal-100 text-teal-800">{t("exchange.mode.offering")}</Badge>
+        );
     };
-
-    const statusVariants = {
-        open: "success",
-        claimed: "warning",
-        completed: "secondary",
-        cancelled: "outline",
-    } as const;
 
     return (
-        <div className="space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
             {/* Header */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.back()}
-                        className="shrink-0"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div>
-                        <h1 className="text-2xl font-bold text-foreground">
-              Community Exchange
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-              Share seeds, surplus produce, and tools with neighbors
-                        </p>
-                    </div>
+            <div className="flex justify-between items-start">
+                <div>
+                    <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
+                        {t("exchange.title")}
+                    </h1>
+                    <p className="text-[var(--color-text-secondary)] mt-1">
+                        {t("exchange.subtitle")}
+                    </p>
                 </div>
                 <Button onClick={() => setShowCreateModal(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-          Create Listing
+                    + {t("exchange.listing.createButton")}
                 </Button>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Filter:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    {(["all", "seed", "surplus", "tool"] as const).map((type) => (
+            {/* Location bar */}
+            <Card>
+                <CardContent className="py-3">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm">📍</span>
+                            {locationStatus === "success" ? (
+                                <span className="text-sm text-green-600">
+                                    {t("exchange.location.usingCountry", { country: getCountryName(userCountry) })}
+                                    {userLocation && ` (GPS: ${userLocation.latitude.toFixed(2)}, ${userLocation.longitude.toFixed(2)})`}
+                                </span>
+                            ) : locationStatus === "error" ? (
+                                <span className="text-sm text-orange-600">
+                                    {t("exchange.location.noPermission")} {getCountryName(userCountry)}
+                                </span>
+                            ) : (
+                                <span className="text-sm text-[var(--color-text-secondary)]">
+                                    {t("exchange.location.usingCountry", { country: getCountryName(userCountry) })}
+                                </span>
+                            )}
+                        </div>
                         <Button
-                            key={type}
-                            variant={typeFilter === type ? "primary" : "outline"}
                             size="sm"
-                            onClick={() => setTypeFilter(type)}
+                            variant="secondary"
+                            onClick={detectLocation}
+                            disabled={locationStatus === "detecting"}
                         >
-                            {type === "all" ? "All Types" : type.charAt(0).toUpperCase() + type.slice(1)}
+                            {locationStatus === "detecting"
+                                ? t("exchange.create.locationDetecting")
+                                : t("exchange.create.useMyLocation")}
                         </Button>
-                    ))}
-                </div>
-                <div className="sm:ml-auto">
-                    <Select
-                        options={[
-                            { value: "open", label: "Open" },
-                            { value: "claimed", label: "Claimed" },
-                            { value: "completed", label: "Completed" },
-                            { value: "all", label: "All Status" },
-                        ]}
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                    />
-                </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3">
+                <Select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    options={[
+                        { value: "", label: t("exchange.filters.allTypes") },
+                        { value: "seeds", label: t("exchange.types.seeds") },
+                        { value: "produce", label: t("exchange.types.produce") },
+                        { value: "tools", label: t("exchange.types.tools") },
+                        { value: "other", label: t("exchange.types.other") },
+                    ]}
+                    className="w-36"
+                />
+                <Select
+                    value={filterMode}
+                    onChange={(e) => setFilterMode(e.target.value)}
+                    options={[
+                        { value: "", label: t("exchange.filters.allModes") },
+                        { value: "offering", label: t("exchange.mode.offering") },
+                        { value: "seeking", label: t("exchange.mode.seeking") },
+                    ]}
+                    className="w-40"
+                />
+                <Select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    options={[
+                        { value: "available", label: t("exchange.status.available") },
+                        { value: "", label: t("exchange.filters.allStatuses") },
+                        { value: "claimed", label: t("exchange.status.claimed") },
+                        { value: "completed", label: t("exchange.status.completed") },
+                    ]}
+                    className="w-36"
+                />
             </div>
 
-            {/* Listings Grid */}
+            {/* Listings */}
             {loading ? (
-                <div className="flex min-h-[40vh] items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="text-center py-12 text-[var(--color-text-secondary)]">
+                    {t("common.loading")}
                 </div>
             ) : listings.length === 0 ? (
-                <Card className="py-12 text-center">
-                    <CardContent>
-                        <Package className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <h3 className="mt-4 text-lg font-semibold">No Listings Found</h3>
-                        <p className="mt-2 text-sm text-muted-foreground">
-              Be the first to share something with your community!
+                <Card>
+                    <CardContent className="py-12 text-center">
+                        <p className="text-[var(--color-text-secondary)]">
+                            {t("exchange.listing.noListings")}
                         </p>
-                        <Button onClick={() => setShowCreateModal(true)} className="mt-4">
-              Create First Listing
-                        </Button>
+                        <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                            {t("exchange.listing.noListingsDescription")}
+                        </p>
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {listings.map((listing) => {
-                        const Icon = typeIcons[listing.type];
-                        return (
-                            <Card key={listing.id} className="flex flex-col">
-                                <CardContent className="flex flex-1 flex-col">
-                                    {/* Type & Status */}
-                                    <div className="mb-3 flex items-center justify-between">
-                                        <div
-                                            className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${typeColors[listing.type]}`}
-                                        >
-                                            <Icon className="h-3.5 w-3.5" />
-                                            {listing.type}
+                <div className="space-y-4">
+                    {listings.map((listing) => (
+                        <Card key={listing.id}>
+                            <CardContent className="py-4">
+                                <div className="flex justify-between items-start gap-4">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                                            {getModeBadge(listing.mode)}
+                                            <Badge variant="secondary">
+                                                {t(`exchange.types.${listing.type}`)}
+                                            </Badge>
+                                            {getDealTypeBadge(listing)}
+                                            {listing.distance !== undefined && (
+                                                <span className="text-xs text-[var(--color-text-secondary)]">
+                                                    {t("exchange.listing.distance", { distance: listing.distance })}
+                                                </span>
+                                            )}
                                         </div>
-                                        <Badge variant={statusVariants[listing.status]}>
-                                            {listing.status}
-                                        </Badge>
-                                    </div>
 
-                                    {/* Title & Description */}
-                                    <h3 className="font-semibold">{listing.title}</h3>
-                                    {listing.description && (
-                                        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                                        <h3 className="font-semibold text-lg">{listing.title}</h3>
+                                        
+                                        {listing.quantity && (
+                                            <p className="text-sm text-[var(--color-text-secondary)]">
+                                                {listing.quantity}
+                                            </p>
+                                        )}
+                                        
+                                        <p className="text-[var(--color-text-secondary)] mt-1 line-clamp-2">
                                             {listing.description}
                                         </p>
+
+                                        {/* Trade items wanted */}
+                                        {listing.dealType === "trade" && listing.tradeItems && listing.tradeItems.length > 0 && (
+                                            <div className="mt-2">
+                                                <span className="text-sm font-medium">
+                                                    {listing.mode === "offering" 
+                                                        ? t("exchange.listing.wantsInReturn")
+                                                        : t("exchange.listing.lookingFor")}:
+                                                </span>
+                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                    {listing.tradeItems.map((item, i) => (
+                                                        <Badge key={i} variant="secondary" className="text-xs">
+                                                            {item}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-3 mt-3 text-sm text-[var(--color-text-secondary)]">
+                                            {listing.userName && (
+                                                <span>👤 {listing.userName}</span>
+                                            )}
+                                            <span>📍 {getCountryName(listing.country)}</span>
+                                        </div>
+                                    </div>
+
+                                    {!listing.isOwner && listing.status === "available" && (
+                                        <Button
+                                            size="sm"
+                                            onClick={() => {
+                                                setClaimListing(listing);
+                                                setShowClaimModal(true);
+                                            }}
+                                        >
+                                            {listing.dealType === "trade"
+                                                ? t("exchange.listing.offerTradeButton")
+                                                : t("exchange.listing.claimButton")}
+                                        </Button>
                                     )}
-
-                                    {/* Details */}
-                                    <div className="mt-3 flex flex-wrap gap-2 text-sm">
-                                        <Badge variant="outline">
-                                            {listing.quantity} {listing.unit}
-                                        </Badge>
-                                        {listing.condition && listing.type === "seed" && (
-                                            <Badge variant="outline">{listing.condition}</Badge>
-                                        )}
-                                    </div>
-
-                                    {/* Location */}
-                                    <div className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-                                        <MapPin className="h-4 w-4" />
-                                        {listing.locationArea}
-                                    </div>
-
-                                    {/* Actions */}
-                                    <div className="mt-4 flex gap-2 pt-2 border-t">
-                                        {listing.isOwner ? (
-                                            <>
-                                                {listing.status === "claimed" && (
-                                                    <Button
-                                                        variant="primary"
-                                                        size="sm"
-                                                        className="flex-1"
-                                                        onClick={() =>
-                                                            handleUpdateStatus(listing.id, "complete")
-                                                        }
-                                                    >
-                            Mark Complete
-                                                    </Button>
-                                                )}
-                                                {(listing.status === "open" ||
-                          listing.status === "claimed") && (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleUpdateStatus(listing.id, "cancel")
-                                                        }
-                                                    >
-                            Cancel
-                                                    </Button>
-                                                )}
-                                            </>
-                                        ) : (
-                                            listing.status === "open" && (
-                                                <Button
-                                                    variant="primary"
-                                                    size="sm"
-                                                    className="flex-1"
-                                                    onClick={() =>
-                                                        setClaimModal({
-                                                            listing,
-                                                            name: "",
-                                                            contact: "",
-                                                            loading: false,
-                                                        })
-                                                    }
-                                                >
-                          Claim This
-                                                </Button>
-                                            )
-                                        )}
-                                    </div>
-
-                                    {/* Time */}
-                                    <p className="mt-2 text-xs text-muted-foreground">
-                                        {new Date(listing.createdAt).toLocaleDateString()}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
             )}
 
-            {/* Create Listing Modal */}
-            <CreateListingModal
+            {/* Create Modal */}
+            <Modal
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
-                onSuccess={() => {
-                    setShowCreateModal(false);
-                    fetchListings();
-                }}
-            />
-
-            {/* Claim Modal */}
-            <Modal
-                isOpen={!!claimModal.listing}
-                onClose={() =>
-                    setClaimModal({ listing: null, name: "", contact: "", loading: false })
-                }
-                title="Claim This Item"
-                size="sm"
+                title={t("exchange.create.title")}
             >
                 <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-            Provide your contact info so the owner can reach you.
-                    </p>
-                    <Input
-                        label="Your Name"
-                        value={claimModal.name}
-                        onChange={(e) =>
-                            setClaimModal((prev) => ({ ...prev, name: e.target.value }))
-                        }
-                        placeholder="Enter your name"
+                    {/* Mode */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            {t("exchange.create.modeLabel")}
+                        </label>
+                        <div className="flex gap-2">
+                            <button
+                                className={`flex-1 p-3 rounded-lg border text-sm ${
+                                    createForm.mode === "offering"
+                                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                                        : "border-[var(--color-border)]"
+                                }`}
+                                onClick={() => setCreateForm({ ...createForm, mode: "offering" })}
+                            >
+                                {t("exchange.create.modeOffering")}
+                            </button>
+                            <button
+                                className={`flex-1 p-3 rounded-lg border text-sm ${
+                                    createForm.mode === "seeking"
+                                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                                        : "border-[var(--color-border)]"
+                                }`}
+                                onClick={() => setCreateForm({ ...createForm, mode: "seeking" })}
+                            >
+                                {t("exchange.create.modeSeeking")}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Type */}
+                    <Select
+                        label={t("exchange.create.typeLabel")}
+                        value={createForm.type}
+                        onChange={(e) => setCreateForm({ ...createForm, type: e.target.value as ListingType })}
+                        options={[
+                            { value: "seeds", label: t("exchange.types.seeds") },
+                            { value: "produce", label: t("exchange.types.produce") },
+                            { value: "tools", label: t("exchange.types.tools") },
+                            { value: "other", label: t("exchange.types.other") },
+                        ]}
                     />
+
+                    {/* Plant type (for seeds/produce) */}
+                    {(createForm.type === "seeds" || createForm.type === "produce") && (
+                        <Select
+                            label={t("exchange.create.plantTypeLabel")}
+                            value={createForm.plantId}
+                            onChange={(e) => setCreateForm({ ...createForm, plantId: e.target.value })}
+                            options={[
+                                { value: "", label: t("exchange.create.plantTypePlaceholder") },
+                                ...plantOptions,
+                            ]}
+                        />
+                    )}
+
+                    {/* Title */}
                     <Input
-                        label="Contact Info"
-                        value={claimModal.contact}
-                        onChange={(e) =>
-                            setClaimModal((prev) => ({ ...prev, contact: e.target.value }))
-                        }
-                        placeholder="Phone, Telegram, or Email"
-                        helper="How should the owner contact you?"
+                        label={t("exchange.create.titleLabel")}
+                        placeholder={t("exchange.create.titlePlaceholder")}
+                        value={createForm.title}
+                        onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
                     />
-                    <div className="flex justify-end gap-2 pt-2">
+
+                    {/* Description */}
+                    <Textarea
+                        label={t("exchange.create.descriptionLabel")}
+                        placeholder={t("exchange.create.descriptionPlaceholder")}
+                        value={createForm.description}
+                        onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                        rows={3}
+                    />
+
+                    {/* Quantity */}
+                    <Input
+                        label={t("exchange.create.quantityLabel")}
+                        placeholder={t("exchange.create.quantityPlaceholder")}
+                        value={createForm.quantity}
+                        onChange={(e) => setCreateForm({ ...createForm, quantity: e.target.value })}
+                    />
+
+                    {/* Deal type */}
+                    <Select
+                        label={t("exchange.create.dealTypeLabel")}
+                        value={createForm.dealType}
+                        onChange={(e) => setCreateForm({ ...createForm, dealType: e.target.value as DealType })}
+                        options={[
+                            { value: "donation", label: t("exchange.dealType.donation") },
+                            { value: "trade", label: t("exchange.dealType.trade") },
+                            { value: "price", label: t("exchange.dealType.price") },
+                        ]}
+                    />
+
+                    {/* Price input */}
+                    {createForm.dealType === "price" && (
+                        <div>
+                            <Input
+                                type="number"
+                                label={t("exchange.create.priceLabel")}
+                                placeholder={t("exchange.create.pricePlaceholder")}
+                                value={createForm.price}
+                                onChange={(e) => setCreateForm({ ...createForm, price: e.target.value })}
+                                min={0}
+                                step={0.01}
+                            />
+                            <p className="text-xs text-[var(--color-text-secondary)] mt-1">
+                                {t("exchange.create.currencyNote")} ({getCountryName(userCountry)})
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Trade items */}
+                    {createForm.dealType === "trade" && (
+                        <div>
+                            <label className="block text-sm font-medium mb-1">
+                                {t("exchange.create.tradeItemsLabel")}
+                            </label>
+                            <div className="flex gap-2 mb-2">
+                                <Input
+                                    placeholder={t("exchange.create.tradeItemsPlaceholder")}
+                                    value={createForm.newTradeItem}
+                                    onChange={(e) => setCreateForm({ ...createForm, newTradeItem: e.target.value })}
+                                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTradeItem())}
+                                />
+                                <Button type="button" onClick={addTradeItem} size="sm">
+                                    {t("exchange.create.addTradeItem")}
+                                </Button>
+                            </div>
+                            {createForm.tradeItems.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                    {createForm.tradeItems.map((item, i) => (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-secondary text-secondary-foreground cursor-pointer hover:bg-secondary/80"
+                                            onClick={() => removeTradeItem(i)}
+                                        >
+                                            {item} ×
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Location */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            {t("exchange.create.locationLabel")}
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-[var(--color-text-secondary)]">
+                                📍 {getCountryName(userCountry)}
+                                {userLocation && ` (GPS enabled)`}
+                            </span>
+                            {!userLocation && (
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={detectLocation}
+                                    disabled={locationStatus === "detecting"}
+                                >
+                                    {t("exchange.create.useMyLocation")}
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Submit */}
+                    <div className="flex gap-2 pt-4">
                         <Button
-                            variant="outline"
-                            onClick={() =>
-                                setClaimModal({
-                                    listing: null,
-                                    name: "",
-                                    contact: "",
-                                    loading: false,
-                                })
-                            }
+                            onClick={handleCreateListing}
+                            disabled={creating || !createForm.title.trim()}
+                            className="flex-1"
                         >
-              Cancel
+                            {creating ? t("common.loading") : t("exchange.create.submitButton")}
                         </Button>
                         <Button
-                            onClick={handleClaim}
-                            loading={claimModal.loading}
-                            disabled={!claimModal.name || !claimModal.contact}
+                            variant="ghost"
+                            onClick={() => setShowCreateModal(false)}
                         >
-                            <Phone className="mr-2 h-4 w-4" />
-              Submit Claim
+                            {t("common.cancel")}
                         </Button>
                     </div>
                 </div>
             </Modal>
 
-            <OfflineBadge />
-        </div>
-    );
-}
+            {/* Claim Modal */}
+            <Modal
+                isOpen={showClaimModal}
+                onClose={() => setShowClaimModal(false)}
+                title={t("exchange.claim.title")}
+            >
+                {claimListing && (
+                    <div className="space-y-4">
+                        <div className="p-3 bg-[var(--color-surface)] rounded-lg">
+                            <p className="font-medium">{claimListing.title}</p>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                                {claimListing.description}
+                            </p>
+                        </div>
 
-// Create Listing Modal Component
-function CreateListingModal({
-    isOpen,
-    onClose,
-    onSuccess,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-    const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [formData, setFormData] = useState({
-        type: "seed" as "seed" | "surplus" | "tool",
-        title: "",
-        description: "",
-        quantity: 1,
-        unit: "items",
-        condition: "unknown" as "fresh" | "unknown" | "old",
-        locationArea: "",
-        contact: "",
-    });
+                        <Textarea
+                            label={t("exchange.claim.messageLabel")}
+                            placeholder={t("exchange.claim.messagePlaceholder")}
+                            value={claimMessage}
+                            onChange={(e) => setClaimMessage(e.target.value)}
+                            rows={3}
+                        />
 
-    const handleChange = (field: string, value: string | number) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-        if (errors[field]) {
-            setErrors((prev) => {
-                const newErrors = { ...prev };
-                delete newErrors[field];
-                return newErrors;
-            });
-        }
-    };
+                        {claimListing.dealType === "trade" && (
+                            <Textarea
+                                label={t("exchange.claim.tradeOfferLabel")}
+                                placeholder={t("exchange.claim.tradeOfferPlaceholder")}
+                                value={claimTradeOffer}
+                                onChange={(e) => setClaimTradeOffer(e.target.value)}
+                                rows={2}
+                            />
+                        )}
 
-    const handleSubmit = async () => {
-        const newErrors: Record<string, string> = {};
-        if (!formData.title.trim()) newErrors.title = "Title is required";
-        if (formData.quantity <= 0)
-            newErrors.quantity = "Quantity must be greater than 0";
-        if (!formData.locationArea.trim())
-            newErrors.locationArea = "Location is required";
-        if (!formData.contact.trim()) newErrors.contact = "Contact info is required";
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const res = await fetch("/api/exchange", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-
-            if (res.ok) {
-                onSuccess();
-                setFormData({
-                    type: "seed",
-                    title: "",
-                    description: "",
-                    quantity: 1,
-                    unit: "items",
-                    condition: "unknown",
-                    locationArea: "",
-                    contact: "",
-                });
-            }
-        } catch (error) {
-            console.error("Create listing failed:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Create Listing" size="md">
-            <div className="space-y-4">
-                <Select
-                    label="Type"
-                    options={[
-                        { value: "seed", label: "Seeds" },
-                        { value: "surplus", label: "Surplus Produce" },
-                        { value: "tool", label: "Tools / Supplies" },
-                    ]}
-                    value={formData.type}
-                    onChange={(e) => handleChange("type", e.target.value)}
-                />
-
-                <Input
-                    label="Title *"
-                    value={formData.title}
-                    onChange={(e) => handleChange("title", e.target.value)}
-                    placeholder="What are you sharing?"
-                    error={errors.title}
-                />
-
-                <Textarea
-                    label="Description"
-                    value={formData.description}
-                    onChange={(e) => handleChange("description", e.target.value)}
-                    placeholder="Any details about the item..."
-                    rows={3}
-                    helper="Max 500 characters"
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                    <Input
-                        label="Quantity *"
-                        type="number"
-                        value={formData.quantity}
-                        onChange={(e) => handleChange("quantity", parseInt(e.target.value) || 0)}
-                        min={1}
-                        error={errors.quantity}
-                    />
-                    <Select
-                        label="Unit"
-                        options={[
-                            { value: "items", label: "Items" },
-                            { value: "packets", label: "Packets" },
-                            { value: "seeds", label: "Seeds" },
-                            { value: "kg", label: "Kilograms" },
-                            { value: "pieces", label: "Pieces" },
-                        ]}
-                        value={formData.unit}
-                        onChange={(e) => handleChange("unit", e.target.value)}
-                    />
-                </div>
-
-                {formData.type === "seed" && (
-                    <Select
-                        label="Seed Condition"
-                        options={[
-                            { value: "fresh", label: "Fresh - This season" },
-                            { value: "unknown", label: "Unknown" },
-                            { value: "old", label: "Old - Over 1 year" },
-                        ]}
-                        value={formData.condition}
-                        onChange={(e) => handleChange("condition", e.target.value)}
-                    />
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleClaim}
+                                disabled={claiming}
+                                className="flex-1"
+                            >
+                                {claiming ? t("common.loading") : t("exchange.claim.submitButton")}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setShowClaimModal(false)}
+                            >
+                                {t("common.cancel")}
+                            </Button>
+                        </div>
+                    </div>
                 )}
-
-                <Input
-                    label="Location Area *"
-                    value={formData.locationArea}
-                    onChange={(e) => handleChange("locationArea", e.target.value)}
-                    placeholder="e.g., City Center, North Zone"
-                    helper="Use general area only (no exact address)"
-                    error={errors.locationArea}
-                />
-
-                <Input
-                    label="Contact Method *"
-                    value={formData.contact}
-                    onChange={(e) => handleChange("contact", e.target.value)}
-                    placeholder="Phone, Telegram, Email, etc."
-                    error={errors.contact}
-                />
-
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                    <Button variant="outline" onClick={onClose}>
-            Cancel
-                    </Button>
-                    <Button onClick={handleSubmit} loading={loading}>
-                        <Plus className="mr-2 h-4 w-4" />
-            Create Listing
-                    </Button>
-                </div>
-            </div>
-        </Modal>
+            </Modal>
+        </div>
     );
 }

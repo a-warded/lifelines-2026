@@ -17,21 +17,23 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/plan/new", label: "Get Farming Plan", icon: Sprout },
-  { href: "/dashboard/exchange", label: "Exchange", icon: RefreshCw },
-  { href: "/dashboard/water", label: "Water Calculator", icon: Droplets },
-  { href: "/dashboard/assistant", label: "Assistant", icon: MessageCircle },
-  { href: "/dashboard/profile", label: "Profile", icon: User },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-];
+import { useTranslation } from "react-i18next";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
+
+  const navItems = [
+    { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+    { href: "/dashboard/plan/new", label: t("nav.plan"), icon: Sprout },
+    { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
+    { href: "/dashboard/water", label: t("nav.water"), icon: Droplets },
+    { href: "/dashboard/assistant", label: t("nav.assistant"), icon: MessageCircle },
+    { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
+    { href: "/dashboard/settings", label: t("nav.settings"), icon: Settings },
+  ];
 
   return (
     <>
@@ -113,7 +115,7 @@ export function Sidebar() {
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             >
               <LogOut className="h-5 w-5" />
-              Sign out
+              {t("nav.signOut")}
             </button>
           </div>
         </div>

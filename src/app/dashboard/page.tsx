@@ -15,6 +15,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface PlanPreview {
   id: string;
@@ -29,6 +30,7 @@ interface PlanPreview {
 export default function DashboardPage() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const [latestPlan, setLatestPlan] = useState<PlanPreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [demoLoading, setDemoLoading] = useState(false);
@@ -77,29 +79,29 @@ export default function DashboardPage() {
 
   const features = [
     {
-      title: "Get Farming Plan",
-      description: "Personalized plan based on your conditions",
+      title: t("dashboard.features.plan.title"),
+      description: t("dashboard.features.plan.description"),
       href: "/dashboard/plan/new",
       icon: Sprout,
       color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
     },
     {
-      title: "Exchange Seeds & Surplus",
-      description: "Share and find resources in your community",
+      title: t("dashboard.features.exchange.title"),
+      description: t("dashboard.features.exchange.description"),
       href: "/dashboard/exchange",
       icon: RefreshCw,
       color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
     },
     {
-      title: "Water Calculator",
-      description: "Calculate water needs for your crops",
+      title: t("dashboard.features.water.title"),
+      description: t("dashboard.features.water.description"),
       href: "/dashboard/water",
       icon: Droplets,
       color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300",
     },
     {
-      title: "Assistant",
-      description: "Get help with farming questions",
+      title: t("dashboard.features.assistant.title"),
+      description: t("dashboard.features.assistant.description"),
       href: "/dashboard/assistant",
       icon: MessageCircle,
       color: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
@@ -112,10 +114,10 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-            Welcome back{session?.user?.name ? `, ${session.user.name}` : ""}!
+            {t("dashboard.welcome", { name: session?.user?.name || "" })}
           </h1>
           <p className="mt-1 text-muted-foreground">
-            Grow food, build resilience, share with your community.
+            {t("dashboard.tagline")}
           </p>
         </div>
         {showDemo && (
@@ -126,7 +128,7 @@ export default function DashboardPage() {
             className="shrink-0"
           >
             <Calculator className="mr-2 h-4 w-4" />
-            Load Demo Data
+            {t("dashboard.loadDemo")}
           </Button>
         )}
       </div>
@@ -167,11 +169,11 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2">
                   <Leaf className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <h3 className="font-semibold text-green-800 dark:text-green-200">
-                    Your Latest Farming Plan
+                    {t("dashboard.latestPlan.title")}
                   </h3>
                 </div>
                 <p className="mt-2 text-sm text-green-700 dark:text-green-300">
-                  Recommended crops:{" "}
+                  {t("dashboard.latestPlan.recommended")}:{" "}
                   {latestPlan.recommendedCrops.map((c, i) => (
                     <span key={c.cropName}>
                       {i > 0 && ", "}
@@ -182,17 +184,17 @@ export default function DashboardPage() {
                 <div className="mt-2 flex items-center gap-3">
                   <Badge variant="info">
                     <Droplets className="mr-1 h-3 w-3" />
-                    {latestPlan.estimatedDailyWaterLiters}L/day
+                    {latestPlan.estimatedDailyWaterLiters}L/{t("common.day")}
                   </Badge>
                   <span className="text-xs text-green-600 dark:text-green-400">
-                    Created{" "}
+                    {t("dashboard.latestPlan.created")}{" "}
                     {new Date(latestPlan.createdAt).toLocaleDateString()}
                   </span>
                 </div>
               </div>
               <Link href={`/dashboard/plan/${latestPlan.id}`}>
                 <Button size="sm" variant="outline">
-                  View Plan
+                  {t("dashboard.latestPlan.view")}
                 </Button>
               </Link>
             </div>
@@ -206,17 +208,16 @@ export default function DashboardPage() {
           <CardContent className="py-8 text-center">
             <Sprout className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-semibold">
-              Ready to Start Growing?
+              {t("dashboard.getStarted.title")}
             </h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Create your personalized farming plan based on your space, water
-              access, and goals.
+              {t("dashboard.getStarted.description")}
             </p>
             <div className="mt-6">
               <Link href="/dashboard/plan/new">
                 <Button size="lg">
                   <Sprout className="mr-2 h-5 w-5" />
-                  Get Your Farming Plan
+                  {t("dashboard.getStarted.cta")}
                 </Button>
               </Link>
             </div>

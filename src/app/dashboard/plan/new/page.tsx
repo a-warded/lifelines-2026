@@ -5,6 +5,7 @@ import { cachePlan } from "@/lib/offline-storage";
 import { AlertCircle, ArrowLeft, Loader2, Sprout } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface FormData {
   waterAvailability: string;
@@ -21,6 +22,7 @@ interface FormErrors {
 
 export default function NewPlanPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
     const [formData, setFormData] = useState<FormData>({
@@ -33,43 +35,43 @@ export default function NewPlanPage() {
     });
 
     const waterOptions = [
-        { value: "none", label: "None - No reliable water access" },
-        { value: "low", label: "Low - Limited or shared access" },
-        { value: "medium", label: "Medium - Regular but limited supply" },
-        { value: "high", label: "High - Reliable water access" },
+        { value: "none", label: t("plan.form.water.options.none") },
+        { value: "low", label: t("plan.form.water.options.low") },
+        { value: "medium", label: t("plan.form.water.options.medium") },
+        { value: "high", label: t("plan.form.water.options.high") },
     ];
 
     const soilOptions = [
-        { value: "normal", label: "Normal - Regular garden soil" },
-        { value: "salty", label: "Salty - Near coast or salty groundwater" },
-        { value: "unknown", label: "Unknown - Not sure about soil quality" },
+        { value: "normal", label: t("plan.form.soil.options.normal") },
+        { value: "salty", label: t("plan.form.soil.options.salty") },
+        { value: "unknown", label: t("plan.form.soil.options.unknown") },
     ];
 
     const spaceOptions = [
-        { value: "rooftop", label: "Rooftop" },
-        { value: "balcony", label: "Balcony" },
-        { value: "containers", label: "Containers / Pots" },
-        { value: "backyard", label: "Backyard" },
-        { value: "microplot", label: "Small Plot / Community Garden" },
+        { value: "rooftop", label: t("plan.form.space.options.rooftop") },
+        { value: "balcony", label: t("plan.form.space.options.balcony") },
+        { value: "containers", label: t("plan.form.space.options.containers") },
+        { value: "backyard", label: t("plan.form.space.options.backyard") },
+        { value: "microplot", label: t("plan.form.space.options.microplot") },
     ];
 
     const sunlightOptions = [
-        { value: "low", label: "Low - 0-3 hours of direct sun" },
-        { value: "medium", label: "Medium - 4-6 hours of direct sun" },
-        { value: "high", label: "High - 7+ hours of direct sun" },
+        { value: "low", label: t("plan.form.sunlight.options.low") },
+        { value: "medium", label: t("plan.form.sunlight.options.medium") },
+        { value: "high", label: t("plan.form.sunlight.options.high") },
     ];
 
     const goalOptions = [
-        { value: "calories", label: "Calories - Grow filling, calorie-dense food" },
-        { value: "nutrition", label: "Nutrition - Grow vitamin-rich vegetables" },
-        { value: "fast", label: "Fast Harvest - Quickest time to food" },
+        { value: "calories", label: t("plan.form.goal.options.calories") },
+        { value: "nutrition", label: t("plan.form.goal.options.nutrition") },
+        { value: "fast", label: t("plan.form.goal.options.fast") },
     ];
 
     const experienceOptions = [
-        { value: "", label: "Skip this question" },
-        { value: "beginner", label: "Beginner - New to farming" },
-        { value: "intermediate", label: "Intermediate - Some experience" },
-        { value: "advanced", label: "Advanced - Experienced grower" },
+        { value: "", label: t("plan.form.experience.options.skip") },
+        { value: "beginner", label: t("plan.form.experience.options.beginner") },
+        { value: "intermediate", label: t("plan.form.experience.options.intermediate") },
+        { value: "advanced", label: t("plan.form.experience.options.advanced") },
     ];
 
     const handleChange = (field: keyof FormData, value: string) => {
@@ -87,19 +89,19 @@ export default function NewPlanPage() {
         const newErrors: FormErrors = {};
 
         if (!formData.waterAvailability) {
-            newErrors.waterAvailability = "Please select your water availability";
+            newErrors.waterAvailability = t("plan.form.errors.water");
         }
         if (!formData.soilCondition) {
-            newErrors.soilCondition = "Please select your soil condition";
+            newErrors.soilCondition = t("plan.form.errors.soil");
         }
         if (!formData.spaceType) {
-            newErrors.spaceType = "Please select your growing space type";
+            newErrors.spaceType = t("plan.form.errors.space");
         }
         if (!formData.sunlight) {
-            newErrors.sunlight = "Please select your sunlight level";
+            newErrors.sunlight = t("plan.form.errors.sunlight");
         }
         if (!formData.primaryGoal) {
-            newErrors.primaryGoal = "Please select your primary goal";
+            newErrors.primaryGoal = t("plan.form.errors.goal");
         }
 
         setErrors(newErrors);
@@ -131,7 +133,7 @@ export default function NewPlanPage() {
             router.push(`/dashboard/plan/${data.plan.id}`);
         } catch (error) {
             console.error("Error creating plan:", error);
-            setErrors({ submit: "Failed to create plan. Please try again." });
+            setErrors({ submit: t("plan.form.errors.submit") });
         } finally {
             setLoading(false);
         }
@@ -151,10 +153,10 @@ export default function NewPlanPage() {
                 </Button>
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">
-            Get Your Farming Plan
+                        {t("plan.form.title")}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-            Answer a few questions to get personalized recommendations
+                        {t("plan.form.subtitle")}
                     </p>
                 </div>
             </div>
@@ -166,21 +168,20 @@ export default function NewPlanPage() {
                         {/* Water Availability */}
                         <div className="space-y-2">
                             <Select
-                                label="Water Availability *"
+                                label={t("plan.form.water.label")}
                                 options={waterOptions}
                                 value={formData.waterAvailability}
                                 onChange={(e) =>
                                     handleChange("waterAvailability", e.target.value)
                                 }
-                                placeholder="How much water can you access?"
+                                placeholder={t("plan.form.water.placeholder")}
                                 error={errors.waterAvailability}
                             />
                             {formData.waterAvailability === "none" && (
                                 <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
                                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                                     <span>
-                    No water access makes growing very difficult. We'll provide
-                    alternative strategies.
+                                        {t("plan.form.water.noAccessWarning")}
                                     </span>
                                 </div>
                             )}
@@ -188,51 +189,51 @@ export default function NewPlanPage() {
 
                         {/* Soil Condition */}
                         <Select
-                            label="Soil Condition *"
+                            label={t("plan.form.soil.label")}
                             options={soilOptions}
                             value={formData.soilCondition}
                             onChange={(e) => handleChange("soilCondition", e.target.value)}
-                            placeholder="What's your soil like?"
+                            placeholder={t("plan.form.soil.placeholder")}
                             error={errors.soilCondition}
                         />
 
                         {/* Space Type */}
                         <Select
-                            label="Growing Space *"
+                            label={t("plan.form.space.label")}
                             options={spaceOptions}
                             value={formData.spaceType}
                             onChange={(e) => handleChange("spaceType", e.target.value)}
-                            placeholder="Where will you grow?"
+                            placeholder={t("plan.form.space.placeholder")}
                             error={errors.spaceType}
                         />
 
                         {/* Sunlight */}
                         <Select
-                            label="Sunlight *"
+                            label={t("plan.form.sunlight.label")}
                             options={sunlightOptions}
                             value={formData.sunlight}
                             onChange={(e) => handleChange("sunlight", e.target.value)}
-                            placeholder="How much sun does your space get?"
+                            placeholder={t("plan.form.sunlight.placeholder")}
                             error={errors.sunlight}
                         />
 
                         {/* Primary Goal */}
                         <Select
-                            label="Primary Goal *"
+                            label={t("plan.form.goal.label")}
                             options={goalOptions}
                             value={formData.primaryGoal}
                             onChange={(e) => handleChange("primaryGoal", e.target.value)}
-                            placeholder="What matters most to you?"
+                            placeholder={t("plan.form.goal.placeholder")}
                             error={errors.primaryGoal}
                         />
 
                         {/* Experience Level (Optional) */}
                         <Select
-                            label="Experience Level (Optional)"
+                            label={t("plan.form.experience.label")}
                             options={experienceOptions}
                             value={formData.experienceLevel}
                             onChange={(e) => handleChange("experienceLevel", e.target.value)}
-                            helper="We'll adjust recommendations based on your experience"
+                            helper={t("plan.form.experience.helper")}
                         />
 
                         {/* Submit Error */}
@@ -253,12 +254,12 @@ export default function NewPlanPage() {
                             {loading ? (
                                 <>
                                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Creating Your Plan...
+                                    {t("plan.form.creating")}
                                 </>
                             ) : (
                                 <>
                                     <Sprout className="mr-2 h-5 w-5" />
-                  Generate My Farming Plan
+                                    {t("plan.form.submit")}
                                 </>
                             )}
                         </Button>

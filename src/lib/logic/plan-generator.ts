@@ -1,138 +1,96 @@
 // Plan Generator - Rule Engine MVP
 // Generates farming plans based on user constraints
+// Uses central plant database
 
 import { IFarmProfile } from "../models/farm-profile";
 import { IRecommendedCrop, ITimelineBlock } from "../models/plan";
+import {
+    Difficulty,
+    Goal,
+    GrowingSpace,
+    PLANTS,
+    PlantData,
+    SunNeed,
+    WaterNeed,
+    getAllPlants,
+} from "../plants";
 
 export interface PlanDraft {
-  recommendedCrops: IRecommendedCrop[];
-  timeline: ITimelineBlock[];
-  setupChecklist: string[];
-  estimatedDailyWaterLiters: number;
-  fallbackNotes: string;
+    recommendedCrops: IRecommendedCrop[];
+    timeline: ITimelineBlock[];
+    setupChecklist: string[];
+    estimatedDailyWaterLiters: number;
+    fallbackNotes: string;
 }
-
-type Difficulty = "easy" | "medium" | "hard";
-
-interface CropData {
-  name: string;
-  waterNeed: string;
-  sunNeed: string;
-  saltTolerance: string;
-  spaceEfficiency: string[];
-  goalFit: string[];
-  difficulty: Difficulty;
-  harvestDays: number;
-  dailyWater: number;
-}
-
-// Crop database with characteristics
-const CROPS: Record<string, CropData> = {
-    tomato: {
-        name: "Tomato",
-        waterNeed: "high", // low/medium/high
-        sunNeed: "high",
-        saltTolerance: "low",
-        spaceEfficiency: ["containers", "rooftop", "backyard", "microplot"],
-        goalFit: ["nutrition"],
-        difficulty: "medium",
-        harvestDays: 70,
-        dailyWater: 0.7, // avg liters per plant
-    },
-    potato: {
-        name: "Potato",
-        waterNeed: "medium",
-        sunNeed: "medium",
-        saltTolerance: "low",
-        spaceEfficiency: ["containers", "backyard", "microplot"],
-        goalFit: ["calories"],
-        difficulty: "medium",
-        harvestDays: 90,
-        dailyWater: 0.5,
-    },
-    beans: {
-        name: "Beans/Legumes",
-        waterNeed: "low",
-        sunNeed: "medium",
-        saltTolerance: "medium",
-        spaceEfficiency: ["containers", "rooftop", "balcony", "backyard", "microplot"],
-        goalFit: ["calories", "nutrition"],
-        difficulty: "easy",
-        harvestDays: 55,
-        dailyWater: 0.4,
-    },
-    leafyGreens: {
-        name: "Leafy Greens",
-        waterNeed: "low",
-        sunNeed: "low",
-        saltTolerance: "medium",
-        spaceEfficiency: ["containers", "rooftop", "balcony", "backyard", "microplot"],
-        goalFit: ["nutrition", "fast"],
-        difficulty: "easy",
-        harvestDays: 30,
-        dailyWater: 0.2,
-    },
-    cucumber: {
-        name: "Cucumber",
-        waterNeed: "high",
-        sunNeed: "high",
-        saltTolerance: "low",
-        spaceEfficiency: ["containers", "backyard", "microplot"],
-        goalFit: ["nutrition"],
-        difficulty: "hard",
-        harvestDays: 55,
-        dailyWater: 0.8,
-    },
-    herbs: {
-        name: "Herbs (Mint/Basil/Parsley)",
-        waterNeed: "low",
-        sunNeed: "low",
-        saltTolerance: "high",
-        spaceEfficiency: ["containers", "rooftop", "balcony", "backyard", "microplot"],
-        goalFit: ["fast", "nutrition"],
-        difficulty: "easy",
-        harvestDays: 21,
-        dailyWater: 0.1,
-    },
-    onions: {
-        name: "Onions/Garlic",
-        waterNeed: "low",
-        sunNeed: "medium",
-        saltTolerance: "medium",
-        spaceEfficiency: ["containers", "backyard", "microplot"],
-        goalFit: ["calories"],
-        difficulty: "medium",
-        harvestDays: 100,
-        dailyWater: 0.15,
-    },
-};
-
-type CropKey = keyof typeof CROPS;
 
 interface CropScore {
-  key: CropKey;
-  score: number;
-  reasons: string[];
+    plant: PlantData;
+    score: number;
+    reasons: string[];
 }
 
-function scoreCrop(
-    cropKey: CropKey,
-    profile: IFarmProfile
-): CropScore {
-    const crop = CROPS[cropKey];
+// Map profile values to plant data values
+const WATER_AVAILABILITY_MAP: Record<string, number> = {
+    none: 0,
+    low: 1,
+    medium: 2,
+    high: 3,
+};
+
+const WATER_NEED_MAP: Record<WaterNeed, number> = {
+    "very-low": 0,
+    low: 1,
+    medium: 2,
+    high: 3,
+    "very-high": 4,
+};
+
+const SUNLIGHT_MAP: Record<string, number> = {
+    low: 1,
+    medium: 2,
+    high: 3,
+};
+
+const SUN_NEED_MAP: Record<SunNeed, number> = {
+    shade: 0,
+    "partial-shade": 1,
+    "partial-sun": 2,
+    "full-sun": 3,
+};
+
+const SALT_TOLERANCE_SCORE: Record<string, number> = {
+    none: -40,
+    low: -25,
+    medium: 0,
+    high: 15,
+};
+
+const GOAL_MAP: Record<string, Goal> = {
+    calories: "calories",
+    nutrition: "nutrition",
+    fast: "fast",
+};
+
+const SPACE_MAP: Record<string, GrowingSpace> = {
+    containers: "containers",
+    rooftop: "rooftop",
+    balcony: "balcony",
+    backyard: "backyard",
+    microplot: "microplot",
+};
+
+function scorePlant(plant: PlantData, profile: IFarmProfile): CropScore {
     let score = 50; // base score
     const reasons: string[] = [];
 
     // Water availability scoring
-    const waterMap: Record<string, number> = { none: 0, low: 1, medium: 2, high: 3 };
-    const cropWaterMap: Record<string, number> = { low: 1, medium: 2, high: 3 };
-    const userWater = waterMap[profile.waterAvailability];
-    const cropWater = cropWaterMap[crop.waterNeed];
+    const userWater = WATER_AVAILABILITY_MAP[profile.waterAvailability] ?? 2;
+    const plantWater = WATER_NEED_MAP[plant.waterNeed];
 
-    if (userWater >= cropWater) {
+    if (userWater >= plantWater) {
         score += 20;
         reasons.push(`Works well with your ${profile.waterAvailability} water availability`);
-    } else if (userWater === cropWater - 1) {
+    } else if (userWater >= plantWater - 1) {
         score += 5;
         reasons.push("May need careful watering management");
     } else {
@@ -141,28 +99,33 @@ function scoreCrop(
     }
 
     // Sunlight scoring
-    const sunMap: Record<string, number> = { low: 1, medium: 2, high: 3 };
-    const userSun = sunMap[profile.sunlight];
-    const cropSun = sunMap[crop.sunNeed];
+    const userSun = SUNLIGHT_MAP[profile.sunlight] ?? 2;
+    const plantSun = SUN_NEED_MAP[plant.sunNeed];
 
-    if (userSun >= cropSun) {
+    // Plants can tolerate more sun than they need, but not less
+    if (userSun >= plantSun) {
         score += 15;
         reasons.push(`Suitable for your ${profile.sunlight} sunlight conditions`);
+    } else if (userSun >= plantSun - 1) {
+        score -= 5;
     } else {
         score -= 20;
     }
 
     // Soil condition scoring
     if (profile.soilCondition === "salty") {
-        const saltMap: Record<string, number> = { low: -30, medium: 0, high: 15 };
-        score += saltMap[crop.saltTolerance];
-        if (crop.saltTolerance === "high") {
+        const saltScore = SALT_TOLERANCE_SCORE[plant.saltTolerance] ?? 0;
+        score += saltScore;
+        if (plant.saltTolerance === "high") {
             reasons.push("Tolerates salty soil conditions well");
+        } else if (plant.saltTolerance === "medium") {
+            reasons.push("Has some salt tolerance");
         }
     }
 
     // Space type scoring
-    if (crop.spaceEfficiency.includes(profile.spaceType)) {
+    const userSpace = SPACE_MAP[profile.spaceType];
+    if (userSpace && plant.spaceEfficiency.includes(userSpace)) {
         score += 15;
         reasons.push(`Ideal for ${profile.spaceType} growing`);
     } else {
@@ -170,43 +133,56 @@ function scoreCrop(
     }
 
     // Goal fit scoring
-    if (crop.goalFit.includes(profile.primaryGoal)) {
+    const userGoal = GOAL_MAP[profile.primaryGoal];
+    if (userGoal && plant.goalFit.includes(userGoal)) {
         score += 20;
-        const goalLabels = {
+        const goalLabels: Record<Goal, string> = {
             calories: "high calorie production",
             nutrition: "nutritional value",
             fast: "quick harvest",
+            income: "income generation",
         };
-        reasons.push(`Great for ${goalLabels[profile.primaryGoal]}`);
+        reasons.push(`Great for ${goalLabels[userGoal]}`);
+    }
+
+    // Fast harvest bonus for "fast" goal
+    if (profile.primaryGoal === "fast" && plant.harvestDays.max <= 45) {
+        score += 15;
+        reasons.push("Quick harvest time");
     }
 
     // Experience level adjustment
-    if (profile.experienceLevel === "beginner" && crop.difficulty === "hard") {
-        score -= 15;
-    } else if (profile.experienceLevel === "beginner" && crop.difficulty === "easy") {
-        score += 10;
-        reasons.push("Beginner-friendly crop");
+    if (profile.experienceLevel === "beginner") {
+        if (plant.difficulty === "hard") {
+            score -= 20;
+        } else if (plant.difficulty === "easy") {
+            score += 15;
+            reasons.push("Beginner-friendly crop");
+        }
     }
 
-    return { key: cropKey, score, reasons };
+    return { plant, score, reasons };
 }
 
 function getTopCrops(profile: IFarmProfile): IRecommendedCrop[] {
-    const scores: CropScore[] = Object.keys(CROPS).map((key) =>
-        scoreCrop(key as CropKey, profile)
-    );
+    const allPlants = getAllPlants();
+    const scores: CropScore[] = allPlants.map((plant) => scorePlant(plant, profile));
 
     // Sort by score descending
     scores.sort((a, b) => b.score - a.score);
 
-    // Take top 3
-    return scores.slice(0, 3).map((s) => {
-        const crop = CROPS[s.key];
+    // Take top 3-4 depending on scores
+    const topCount = scores[3]?.score > 40 ? 4 : 3;
+
+    return scores.slice(0, topCount).map((s) => {
+        const avgHarvestDays = Math.round(
+            (s.plant.harvestDays.min + s.plant.harvestDays.max) / 2
+        );
         return {
-            cropName: crop.name,
+            cropName: s.plant.name,
             reason: s.reasons.slice(0, 2).join(". ") + ".",
-            difficulty: crop.difficulty,
-            timeToHarvestDays: crop.harvestDays,
+            difficulty: s.plant.difficulty as Difficulty,
+            timeToHarvestDays: avgHarvestDays,
         };
     });
 }
@@ -219,7 +195,7 @@ function generateTimeline(
         profile.spaceType
     );
     const isLowResource =
-    profile.waterAvailability === "low" || profile.waterAvailability === "none";
+        profile.waterAvailability === "low" || profile.waterAvailability === "none";
 
     const todaySteps: string[] = [
         "Survey your growing space and note sunlight patterns",
@@ -243,7 +219,9 @@ function generateTimeline(
     ];
 
     if (profile.soilCondition === "salty") {
-        thisWeekSteps.push("Consider raised beds or containers to avoid salty ground soil");
+        thisWeekSteps.push(
+            "Consider raised beds or containers to avoid salty ground soil"
+        );
     }
 
     const week2Steps: string[] = [
@@ -283,16 +261,23 @@ function generateChecklist(profile: IFarmProfile): string[] {
         base.push("Set up water recycling/collection");
     }
 
+    if (profile.waterAvailability === "none") {
+        base.push("Establish water source or collection system");
+    }
+
     return base.slice(0, 8); // Max 8 items
 }
 
 function estimateWaterUsage(crops: IRecommendedCrop[]): number {
     // Assume 2 plants of each recommended crop as starter
+    // Use vegetative stage as baseline
     let total = 0;
     for (const crop of crops) {
-        const cropData = Object.values(CROPS).find((c) => c.name === crop.cropName);
-        if (cropData) {
-            total += cropData.dailyWater * 2;
+        const plant = Object.values(PLANTS).find((p) => p.name === crop.cropName);
+        if (plant) {
+            // Average of seedling and vegetative stages
+            const avgWater = (plant.waterByStage.seedling + plant.waterByStage.vegetative) / 2;
+            total += avgWater * 2; // 2 plants
         }
     }
     return Math.round(total * 10) / 10; // Round to 1 decimal
@@ -344,8 +329,10 @@ export function generatePlan(profile: IFarmProfile): PlanDraft {
     };
 }
 
-// Export crop list for water calculator
-export const CROP_LIST = Object.entries(CROPS).map(([key, data]) => ({
-    value: key,
-    label: data.name,
-}));
+// Export plant options for UI
+export function getPlantOptions(): { value: string; label: string }[] {
+    return Object.entries(PLANTS).map(([id, plant]) => ({
+        value: id,
+        label: plant.name,
+    }));
+}

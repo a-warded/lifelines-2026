@@ -1,0 +1,501 @@
+{
+    "common": {
+        "appName": "Lifelines",
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "submit": "Submit",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "confirm": "Confirm",
+        "delete": "Delete",
+        "edit": "Edit",
+        "create": "Create",
+        "update": "Update",
+        "search": "Search",
+        "filter": "Filter",
+        "clear": "Clear",
+        "reset": "Reset",
+        "error": "Error",
+        "success": "Success",
+        "warning": "Warning",
+        "info": "Info",
+        "yes": "Yes",
+        "no": "No",
+        "or": "or",
+        "and": "and",
+        "none": "None",
+        "all": "All",
+        "noResults": "No results found",
+        "tryAgain": "Try Again",
+        "required": "Required",
+        "optional": "Optional",
+        "online": "Online",
+        "offline": "Offline (cached data)",
+        "day": "day"
+    },
+    "nav": {
+        "home": "Home",
+        "dashboard": "Dashboard",
+        "plan": "Farming Plan",
+        "newPlan": "Get Farming Plan",
+        "exchange": "Exchange",
+        "water": "Water Calculator",
+        "assistant": "AI Assistant",
+        "profile": "Profile",
+        "settings": "Settings",
+        "signIn": "Sign In",
+        "signOut": "Sign Out",
+        "register": "Register"
+    },
+    "landing": {
+        "hero": {
+            "title": "Community Farming",
+            "subtitle": "Grow food together. Build resilience. Share with your community.",
+            "description": "A platform for micro-farmers on rooftops, balconies, and small plots to coordinate and thrive."
+        },
+        "features": {
+            "title": "Features",
+            "plan": {
+                "title": "Personalized Plans",
+                "description": "Get farming recommendations based on your water, space, and sunlight"
+            },
+            "exchange": {
+                "title": "Community Exchange",
+                "description": "Share seeds, surplus produce, and tools with neighbors"
+            },
+            "water": {
+                "title": "Water Calculator",
+                "description": "Know exactly how much water your crops need"
+            },
+            "assistant": {
+                "title": "AI Assistant",
+                "description": "Get instant help with voice or text questions"
+            }
+        },
+        "lowResource": {
+            "title": "Designed for resilience",
+            "description": "Works offline, uses minimal data, and supports voice for low-literacy access."
+        },
+        "cta": {
+            "getStarted": "Get Started",
+            "learnMore": "Learn More",
+            "dashboard": "Go to Dashboard"
+        },
+        "footer": "Built for community food resilience"
+    },
+    "auth": {
+        "login": {
+            "title": "Welcome Back",
+            "subtitle": "Sign in to your account",
+            "emailLabel": "Email",
+            "emailPlaceholder": "Enter your email",
+            "passwordLabel": "Password",
+            "passwordPlaceholder": "Enter your password",
+            "submitButton": "Sign In",
+            "noAccount": "Don't have an account?",
+            "registerLink": "Register here",
+            "error": "Invalid email or password"
+        },
+        "register": {
+            "title": "Create Account",
+            "subtitle": "Join the community",
+            "nameLabel": "Full Name",
+            "namePlaceholder": "Enter your name",
+            "emailLabel": "Email",
+            "emailPlaceholder": "Enter your email",
+            "passwordLabel": "Password",
+            "passwordPlaceholder": "Create a password",
+            "confirmPasswordLabel": "Confirm Password",
+            "confirmPasswordPlaceholder": "Confirm your password",
+            "submitButton": "Create Account",
+            "hasAccount": "Already have an account?",
+            "loginLink": "Sign in here",
+            "passwordMismatch": "Passwords do not match",
+            "success": "Account created successfully"
+        }
+    },
+    "dashboard": {
+        "welcome": "Welcome back{{name, andName}}!",
+        "tagline": "Grow food, build resilience, share with your community.",
+        "loadDemo": "Load Demo Data",
+        "features": {
+            "plan": {
+                "title": "Get Farming Plan",
+                "description": "Personalized plan based on your conditions"
+            },
+            "exchange": {
+                "title": "Exchange Seeds & Surplus",
+                "description": "Share and find resources in your community"
+            },
+            "water": {
+                "title": "Water Calculator",
+                "description": "Calculate water needs for your crops"
+            },
+            "assistant": {
+                "title": "Assistant",
+                "description": "Get help with farming questions"
+            }
+        },
+        "latestPlan": {
+            "title": "Your Latest Farming Plan",
+            "recommended": "Recommended crops",
+            "created": "Created",
+            "view": "View Plan"
+        },
+        "getStarted": {
+            "title": "Ready to Start Growing?",
+            "description": "Create your personalized farming plan based on your space, water access, and goals.",
+            "cta": "Get Your Farming Plan"
+        }
+    },
+    "plan": {
+        "form": {
+            "title": "Get Your Farming Plan",
+            "subtitle": "Answer a few questions to get personalized recommendations",
+            "water": {
+                "label": "Water Availability *",
+                "placeholder": "How much water can you access?",
+                "noAccessWarning": "No water access makes growing very difficult. We'll provide alternative strategies.",
+                "options": {
+                    "none": "None - No reliable water access",
+                    "low": "Low - Limited or shared access",
+                    "medium": "Medium - Regular but limited supply",
+                    "high": "High - Reliable water access"
+                }
+            },
+            "soil": {
+                "label": "Soil Condition *",
+                "placeholder": "What's your soil like?",
+                "options": {
+                    "normal": "Normal - Regular garden soil",
+                    "salty": "Salty - Near coast or salty groundwater",
+                    "unknown": "Unknown - Not sure about soil quality"
+                }
+            },
+            "space": {
+                "label": "Growing Space *",
+                "placeholder": "Where will you grow?",
+                "options": {
+                    "rooftop": "Rooftop",
+                    "balcony": "Balcony",
+                    "containers": "Containers / Pots",
+                    "backyard": "Backyard",
+                    "microplot": "Small Plot / Community Garden"
+                }
+            },
+            "sunlight": {
+                "label": "Sunlight *",
+                "placeholder": "How much sun does your space get?",
+                "options": {
+                    "low": "Low - 0-3 hours of direct sun",
+                    "medium": "Medium - 4-6 hours of direct sun",
+                    "high": "High - 7+ hours of direct sun"
+                }
+            },
+            "goal": {
+                "label": "Primary Goal *",
+                "placeholder": "What matters most to you?",
+                "options": {
+                    "calories": "Calories - Grow filling, calorie-dense food",
+                    "nutrition": "Nutrition - Grow vitamin-rich vegetables",
+                    "fast": "Fast Harvest - Quickest time to food"
+                }
+            },
+            "experience": {
+                "label": "Experience Level (Optional)",
+                "helper": "We'll adjust recommendations based on your experience",
+                "options": {
+                    "skip": "Skip this question",
+                    "beginner": "Beginner - New to farming",
+                    "intermediate": "Intermediate - Some experience",
+                    "advanced": "Advanced - Experienced grower"
+                }
+            },
+            "errors": {
+                "water": "Please select your water availability",
+                "soil": "Please select your soil condition",
+                "space": "Please select your growing space type",
+                "sunlight": "Please select your sunlight level",
+                "goal": "Please select your primary goal",
+                "submit": "Failed to create plan. Please try again."
+            },
+            "submit": "Generate My Farming Plan",
+            "creating": "Creating Your Plan..."
+        },
+        "view": {
+            "title": "Your Farming Plan",
+            "created": "Created",
+            "offline": "Cached • Offline Mode",
+            "noPlan": "No Plan Found",
+            "createFirst": "Create your first farming plan to get started.",
+            "challengingConditions": "Challenging Conditions",
+            "generatedOn": "Generated on {{date}}",
+            "recommendedCrops": {
+                "title": "Recommended Crops",
+                "difficulty": "Difficulty",
+                "harvestTime": "{{days}} days to harvest",
+                "reason": "Why"
+            },
+            "timeline": {
+                "title": "Your Timeline"
+            },
+            "checklist": {
+                "title": "Setup Checklist"
+            },
+            "water": {
+                "title": "Estimated Daily Water",
+                "amount": "{{liters}} liters/day",
+                "description": "Based on 2 plants of each recommended crop",
+                "openCalculator": "Open Calculator"
+            },
+            "fallback": {
+                "title": "Important Notes"
+            },
+            "actions": {
+                "newPlan": "Create New Plan",
+                "findSeeds": "Find Seeds in Exchange",
+                "print": "Print Plan"
+            }
+        },
+        "difficulty": {
+            "easy": "Easy",
+            "medium": "Medium",
+            "hard": "Hard"
+        }
+    },
+    "exchange": {
+        "title": "Community Exchange",
+        "subtitle": "Share seeds, trade surplus, help neighbors",
+        "filters": {
+            "type": "Type",
+            "status": "Status",
+            "mode": "Mode",
+            "allTypes": "All Types",
+            "allStatuses": "All Statuses",
+            "allModes": "All Modes"
+        },
+        "types": {
+            "seeds": "Seeds",
+            "produce": "Produce",
+            "tools": "Tools",
+            "other": "Other"
+        },
+        "status": {
+            "available": "Available",
+            "claimed": "Claimed",
+            "completed": "Completed"
+        },
+        "mode": {
+            "offering": "I Have (Offering)",
+            "seeking": "Looking For"
+        },
+        "dealType": {
+            "price": "For Sale",
+            "trade": "For Trade",
+            "donation": "Free/Donation"
+        },
+        "listing": {
+            "createButton": "Create Listing",
+            "noListings": "No listings found in your area",
+            "noListingsDescription": "Be the first to share something with your community!",
+            "claimButton": "Claim",
+            "contactButton": "Contact",
+            "offerTradeButton": "Offer Trade",
+            "distance": "{{distance}} km away",
+            "postedBy": "Posted by {{name}}",
+            "wantsInReturn": "Wants in return",
+            "lookingFor": "Looking for"
+        },
+        "create": {
+            "title": "Create New Listing",
+            "modeLabel": "What are you doing?",
+            "modeOffering": "I have something to share/sell/trade",
+            "modeSeeking": "I'm looking for something",
+            "titleLabel": "Title",
+            "titlePlaceholder": "What are you offering/seeking?",
+            "descriptionLabel": "Description",
+            "descriptionPlaceholder": "Describe the item, quantity, condition...",
+            "typeLabel": "Category",
+            "plantTypeLabel": "Plant Type (if applicable)",
+            "plantTypePlaceholder": "Select a plant...",
+            "quantityLabel": "Quantity",
+            "quantityPlaceholder": "e.g., 50 seeds, 2 kg",
+            "dealTypeLabel": "Deal Type",
+            "priceLabel": "Price",
+            "pricePlaceholder": "Enter amount",
+            "currencyNote": "Price will be shown in your local currency",
+            "tradeItemsLabel": "What do you want in return?",
+            "tradeItemsPlaceholder": "Add items you'd accept in trade",
+            "addTradeItem": "Add Item",
+            "locationLabel": "Location",
+            "useMyLocation": "Use My Location",
+            "locationDetecting": "Detecting location...",
+            "locationError": "Could not detect location",
+            "locationSuccess": "Location detected",
+            "submitButton": "Post Listing"
+        },
+        "claim": {
+            "title": "Claim This Listing",
+            "messageLabel": "Message to the poster",
+            "messagePlaceholder": "Introduce yourself and arrange pickup/exchange...",
+            "tradeOfferLabel": "Your trade offer",
+            "tradeOfferPlaceholder": "What are you offering in exchange?",
+            "submitButton": "Send Claim"
+        },
+        "location": {
+            "detecting": "Detecting your location...",
+            "noPermission": "Location permission denied. Showing listings from your country.",
+            "usingCountry": "Showing listings from {{country}}"
+        }
+    },
+    "water": {
+        "title": "Water Calculator",
+        "subtitle": "Calculate daily water needs for your plants",
+        "addPlant": "Add Plant",
+        "removePlant": "Remove",
+        "plantLabel": "Plant",
+        "selectPlant": "Select a plant...",
+        "stageLabel": "Growth Stage",
+        "countLabel": "Number of Plants",
+        "stages": {
+            "seedling": "Seedling",
+            "vegetative": "Vegetative",
+            "flowering": "Flowering",
+            "fruiting": "Fruiting",
+            "mature": "Mature"
+        },
+        "results": {
+            "title": "Daily Water Requirement",
+            "total": "{{liters}} liters/day",
+            "perPlant": "{{liters}} L/plant",
+            "breakdown": "Breakdown by Plant",
+            "noPlants": "Add plants to calculate water needs",
+            "warning": "⚠️ High water demand. Consider water-saving techniques like mulching and drip irrigation.",
+            "tip": "Tip: Water early morning or late evening to reduce evaporation."
+        },
+        "history": {
+            "title": "Recent Calculations",
+            "noHistory": "No saved calculations yet",
+            "savedOn": "Saved {{date}}"
+        },
+        "actions": {
+            "save": "Save Calculation",
+            "clear": "Clear All"
+        }
+    },
+    "assistant": {
+        "title": "Farming Assistant",
+        "subtitle": "Ask questions about growing food, saving water, and more",
+        "placeholder": "Ask a question...",
+        "enableVoice": "Enable voice responses",
+        "disableVoice": "Disable voice",
+        "listening": "Listening... Speak now",
+        "error": "Sorry, I couldn't process your message. Please check your connection and try again.",
+        "empty": {
+            "title": "How can I help you grow?",
+            "description": "Ask me about crops, watering, pest control, container gardening, or anything related to growing your own food."
+        },
+        "presets": {
+            "title": "Quick Questions",
+            "lowWater": "How do I grow with little water?",
+            "containers": "What can I grow in containers?",
+            "startToday": "What can I start growing today?",
+            "pests": "How do I deal with pests naturally?",
+            "saltySoil": "My soil is salty, what can I grow?",
+            "fastHarvest": "What grows fastest?",
+            "moreTips": "Give me more tips"
+        },
+        "voice": {
+            "startListening": "Start voice input",
+            "stopListening": "Stop listening",
+            "listening": "Listening...",
+            "speakResponses": "Speak responses",
+            "speechNotSupported": "Speech not supported in this browser"
+        },
+        "messages": {
+            "welcome": "Hello! I'm your farming assistant. Ask me anything about growing food, dealing with pests, saving water, or getting started. You can type or use your voice!",
+            "thinking": "Let me think...",
+            "error": "Sorry, I couldn't process that. Please try again."
+        }
+    },
+    "plants": {
+        "categories": {
+            "vegetable": "Vegetables",
+            "fruit": "Fruits",
+            "legume": "Legumes",
+            "root": "Root Vegetables",
+            "herb": "Herbs",
+            "leafy-green": "Leafy Greens",
+            "grain": "Grains",
+            "tuber": "Tubers"
+        },
+        "waterNeed": {
+            "very-low": "Very Low",
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High",
+            "very-high": "Very High"
+        },
+        "sunNeed": {
+            "shade": "Shade",
+            "partial-shade": "Partial Shade",
+            "partial-sun": "Partial Sun",
+            "full-sun": "Full Sun"
+        },
+        "difficulty": {
+            "easy": "Easy",
+            "medium": "Medium",
+            "hard": "Hard"
+        }
+    },
+    "profile": {
+        "title": "Your Profile",
+        "nameLabel": "Name",
+        "emailLabel": "Email",
+        "locationLabel": "Location",
+        "joinedLabel": "Member since",
+        "statsTitle": "Your Stats",
+        "plansCreated": "Plans Created",
+        "listingsPosted": "Listings Posted",
+        "tradesCompleted": "Trades Completed"
+    },
+    "settings": {
+        "title": "Settings",
+        "language": {
+            "title": "Language",
+            "description": "Choose your preferred language"
+        },
+        "notifications": {
+            "title": "Notifications",
+            "description": "Manage notification preferences"
+        },
+        "dataUsage": {
+            "title": "Data Usage",
+            "description": "Optimize for low data connections",
+            "lowDataMode": "Low Data Mode"
+        },
+        "offline": {
+            "title": "Offline Data",
+            "description": "Manage cached data",
+            "clearCache": "Clear Cache",
+            "cacheSize": "Cache size: {{size}}"
+        }
+    },
+    "errors": {
+        "notFound": "Page not found",
+        "unauthorized": "Please sign in to access this page",
+        "serverError": "Something went wrong. Please try again.",
+        "networkError": "Network error. Check your connection.",
+        "validationError": "Please check your input and try again."
+    },
+    "units": {
+        "liters": "liters",
+        "litersShort": "L",
+        "kilometers": "km",
+        "days": "days",
+        "cm": "cm",
+        "kg": "kg"
+    }
+}

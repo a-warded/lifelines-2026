@@ -1,102 +1,161 @@
-// Water Calculator Logic
-// Calculates water requirements based on crops, plants, and growth stage
+// Water Calculator - Uses central plant database
+// Calculates water requirements for multiple plant entries
 
-export interface WaterInput {
-  cropType: string;
-  numberOfPlants: number;
-  growthStage: "seedling" | "growing" | "fruiting";
-  waterAvailability: "none" | "low" | "medium" | "high";
+import { GrowthStage, getPlantById, getPlantOptions } from "../plants";
+
+export interface WaterEntry {
+    plantId: string;
+    stage: GrowthStage;
+    count: number;
 }
 
 export interface WaterResult {
-  dailyLiters: number;
-  weeklyLiters: number;
-  survivalDailyLiters: number;
-  warnings: string[];
+    plantId: string;
+    plantName: string;
+    stage: GrowthStage;
+    count: number;
+    litersPerPlant: number;
+    totalLiters: number;
 }
 
-// Liters per plant per day by crop and growth stage
-const WATER_BASELINES: Record<string, Record<string, number>> = {
-    tomato: { seedling: 0.2, growing: 0.6, fruiting: 1.0 },
-    potato: { seedling: 0.3, growing: 0.5, fruiting: 0.7 },
-    beans: { seedling: 0.2, growing: 0.4, fruiting: 0.6 },
-    leafyGreens: { seedling: 0.1, growing: 0.2, fruiting: 0.3 },
-    cucumber: { seedling: 0.3, growing: 0.7, fruiting: 1.2 },
-    herbs: { seedling: 0.05, growing: 0.1, fruiting: 0.15 },
-    onions: { seedling: 0.1, growing: 0.15, fruiting: 0.2 },
-};
+export interface WaterCalculationResult {
+    entries: WaterResult[];
+    totalDailyLiters: number;
+    warning?: string;
+    tips: string[];
+}
 
-// Default baseline for unknown crops
-const DEFAULT_BASELINE = { seedling: 0.2, growing: 0.4, fruiting: 0.6 };
+// Growth stage labels for display
+export const GROWTH_STAGES: { value: GrowthStage; label: string }[] = [
+    { value: "seedling", label: "Seedling" },
+    { value: "vegetative", label: "Vegetative" },
+    { value: "flowering", label: "Flowering" },
+    { value: "fruiting", label: "Fruiting" },
+    { value: "mature", label: "Mature" },
+];
 
-export function calculateWater(input: WaterInput): WaterResult {
-    const { cropType, numberOfPlants, growthStage, waterAvailability } = input;
+// Water level thresholds for warnings
+const HIGH_WATER_THRESHOLD = 10; // liters/day
+const VERY_HIGH_WATER_THRESHOLD = 20; // liters/day
 
-    // Get baseline for crop or use default
-    const cropBaseline = WATER_BASELINES[cropType] || DEFAULT_BASELINE;
-    const litersPerPlant = cropBaseline[growthStage];
+export function calculateWater(entries: WaterEntry[]): WaterCalculationResult {
+    const results: WaterResult[] = [];
+    let totalDailyLiters = 0;
 
-    // Calculate totals
-    const dailyLiters = Math.round(litersPerPlant * numberOfPlants * 100) / 100;
-    const weeklyLiters = Math.round(dailyLiters * 7 * 100) / 100;
-    const survivalDailyLiters = Math.round(dailyLiters * 0.6 * 100) / 100;
+    for (const entry of entries) {
+        if (!entry.plantId || entry.count <= 0) continue;
 
-    // Generate warnings (max 3)
-    const warnings: string[] = [];
+        const plant = getPlantById(entry.plantId);
+        if (!plant) continue;
 
-    if (waterAvailability === "none") {
-        warnings.push(
-            "⚠️ No water access: Growing is not feasible. Establish water source first."
-        );
+        const litersPerPlant = plant.waterByStage[entry.stage];
+        const totalLiters = litersPerPlant * entry.count;
+
+        results.push({
+            plantId: entry.plantId,
+            plantName: plant.name,
+            stage: entry.stage,
+            count: entry.count,
+            litersPerPlant: Math.round(litersPerPlant * 100) / 100,
+            totalLiters: Math.round(totalLiters * 100) / 100,
+        });
+
+        totalDailyLiters += totalLiters;
     }
 
-    if (waterAvailability === "low" && dailyLiters > 5) {
-        warnings.push(
-            `⚠️ ${dailyLiters}L daily exceeds low-water capacity. Consider reducing to ${Math.floor(5 / litersPerPlant)} plants.`
-        );
+    // Round total
+    totalDailyLiters = Math.round(totalDailyLiters * 100) / 100;
+
+    // Generate warning if needed
+    let warning: string | undefined;
+    if (totalDailyLiters >= VERY_HIGH_WATER_THRESHOLD) {
+        warning =
+            "⚠️ Very high water demand! Consider reducing plant count, using mulch, or setting up drip irrigation to conserve water.";
+    } else if (totalDailyLiters >= HIGH_WATER_THRESHOLD) {
+        warning =
+            "⚠️ High water demand. Consider water-saving techniques like mulching and drip irrigation.";
     }
 
-    if (waterAvailability === "medium" && dailyLiters > 15) {
-        warnings.push(
-            `⚠️ ${dailyLiters}L daily is high for medium water availability. Consider reducing plant count.`
-        );
-    }
+    // Generate contextual tips
+    const tips = generateTips(results, totalDailyLiters);
 
-    if (dailyLiters > 30) {
-        warnings.push(
-            "⚠️ Over 30L daily is unrealistic for micro-farming. Strongly consider a smaller operation."
-        );
-    }
-
-    // Limit to 3 warnings
     return {
-        dailyLiters,
-        weeklyLiters,
-        survivalDailyLiters,
-        warnings: warnings.slice(0, 3),
+        entries: results,
+        totalDailyLiters,
+        warning,
+        tips,
     };
 }
 
-// Export crop options for dropdown
-export const CROP_OPTIONS = [
-    { value: "tomato", label: "Tomato" },
-    { value: "potato", label: "Potato" },
-    { value: "beans", label: "Beans/Legumes" },
-    { value: "leafyGreens", label: "Leafy Greens" },
-    { value: "cucumber", label: "Cucumber" },
-    { value: "herbs", label: "Herbs" },
-    { value: "onions", label: "Onions/Garlic" },
-];
+function generateTips(results: WaterResult[], totalLiters: number): string[] {
+    const tips: string[] = [];
 
-export const GROWTH_STAGES = [
-    { value: "seedling", label: "Seedling" },
-    { value: "growing", label: "Growing" },
-    { value: "fruiting", label: "Fruiting/Mature" },
-];
+    // Always include basic tips
+    tips.push("Water early morning or late evening to reduce evaporation.");
 
-export const WATER_LEVELS = [
-    { value: "none", label: "None" },
-    { value: "low", label: "Low" },
-    { value: "medium", label: "Medium" },
-    { value: "high", label: "High" },
-];
+    // High water plants tip
+    const highWaterPlants = results.filter((r) => {
+        const plant = getPlantById(r.plantId);
+        return plant && (plant.waterNeed === "high" || plant.waterNeed === "very-high");
+    });
+
+    if (highWaterPlants.length > 0) {
+        tips.push(
+            `${highWaterPlants.map((p) => p.plantName).join(", ")} need${highWaterPlants.length === 1 ? "s" : ""} consistent moisture. Don't let soil dry out completely.`
+        );
+    }
+
+    // Fruiting stage tip
+    const fruitingPlants = results.filter((r) => r.stage === "fruiting");
+    if (fruitingPlants.length > 0) {
+        tips.push(
+            "Plants in fruiting stage need the most water. Reduce watering slightly as they mature."
+        );
+    }
+
+    // Container tip
+    tips.push("Containers dry out faster than ground soil. Check moisture daily.");
+
+    // Multiple plants tip
+    if (totalLiters > 5) {
+        tips.push(
+            "Consider grouping plants with similar water needs together for more efficient watering."
+        );
+    }
+
+    // Mulching tip
+    if (totalLiters > 3) {
+        tips.push("Add 5-10cm of mulch around plants to retain moisture and reduce watering needs by up to 50%.");
+    }
+
+    return tips.slice(0, 4); // Max 4 tips
+}
+
+// Calculate water for a single plant (convenience function)
+export function calculateSinglePlantWater(
+    plantId: string,
+    stage: GrowthStage,
+    count: number
+): WaterResult | null {
+    const plant = getPlantById(plantId);
+    if (!plant) return null;
+
+    const litersPerPlant = plant.waterByStage[stage];
+    const totalLiters = litersPerPlant * count;
+
+    return {
+        plantId,
+        plantName: plant.name,
+        stage,
+        count,
+        litersPerPlant: Math.round(litersPerPlant * 100) / 100,
+        totalLiters: Math.round(totalLiters * 100) / 100,
+    };
+}
+
+// Get all plant options for dropdowns
+export { getPlantOptions };
+
+// Re-export growth stages type
+    export type { GrowthStage };
+

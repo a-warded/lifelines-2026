@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface Message {
   id: string;
@@ -25,6 +26,7 @@ interface Message {
 
 export default function AssistantPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -186,8 +188,7 @@ export default function AssistantPage() {
             const errorMessage: Message = {
                 id: `error-${Date.now()}`,
                 role: "assistant",
-                content:
-          "Sorry, I couldn't process your message. Please check your connection and try again.",
+                content: t("assistant.error"),
             };
             setMessages((prev) => [...prev, errorMessage]);
         } finally {
@@ -271,10 +272,10 @@ export default function AssistantPage() {
                 </Button>
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold text-foreground">
-            Farming Assistant
+                        {t("assistant.title")}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-            Ask questions about growing food, saving water, and more
+                        {t("assistant.subtitle")}
                     </p>
                 </div>
                 {speechSupported && (
@@ -282,7 +283,7 @@ export default function AssistantPage() {
                         variant={speakEnabled ? "primary" : "outline"}
                         size="sm"
                         onClick={() => setSpeakEnabled(!speakEnabled)}
-                        title={speakEnabled ? "Disable voice" : "Enable voice responses"}
+                        title={speakEnabled ? t("assistant.disableVoice") : t("assistant.enableVoice")}
                     >
                         {speakEnabled ? (
                             <Volume2 className="h-4 w-4" />
@@ -321,11 +322,10 @@ export default function AssistantPage() {
                             <div className="flex h-full flex-col items-center justify-center text-center">
                                 <MessageCircle className="h-12 w-12 text-muted-foreground" />
                                 <h3 className="mt-4 text-lg font-semibold">
-                  How can I help you grow?
+                                    {t("assistant.empty.title")}
                                 </h3>
                                 <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                  Ask me about crops, watering, pest control, container
-                  gardening, or anything related to growing your own food.
+                                    {t("assistant.empty.description")}
                                 </p>
                             </div>
                         ) : (
@@ -390,7 +390,7 @@ export default function AssistantPage() {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={handleKeyPress}
-                                    placeholder="Ask a question..."
+                                    placeholder={t("assistant.placeholder")}
                                     className="w-full resize-none rounded-xl border bg-background px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     rows={1}
                                     style={{
@@ -412,7 +412,7 @@ export default function AssistantPage() {
 
                         {isListening && (
                             <p className="mt-2 text-center text-sm text-muted-foreground animate-pulse">
-                Listening... Speak now
+                                {t("assistant.listening")}
                             </p>
                         )}
                     </div>

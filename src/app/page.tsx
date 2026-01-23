@@ -3,30 +3,32 @@
 import { Droplets, Leaf, MessageCircle, RefreshCw, Sprout } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const { t } = useTranslation();
 
   const features = [
     {
       icon: Sprout,
-      title: "Personalized Plans",
-      description: "Get farming recommendations based on your water, space, and sunlight",
+      title: t("landing.features.plan.title"),
+      description: t("landing.features.plan.description"),
     },
     {
       icon: RefreshCw,
-      title: "Community Exchange",
-      description: "Share seeds, surplus produce, and tools with neighbors",
+      title: t("landing.features.exchange.title"),
+      description: t("landing.features.exchange.description"),
     },
     {
       icon: Droplets,
-      title: "Water Calculator",
-      description: "Know exactly how much water your crops need",
+      title: t("landing.features.water.title"),
+      description: t("landing.features.water.description"),
     },
     {
       icon: MessageCircle,
-      title: "AI Assistant",
-      description: "Get instant help with voice or text questions",
+      title: t("landing.features.assistant.title"),
+      description: t("landing.features.assistant.description"),
     },
   ];
 
@@ -39,14 +41,13 @@ export default function Home() {
             <Leaf className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
           <h1 className="text-4xl font-bold text-foreground sm:text-5xl">
-            Community Farming
+            {t("landing.hero.title")}
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-            Grow food together. Build resilience. Share with your community.
+            {t("landing.hero.subtitle")}
           </p>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            A platform for micro-farmers on rooftops, balconies, and small plots
-            to coordinate and thrive.
+            {t("landing.hero.description")}
           </p>
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
@@ -57,7 +58,7 @@ export default function Home() {
                 href="/dashboard"
                 className="rounded-lg bg-primary px-8 py-3 font-medium text-primary-foreground transition-colors hover:opacity-90"
               >
-                Go to Dashboard
+                {t("landing.cta.dashboard")}
               </Link>
             ) : (
               <>
@@ -65,13 +66,13 @@ export default function Home() {
                   href="/login"
                   className="rounded-lg bg-primary px-8 py-3 font-medium text-primary-foreground transition-colors hover:opacity-90"
                 >
-                  Sign In
+                  {t("nav.signIn")}
                 </Link>
                 <Link
                   href="/register"
                   className="rounded-lg border border-border bg-background px-8 py-3 font-medium transition-colors hover:bg-card"
                 >
-                  Create Account
+                  {t("nav.register")}
                 </Link>
               </>
             )}
@@ -102,15 +103,14 @@ export default function Home() {
         {/* Low-resource note */}
         <div className="mt-12 max-w-md rounded-lg bg-amber-50 p-4 text-center dark:bg-amber-950">
           <p className="text-sm text-amber-800 dark:text-amber-200">
-            <strong>Designed for resilience:</strong> Works offline, uses
-            minimal data, and supports voice for low-literacy access.
+            <strong>{t("landing.lowResource.title")}:</strong> {t("landing.lowResource.description")}
           </p>
         </div>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-border py-6 text-center text-sm text-muted-foreground">
-        <p>Built for community food resilience</p>
+        <p>{t("landing.footer")}</p>
       </footer>
     </div>
   );

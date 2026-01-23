@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { calculateWater } from "@/lib/logic/water-calculator";
+import { calculateWater, WaterEntry } from "@/lib/logic/water-calculator";
 import { WaterCalculation } from "@/lib/models";
 import { connectMongo } from "@/lib/mongo";
 import { NextRequest, NextResponse } from "next/server";
@@ -13,30 +13,28 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { cropType, numberOfPlants, growthStage, waterAvailability, save } = body;
+        const { entries, save } = body as { entries: WaterEntry[]; save?: boolean };
 
         // Validation
-        if (!cropType || !numberOfPlants || !growthStage || !waterAvailability) {
+        if (!entries || !Array.isArray(entries) || entries.length === 0) {
             return NextResponse.json(
-                { error: "Missing required fields" },
+                { error: "Please provide at least one plant entry" },
                 { status: 400 }
             );
         }
 
-        if (numberOfPlants <= 0) {
-            return NextResponse.json(
-                { error: "Number of plants must be greater than 0" },
-                { status: 400 }
-            );
+        // Validate each entry
+        for (const entry of entries) {
+            if (!entry.plantId || !entry.stage || !entry.count || entry.count <= 0) {
+                return NextResponse.json(
+                    { error: "Each entry must have plantId, stage, and count > 0" },
+                    { status: 400 }
+                );
+            }
         }
 
         // Calculate
-        const result = calculateWater({
-            cropType,
-            numberOfPlants,
-            growthStage,
-            waterAvailability,
-        });
+        const result = calculateWater(entries);
 
         // Optionally save
         let savedId = null;
@@ -45,11 +43,10 @@ export async function POST(request: NextRequest) {
 
             const calculation = await WaterCalculation.create({
                 userId: session.user.id,
-                cropType,
-                numberOfPlants,
-                growthStage,
-                waterAvailability,
-                ...result,
+                entries,
+                totalLitersPerDay: result.totalDailyLiters,
+                results: result.entries,
+                tips: result.tips,
             });
 
             savedId = calculation._id.toString();
@@ -58,7 +55,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             result: {
-                ...result,
+                entries: result.entries,
+                totalDailyLiters: result.totalDailyLiters,
+                warning: result.warning,
+                tips: result.tips,
                 id: savedId,
             },
         });
@@ -92,14 +92,10 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             calculations: calculations.map((c) => ({
                 id: c._id.toString(),
-                cropType: c.cropType,
-                numberOfPlants: c.numberOfPlants,
-                growthStage: c.growthStage,
-                waterAvailability: c.waterAvailability,
-                dailyLiters: c.dailyLiters,
-                weeklyLiters: c.weeklyLiters,
-                survivalDailyLiters: c.survivalDailyLiters,
-                warnings: c.warnings,
+                entries: c.entries,
+                totalLitersPerDay: c.totalLitersPerDay,
+                results: c.results,
+                tips: c.tips,
                 createdAt: c.createdAt,
             })),
         });

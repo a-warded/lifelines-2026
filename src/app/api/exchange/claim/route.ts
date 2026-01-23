@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Listing not found" }, { status: 404 });
         }
 
-        if (listing.status !== "open") {
+        if (listing.status !== "available") {
             return NextResponse.json(
                 { error: "Listing is not available for claiming" },
                 { status: 400 }

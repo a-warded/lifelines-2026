@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface RecommendedCrop {
   cropName: string;
@@ -49,6 +50,7 @@ interface Profile {
 export default function PlanViewPage() {
     const params = useParams();
     const router = useRouter();
+    const { t } = useTranslation();
     const [plan, setPlan] = useState<Plan | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -99,12 +101,12 @@ export default function PlanViewPage() {
             <div className="mx-auto max-w-2xl space-y-6 text-center">
                 <div className="py-12">
                     <Leaf className="mx-auto h-16 w-16 text-muted-foreground" />
-                    <h2 className="mt-4 text-xl font-semibold">No Plan Found</h2>
+                    <h2 className="mt-4 text-xl font-semibold">{t("plan.view.noPlan")}</h2>
                     <p className="mt-2 text-muted-foreground">
-            Create your first farming plan to get started.
+                        {t("plan.view.createFirst")}
                     </p>
                     <Link href="/dashboard/plan/new">
-                        <Button className="mt-6">Create a Plan</Button>
+                        <Button className="mt-6">{t("plan.view.actions.newPlan")}</Button>
                     </Link>
                 </div>
             </div>
@@ -135,14 +137,14 @@ export default function PlanViewPage() {
                 </Button>
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold text-foreground">
-            Your Farming Plan
+                        {t("plan.view.title")}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-            Created {new Date(plan.createdAt).toLocaleDateString()}
+                        {t("plan.view.created")} {new Date(plan.createdAt).toLocaleDateString()}
                     </p>
                 </div>
                 {isOffline && (
-                    <Badge variant="warning">Cached • Offline Mode</Badge>
+                    <Badge variant="warning">{t("plan.view.offline")}</Badge>
                 )}
             </div>
 
@@ -153,7 +155,7 @@ export default function PlanViewPage() {
                         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
                         <div>
                             <h3 className="font-semibold text-amber-800 dark:text-amber-200">
-                Challenging Conditions
+                                {t("plan.view.challengingConditions")}
                             </h3>
                             <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
                                 {plan.fallbackNotes}
@@ -168,7 +170,7 @@ export default function PlanViewPage() {
                 <CardContent>
                     <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                         <Leaf className="h-5 w-5 text-green-600" />
-            Recommended Crops
+                        {t("plan.view.recommendedCrops.title")}
                     </h2>
                     <div className="space-y-4">
                         {plan.recommendedCrops.map((crop, index) => (
@@ -183,11 +185,11 @@ export default function PlanViewPage() {
                                     <div className="flex flex-wrap items-center gap-2">
                                         <h3 className="font-semibold">{crop.cropName}</h3>
                                         <Badge variant={difficultyColors[crop.difficulty]}>
-                                            {crop.difficulty}
+                                            {t(`plan.difficulty.${crop.difficulty}`)}
                                         </Badge>
                                         <Badge variant="outline">
                                             <Clock className="mr-1 h-3 w-3" />
-                      ~{crop.timeToHarvestDays} days
+                                            ~{crop.timeToHarvestDays} {t("units.days")}
                                         </Badge>
                                     </div>
                                     <p className="mt-2 text-sm text-muted-foreground">
@@ -207,10 +209,10 @@ export default function PlanViewPage() {
                         <Droplets className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
                         <div>
                             <p className="font-semibold text-cyan-800 dark:text-cyan-200">
-                Estimated Daily Water
+                                {t("plan.view.water.title")}
                             </p>
                             <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">
-                                {plan.estimatedDailyWaterLiters} liters
+                                {plan.estimatedDailyWaterLiters} {t("units.liters")}
                             </p>
                         </div>
                     </div>
@@ -218,7 +220,7 @@ export default function PlanViewPage() {
                         href={`/dashboard/water?crop=${plan.recommendedCrops[0]?.cropName || "tomato"}&plants=2`}
                     >
                         <Button variant="outline" size="sm">
-              Open Calculator
+                            {t("plan.view.water.openCalculator")}
                         </Button>
                     </Link>
                 </CardContent>
@@ -229,7 +231,7 @@ export default function PlanViewPage() {
                 <CardContent>
                     <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                         <CheckCircle2 className="h-5 w-5 text-primary" />
-            Setup Checklist
+                        {t("plan.view.checklist.title")}
                     </h2>
                     <ul className="space-y-2">
                         {plan.setupChecklist.map((item, index) => (
@@ -247,7 +249,7 @@ export default function PlanViewPage() {
                 <CardContent>
                     <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                         <Calendar className="h-5 w-5 text-primary" />
-            Your Timeline
+                        {t("plan.view.timeline.title")}
                     </h2>
                     <div className="space-y-6">
                         {plan.timeline.map((block) => (
@@ -275,12 +277,12 @@ export default function PlanViewPage() {
             <div className="flex flex-col gap-3 sm:flex-row">
                 <Link href="/dashboard/plan/new" className="flex-1">
                     <Button variant="outline" className="w-full">
-            Create New Plan
+                        {t("plan.view.actions.newPlan")}
                     </Button>
                 </Link>
                 <Link href="/dashboard/exchange" className="flex-1">
                     <Button variant="secondary" className="w-full">
-            Find Seeds in Exchange
+                        {t("plan.view.actions.findSeeds")}
                     </Button>
                 </Link>
             </div>

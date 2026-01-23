@@ -1,9 +1,11 @@
 import { auth } from "@/lib/auth";
+import { calculateDistance, MAX_LISTING_DISTANCE_KM } from "@/lib/geo";
 import { ExchangeClaim, ExchangeListing } from "@/lib/models";
 import { connectMongo } from "@/lib/mongo";
+import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET - List listings with filters
+// GET - List listings with filters and location-based filtering
 export async function GET(request: NextRequest) {
     try {
         const session = await auth();
@@ -12,46 +14,90 @@ export async function GET(request: NextRequest) {
         }
 
         const { searchParams } = new URL(request.url);
-        const type = searchParams.get("type"); // seed/surplus/tool
-        const status = searchParams.get("status"); // open/claimed/completed
-        const limit = parseInt(searchParams.get("limit") || "20");
+        const type = searchParams.get("type"); // seeds/produce/tools/other
+        const status = searchParams.get("status"); // available/claimed/completed
+        const mode = searchParams.get("mode"); // offering/seeking
+        const limit = parseInt(searchParams.get("limit") || "50");
         const myListings = searchParams.get("my") === "true";
+        
+        // Location filtering
+        const lat = parseFloat(searchParams.get("lat") || "");
+        const lon = parseFloat(searchParams.get("lon") || "");
+        const country = searchParams.get("country") || "";
 
         await connectMongo();
 
         // Build query
         const query: Record<string, unknown> = {};
-        if (type && ["seed", "surplus", "tool"].includes(type)) {
+        
+        if (type && ["seeds", "produce", "tools", "other"].includes(type)) {
             query.type = type;
         }
-        if (status && ["open", "claimed", "completed", "cancelled"].includes(status)) {
+        if (status && ["available", "claimed", "completed", "cancelled"].includes(status)) {
             query.status = status;
+        } else if (!myListings) {
+            // Default to available for public listings
+            query.status = "available";
+        }
+        if (mode && ["offering", "seeking"].includes(mode)) {
+            query.mode = mode;
         }
         if (myListings) {
             query.userId = session.user.id;
         }
+        
+        // Country filtering (required for non-my listings)
+        if (!myListings && country) {
+            query.country = country.toUpperCase();
+        }
 
-        const listings = await ExchangeListing.find(query)
+        let listings = await ExchangeListing.find(query)
             .sort({ createdAt: -1 })
-            .limit(limit)
+            .limit(limit * 2) // Fetch extra for distance filtering
             .lean();
 
+        // Filter by distance if coordinates provided
+        if (!myListings && !isNaN(lat) && !isNaN(lon)) {
+            listings = listings.filter((l) => {
+                if (!l.latitude || !l.longitude) return false;
+                const distance = calculateDistance(lat, lon, l.latitude, l.longitude);
+                return distance <= MAX_LISTING_DISTANCE_KM;
+            });
+        }
+
+        // Limit after filtering
+        listings = listings.slice(0, limit);
+
         return NextResponse.json({
-            listings: listings.map((l) => ({
-                id: l._id.toString(),
-                userId: l.userId,
-                type: l.type,
-                title: l.title,
-                description: l.description,
-                quantity: l.quantity,
-                unit: l.unit,
-                condition: l.condition,
-                locationArea: l.locationArea,
-                contact: l.contact,
-                status: l.status,
-                createdAt: l.createdAt,
-                isOwner: l.userId === session?.user?.id,
-            })),
+            listings: listings.map((l) => {
+                // Calculate distance if coordinates available
+                let distance: number | undefined;
+                if (!isNaN(lat) && !isNaN(lon) && l.latitude && l.longitude) {
+                    distance = Math.round(calculateDistance(lat, lon, l.latitude, l.longitude) * 10) / 10;
+                }
+
+                return {
+                    id: l._id.toString(),
+                    userId: l.userId,
+                    userName: l.userName,
+                    type: l.type,
+                    plantId: l.plantId,
+                    title: l.title,
+                    description: l.description,
+                    quantity: l.quantity,
+                    mode: l.mode,
+                    dealType: l.dealType,
+                    price: l.price,
+                    currencyCountry: l.currencyCountry,
+                    tradeItems: l.tradeItems,
+                    country: l.country,
+                    locationLabel: l.locationLabel,
+                    distance,
+                    status: l.status,
+                    createdAt: l.createdAt,
+                    isOwner: l.userId === session?.user?.id,
+                };
+            }),
         });
     } catch (error) {
         console.error("Listings fetch error:", error);
@@ -71,31 +117,53 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { type, title, description, quantity, unit, condition, locationArea, contact } =
-      body;
+        const {
+            type,
+            plantId,
+            title,
+            description,
+            quantity,
+            mode,
+            dealType,
+            price,
+            tradeItems,
+            latitude,
+            longitude,
+            country,
+            locationLabel,
+        } = body;
 
         // Validation
-        if (!type || !title || !quantity || !unit || !locationArea || !contact) {
+        if (!type || !title || !country) {
             return NextResponse.json(
                 { error: "Missing required fields" },
                 { status: 400 }
             );
         }
 
-        if (!["seed", "surplus", "tool"].includes(type)) {
+        if (!["seeds", "produce", "tools", "other"].includes(type)) {
             return NextResponse.json({ error: "Invalid listing type" }, { status: 400 });
         }
 
-        if (quantity <= 0) {
-            return NextResponse.json(
-                { error: "Quantity must be greater than 0" },
-                { status: 400 }
-            );
+        if (!["offering", "seeking"].includes(mode || "offering")) {
+            return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
         }
 
-        if (description && description.length > 500) {
+        if (!["price", "trade", "donation"].includes(dealType || "donation")) {
+            return NextResponse.json({ error: "Invalid deal type" }, { status: 400 });
+        }
+
+        if (dealType === "price" && (price === undefined || price < 0)) {
+            return NextResponse.json({ error: "Price is required for priced listings" }, { status: 400 });
+        }
+
+        if (dealType === "trade" && (!tradeItems || tradeItems.length === 0)) {
+            return NextResponse.json({ error: "Trade items are required for trade listings" }, { status: 400 });
+        }
+
+        if (description && description.length > 1000) {
             return NextResponse.json(
-                { error: "Description too long (max 500 chars)" },
+                { error: "Description too long (max 1000 chars)" },
                 { status: 400 }
             );
         }
@@ -104,15 +172,22 @@ export async function POST(request: NextRequest) {
 
         const listing = await ExchangeListing.create({
             userId: session.user.id,
+            userName: session.user.name || "Anonymous",
             type,
+            plantId: plantId || undefined,
             title: title.trim(),
             description: (description || "").trim(),
-            quantity,
-            unit,
-            condition: type === "seed" ? condition || "unknown" : undefined,
-            locationArea: locationArea.trim(),
-            contact: contact.trim(),
-            status: "open",
+            quantity: quantity?.trim() || undefined,
+            mode: mode || "offering",
+            dealType: dealType || "donation",
+            price: dealType === "price" ? price : undefined,
+            currencyCountry: dealType === "price" ? country : undefined,
+            tradeItems: dealType === "trade" ? tradeItems : undefined,
+            latitude: latitude || undefined,
+            longitude: longitude || undefined,
+            country: country.toUpperCase(),
+            locationLabel: locationLabel?.trim() || undefined,
+            status: "available",
         });
 
         return NextResponse.json({
@@ -170,7 +245,7 @@ export async function PATCH(request: NextRequest) {
         const statusMap: Record<string, string> = {
             complete: "completed",
             cancel: "cancelled",
-            reopen: "open",
+            reopen: "available",
         };
 
         listing.status = statusMap[action] as typeof listing.status;
@@ -194,5 +269,19 @@ export async function PATCH(request: NextRequest) {
             { error: "Failed to update listing" },
             { status: 500 }
         );
+    }
+}
+
+// Endpoint to get user's country from Cloudflare header (fallback)
+export async function OPTIONS(request: NextRequest) {
+    try {
+        const headersList = await headers();
+        const cfCountry = headersList.get("cf-ipcountry") || "US";
+        
+        return NextResponse.json({
+            country: cfCountry.toUpperCase(),
+        });
+    } catch (error) {
+        return NextResponse.json({ country: "US" });
     }
 }

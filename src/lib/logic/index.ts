@@ -2,11 +2,9 @@ export {
     PRESET_PROMPTS, generateRuleBasedResponse, getAssistantResponse, type AssistantInput,
     type AssistantResponse
 } from "./assistant";
-export { CROP_LIST, generatePlan, type PlanDraft } from "./plan-generator";
+export { generatePlan, getPlantOptions, type PlanDraft } from "./plan-generator";
 export {
-    CROP_OPTIONS,
-    GROWTH_STAGES,
-    WATER_LEVELS, calculateWater, type WaterInput,
+    GROWTH_STAGES, calculateSinglePlantWater, calculateWater, type GrowthStage, type WaterCalculationResult, type WaterEntry,
     type WaterResult
 } from "./water-calculator";
 
