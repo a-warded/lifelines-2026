@@ -12,7 +12,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       AUTH_SECRET: ${AUTH_SECRET}
-      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      AUTH_URL: ${AUTH_URL}
       MONGO_DB_NAME: lifelines
     depends_on:
       - lifelines_mongo
