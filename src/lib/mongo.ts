@@ -1,8 +1,18 @@
+// WARNING: Whoever touches this file needs to make sure that it build without a .env file present
+// Docker build does not contain environment variables, any errors should be thrown at runtime, not build time
+// https://media1.tenor.com/m/r57P_q9DDycAAAAC/futaba-bunny-girl-senpai.gif
+
+import { MongoClient, MongoClientOptions } from "mongodb";
 import mongoose from "mongoose";
 
 let cached = (global as any).mongoose;
 if (!cached) {
     cached = (global as any).mongoose = { conn: null, promise: null };
+}
+
+let mongoClientCached = (global as any)._mongoClient;
+if (!mongoClientCached) {
+    mongoClientCached = (global as any)._mongoClient = { client: null, promise: null };
 }
 
 function getMongoUri() {
@@ -47,3 +57,27 @@ export async function connectMongo() {
     cached.conn = await cached.promise;
     return cached.conn;
 }
+
+function createMongoClientPromise() {
+    if (mongoClientCached.client) return Promise.resolve(mongoClientCached.client);
+
+    const uri = getMongoUri();
+
+    if (!mongoClientCached.promise) {
+        const options: MongoClientOptions = { serverSelectionTimeoutMS: 8000 };
+        const client = new MongoClient(uri, options);
+        mongoClientCached.promise = client.connect().then(() => {
+            mongoClientCached.client = client;
+            return client;
+        });
+    }
+
+    return mongoClientCached.promise;
+}
+
+// Official MongoDB client for auth mainly
+export const clientPromise: any = {
+    then: (onfulfilled: any, onrejected: any) => createMongoClientPromise().then(onfulfilled, onrejected),
+    catch: (onrejected: any) => createMongoClientPromise().catch(onrejected),
+    finally: (onfinally: any) => createMongoClientPromise().finally(onfinally),
+};
