@@ -142,10 +142,6 @@ export default function ExchangePage() {
             if (filterStatus) params.set("status", filterStatus);
             if (filterMode) params.set("mode", filterMode);
             if (userCountry) params.set("country", userCountry);
-            if (userLocation) {
-                params.set("lat", userLocation.latitude.toString());
-                params.set("lon", userLocation.longitude.toString());
-            }
 
             const response = await fetch(`/api/exchange?${params}`);
             const data = await response.json();
@@ -454,9 +450,9 @@ export default function ExchangePage() {
                                             </p>
                                         )}
                                         
-                                        <p className="text-[var(--color-text-secondary)] mt-1 line-clamp-2">
+                                        <span className="text-[var(--color-text-secondary)] mt-1 line-clamp-2">
                                             {renderDescription(listing.description)}
-                                        </p>
+                                        </span>
 
                                         {/* Trade items wanted */}
                                         {listing.dealType === "trade" && listing.tradeItems && listing.tradeItems.length > 0 && (
