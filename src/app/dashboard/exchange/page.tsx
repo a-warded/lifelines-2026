@@ -281,6 +281,46 @@ export default function ExchangePage() {
         );
     };
 
+    // Add helper to render description text and inline images for image URLs
+    const renderDescription = (text: string) => {
+        if (!text) return null;
+        // matches http(s) urls ending with common image extensions (allows query params)
+        const imgUrlRegex = /(https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?\S*)?)/gi;
+        const parts: (string | { img: string })[] = [];
+        let lastIndex = 0;
+        let match: RegExpExecArray | null;
+        while ((match = imgUrlRegex.exec(text)) !== null) {
+            const url = match[0];
+            const idx = match.index;
+            if (idx > lastIndex) {
+                parts.push(text.slice(lastIndex, idx));
+            }
+            parts.push({ img: url });
+            lastIndex = idx + url.length;
+        }
+        if (lastIndex < text.length) {
+            parts.push(text.slice(lastIndex));
+        }
+
+        return (
+            <div>
+                {parts.map((part, i) =>
+                    typeof part === "string" ? (
+                        <span key={i} className="text-[var(--color-text-secondary)]">{part}</span>
+                    ) : (
+                        <div key={i} className="mt-2">
+                            <img
+                                src={part.img}
+                                alt="listing image"
+                                className="rounded max-w-full h-auto border"
+                            />
+                        </div>
+                    )
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="max-w-4xl mx-auto space-y-6">
             {/* Header */}
@@ -415,7 +455,7 @@ export default function ExchangePage() {
                                         )}
                                         
                                         <p className="text-[var(--color-text-secondary)] mt-1 line-clamp-2">
-                                            {listing.description}
+                                            {renderDescription(listing.description)}
                                         </p>
 
                                         {/* Trade items wanted */}
@@ -668,9 +708,9 @@ export default function ExchangePage() {
                     <div className="space-y-4">
                         <div className="p-3 bg-[var(--color-surface)] rounded-lg">
                             <p className="font-medium">{claimListing.title}</p>
-                            <p className="text-sm text-[var(--color-text-secondary)]">
-                                {claimListing.description}
-                            </p>
+                            <div className="text-sm text-[var(--color-text-secondary)]">
+                                {renderDescription(claimListing.description)}
+                            </div>
                         </div>
 
                         <Textarea
