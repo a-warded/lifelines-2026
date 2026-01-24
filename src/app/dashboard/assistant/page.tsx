@@ -1,6 +1,6 @@
 "use client";
 
-import { MicIcon, PhoneOff } from 'lucide-react';
+import { MicIcon, PhoneOff, Video, VideoOff } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import CallAvatar from '@/components/ui/call-avatar';
@@ -29,6 +29,8 @@ export default function AilaRealtimeAssistant() {
     const [isConnected, setIsConnected] = useState(false);
     const [outputActivity, setOutputActivity] = useState(0);
     const [inputActivity, setInputActivity] = useState(0);
+    const [isCameraOn, setIsCameraOn] = useState(false);
+    const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
 
     // Refs
     const websocketRef = useRef<WebSocket | null>(null);
@@ -43,6 +45,14 @@ export default function AilaRealtimeAssistant() {
 
     // add ref to hold latest mute state for synchronous reads in audio callback
     const isMutedRef = useRef(isMuted);
+
+    // Camera refs
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const previewVideoRef = useRef<HTMLVideoElement | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const cameraStreamRef = useRef<MediaStream | null>(null);
+    const cameraIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const isCameraOnRef = useRef(isCameraOn);
 
     function toggleMute() {
         if (!isRecording) {
@@ -67,6 +77,141 @@ export default function AilaRealtimeAssistant() {
             window._isMuted = isMuted;
         }
     }, [isMuted]);
+
+    // Keep camera ref in sync
+    useEffect(() => {
+        isCameraOnRef.current = isCameraOn;
+    }, [isCameraOn]);
+
+    // Wire up preview element to the current camera stream
+    useEffect(() => {
+        const el = previewVideoRef.current;
+        if (!el) return;
+
+        if (!cameraStream) {
+            el.srcObject = null;
+            return;
+        }
+
+        el.srcObject = cameraStream;
+
+        // Some browsers won't start playback unless we explicitly call play()
+        const tryPlay = async () => {
+            try {
+                await el.play();
+            } catch {
+                // ignore autoplay restrictions; user gesture may be required
+            }
+        };
+
+        // If metadata isn't loaded yet, wait for it
+        if (el.readyState >= 1) {
+            void tryPlay();
+        } else {
+            const onLoaded = () => {
+                void tryPlay();
+            };
+            el.addEventListener('loadedmetadata', onLoaded, { once: true });
+            return () => el.removeEventListener('loadedmetadata', onLoaded);
+        }
+    }, [cameraStream, isCameraOn]);
+
+    async function toggleCamera() {
+        if (isCameraOn) {
+            stopCamera();
+        } else {
+            await startCamera();
+        }
+    }
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } 
+            });
+            cameraStreamRef.current = stream;
+            setCameraStream(stream);
+            setIsCameraOn(true);
+            
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                // Best-effort play; don't block UI on this
+                videoRef.current.play().catch(() => {
+                    // ignore autoplay restrictions
+                });
+            }
+            
+            // Start sending frames every 2 seconds
+            cameraIntervalRef.current = setInterval(() => {
+                if (isCameraOnRef.current) {
+                    captureAndSendFrame();
+                }
+            }, 2000);
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+        }
+    }
+
+    function stopCamera() {
+        if (cameraIntervalRef.current) {
+            clearInterval(cameraIntervalRef.current);
+            cameraIntervalRef.current = null;
+        }
+        
+        if (cameraStreamRef.current) {
+            cameraStreamRef.current.getTracks().forEach(track => track.stop());
+            cameraStreamRef.current = null;
+        }
+
+        setCameraStream(null);
+        
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+        
+        setIsCameraOn(false);
+    }
+
+    function captureAndSendFrame() {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        
+        if (!video || !canvas || !websocketRef.current || websocketRef.current.readyState !== WebSocket.OPEN) {
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        
+        // Set canvas size to match video
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        
+        // Draw current video frame to canvas
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to base64 JPEG (quality 0.7 for balance of quality/size)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        const base64Image = dataUrl.split(',')[1];
+        
+        // Send image to the API via conversation.item.create
+        const imageEvent = {
+            type: 'conversation.item.create',
+            item: {
+                type: 'message',
+                role: 'user',
+                content: [
+                    {
+                        type: 'input_image',
+                        image_url: `data:image/jpeg;base64,${base64Image}`,
+                    },
+                ],
+            },
+        };
+        
+        websocketRef.current.send(JSON.stringify(imageEvent));
+        console.log('Sent camera frame to AI');
+    }
 
     async function startRecordingInternal() {
         setIsRecording(true);
@@ -201,6 +346,9 @@ export default function AilaRealtimeAssistant() {
             try { inputAnalyserRef.current.disconnect(); } catch (e) { }
             inputAnalyserRef.current = null;
         }
+
+        // Stop camera if it's on
+        stopCamera();
     }
 
     function handleWebSocketMessage(message: any) {
@@ -309,6 +457,7 @@ export default function AilaRealtimeAssistant() {
         return () => {
             stopRecordingInternal();
             stopAssistantAudioInternal();
+            stopCamera();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -365,6 +514,29 @@ export default function AilaRealtimeAssistant() {
             className="absolute h-screen inset-0 z-10 w-full p-5 flex flex-col items-center justify-center"
             style={{ backgroundImage: "url('/images/aila_bg.webp')", backgroundSize: "contain", backgroundPosition: "center" }}
         >
+            {/* Hidden video element for camera capture */}
+            <video
+                ref={videoRef}
+                className="hidden"
+                playsInline
+                muted
+            />
+            {/* Hidden canvas for frame capture */}
+            <canvas ref={canvasRef} className="hidden" />
+
+            {/* Camera preview (shown when camera is on) */}
+            {isCameraOn && cameraStream && (
+                <div className="absolute top-4 right-4 w-32 h-24 rounded-lg overflow-hidden border-2 border-white shadow-lg">
+                    <video
+                        className="w-full h-full object-cover"
+                        playsInline
+                        muted
+                        autoPlay
+                        ref={previewVideoRef}
+                    />
+                </div>
+            )}
+
             <div className="flex justify-center items-center space-x-4 mt-auto">
                 <CallAvatar
                     active={isRecording}
@@ -392,6 +564,23 @@ export default function AilaRealtimeAssistant() {
                                 className="absolute inset-0 mt-auto mb-auto h-[2px] bg-[#e74c3c]"
                                 style={{ transform: 'rotate(45deg)' }}
                             />
+                        )}
+                    </div>
+                </button>
+
+                <button
+                    onClick={toggleCamera}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-sm transition-colors ${!isCameraOn ? 'bg-[#eee]' : 'bg-white'
+                    }`}
+                    aria-pressed={isCameraOn}
+                >
+                    <div className="relative w-6 h-6 bg-transparent">
+                        {isCameraOn ? (
+                            <Video className="text-black" />
+                        ) : (
+                            <>
+                                <VideoOff className="text-[#999]" />
+                            </>
                         )}
                     </div>
                 </button>

@@ -72,6 +72,8 @@ export default function ExchangePage() {
     const [filterType, setFilterType] = useState<string>("");
     const [filterStatus, setFilterStatus] = useState<string>("");
     const [filterMode, setFilterMode] = useState<string>("");
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [showMobileFilters, setShowMobileFilters] = useState(false);
 
     // Saved/bookmarked listings
     const [savedListings, setSavedListings] = useState<Set<string>>(new Set());
@@ -468,10 +470,41 @@ export default function ExchangePage() {
         );
     };
 
+    // Filter listings by search query
+    const filteredListings = useMemo(() => {
+        if (!searchQuery.trim()) return listings;
+        const query = searchQuery.toLowerCase().trim();
+        return listings.filter((listing) => {
+            return (
+                listing.title.toLowerCase().includes(query) ||
+                listing.description?.toLowerCase().includes(query) ||
+                listing.userName?.toLowerCase().includes(query) ||
+                listing.locationLabel?.toLowerCase().includes(query) ||
+                listing.tradeItems?.some(item => item.toLowerCase().includes(query))
+            );
+        });
+    }, [listings, searchQuery]);
+
     return (
-        <div className="flex gap-6 min-h-[calc(100vh-8rem)]">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 min-h-[calc(100vh-8rem)]">
+            {/* Mobile Filter Toggle Button */}
+            <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="lg:hidden flex items-center justify-between w-full px-4 py-3 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)]"
+            >
+                <span className="text-sm font-medium text-[var(--color-text-primary)]">Filters</span>
+                <div className="flex items-center gap-2">
+                    {(filterType || filterStatus || filterMode) && (
+                        <span className="text-xs text-[var(--color-primary)]">Active</span>
+                    )}
+                    <svg className={`w-4 h-4 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </button>
+
             {/* Left Sidebar - Filters */}
-            <div className="w-72 flex-shrink-0">
+            <div className={`${showMobileFilters ? 'block' : 'hidden'} lg:block w-full lg:w-72 flex-shrink-0`}>
                 <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-5 sticky top-4">
                     <div className="flex items-center justify-between mb-4">
                         <div>
@@ -673,11 +706,19 @@ export default function ExchangePage() {
                     <input
                         type="text"
                         placeholder="Search for a listing..."
-                        className="w-full pl-10 pr-16 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-1.5 py-0.5 rounded border border-[var(--color-border)]">
-                        ⌘K
-                    </span>
+                    {searchQuery && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                        >
+                            ×
+                        </button>
+                    )}
                 </div>
 
                 {/* Listings Grid */}
@@ -685,20 +726,20 @@ export default function ExchangePage() {
                     <div className="text-center py-12 text-[var(--color-text-secondary)]">
                         {t("common.loading")}
                     </div>
-                ) : listings.length === 0 ? (
+                ) : filteredListings.length === 0 ? (
                     <Card>
                         <CardContent className="py-12 text-center">
                             <p className="text-[var(--color-text-secondary)]">
-                                {t("exchange.listing.noListings")}
+                                {searchQuery ? "No listings match your search" : t("exchange.listing.noListings")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                                {t("exchange.listing.noListingsDescription")}
+                                {searchQuery ? "Try different keywords or clear the search" : t("exchange.listing.noListingsDescription")}
                             </p>
                         </CardContent>
                     </Card>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {listings.map((listing) => (
+                        {filteredListings.map((listing) => (
                             <div key={listing.id} className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] overflow-hidden flex flex-col">
                                 {/* Card Image/Header */}
                                 <div className="relative h-36 bg-gradient-to-br from-green-800 to-green-950 overflow-hidden">

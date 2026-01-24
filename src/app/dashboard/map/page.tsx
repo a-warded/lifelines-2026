@@ -82,15 +82,15 @@ export default function MapPage() {
             farm.userName?.toLowerCase().includes(query) ||
             farm.locationLabel?.toLowerCase().includes(query) ||
             farm.country?.toLowerCase().includes(query) ||
-            farm.crops.some((c) => c.plantName.toLowerCase().includes(query))
+            farm.crops?.some((c) => c.plantName.toLowerCase().includes(query))
         );
     });
 
     const stats = {
         totalFarms: farms.length,
-        totalCrops: farms.reduce((sum, f) => sum + f.crops.length, 0),
+        totalCrops: farms.reduce((sum, f) => sum + (f.crops?.length || 0), 0),
         totalPlants: farms.reduce(
-            (sum, f) => sum + f.crops.reduce((s, c) => s + c.count, 0),
+            (sum, f) => sum + (f.crops?.reduce((s, c) => s + c.count, 0) || 0),
             0
         ),
     };
@@ -220,7 +220,7 @@ export default function MapPage() {
                                 <p className="text-sm">{selectedFarm.dailyWaterLiters.toFixed(1)}L</p>
                             </div>
                         </div>
-                        {selectedFarm.crops.length > 0 && (
+                        {selectedFarm.crops && selectedFarm.crops.length > 0 && (
                             <div className="mt-4">
                                 <p className="mb-2 text-xs text-muted-foreground">Growing</p>
                                 <div className="flex flex-wrap gap-2">

@@ -218,3 +218,16 @@ body {
   border-radius: 100vh;
   border: 3px solid var(--background);
 }
+
+/* Contain Leaflet map z-index to prevent overlapping with sidebars */
+.leaflet-pane,
+.leaflet-control,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1 !important;
+}
+
+.leaflet-control-container .leaflet-top,
+.leaflet-control-container .leaflet-bottom {
+  z-index: 5 !important;
+}
