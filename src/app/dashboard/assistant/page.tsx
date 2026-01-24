@@ -130,7 +130,7 @@ export default function RealtimePage() {
             source.connect(inputAnalyser);
             processor.connect(audioCtx.destination);
 
-            processor.onaudioprocess = (e) => {
+            processor.onaudioprocess = (e: AudioProcessingEvent) => {
                 const inputData = e.inputBuffer.getChannelData(0);
                 const int16Data = float32ToInt16(inputData);
                 const base64Audio = int16ToBase64(int16Data);
