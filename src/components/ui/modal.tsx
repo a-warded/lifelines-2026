@@ -43,16 +43,18 @@ export function Modal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 9999 }}>
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onClose}
+                style={{ zIndex: 9999 }}
             />
 
             {/* Modal */}
             <div
-                className={`relative z-10 w-full ${sizes[size]} mx-4 max-h-[90vh] overflow-y-auto rounded-xl bg-card p-6 shadow-xl`}
+                className={`relative w-full ${sizes[size]} mx-4 max-h-[90vh] overflow-y-auto rounded-xl bg-card p-6 shadow-xl`}
+                style={{ zIndex: 10000 }}
             >
                 {/* Header */}
                 {title && (

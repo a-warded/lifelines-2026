@@ -11,17 +11,18 @@ export async function middleware(request: NextRequest) {
     const isLoggedIn = !!token;
 
     const isAuthPage =
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/register");
+        request.nextUrl.pathname.startsWith("/login") ||
+        request.nextUrl.pathname.startsWith("/register");
     const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
+    const isOnboarding = request.nextUrl.pathname.startsWith("/onboarding");
 
     // Redirect logged-in users away from auth pages
     if (isLoggedIn && isAuthPage) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    // Redirect non-logged-in users to login when accessing dashboard
-    if (!isLoggedIn && isDashboard) {
+    // Redirect non-logged-in users to login when accessing dashboard or onboarding
+    if (!isLoggedIn && (isDashboard || isOnboarding)) {
         return NextResponse.redirect(new URL("/login", request.url));
     }
 
@@ -29,5 +30,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/dashboard/:path*", "/login", "/register"],
+    matcher: ["/dashboard/:path*", "/login", "/register", "/onboarding"],
 };
