@@ -630,6 +630,11 @@ export default function ExchangePage() {
                                 {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
                             </p>
                         )}
+                        {locationError && (
+                            <p className="text-xs text-red-500 mt-2 leading-tight">
+                                {locationError}
+                            </p>
+                        )}
                         <Button
                             size="sm"
                             variant="outline"

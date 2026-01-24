@@ -39,6 +39,16 @@ export function getUserLocation(): Promise<GeoLocation> {
             return;
         }
 
+        // Check if we're in a secure context (required for geolocation on mobile)
+        if (typeof window !== 'undefined' && window.isSecureContext === false) {
+            reject(new Error("Geolocation requires a secure connection (HTTPS)"));
+            return;
+        }
+
+        // Mobile browsers need more time and may need high accuracy for initial fix
+        const isMobile = typeof navigator !== 'undefined' && 
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 resolve({
@@ -47,27 +57,51 @@ export function getUserLocation(): Promise<GeoLocation> {
                 });
             },
             (error) => {
-                switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    reject(new Error("Location permission denied"));
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    reject(new Error("Location information unavailable"));
-                    break;
-                case error.TIMEOUT:
-                    reject(new Error("Location request timed out"));
-                    break;
-                default:
-                    reject(new Error("Unknown location error"));
+                // On mobile, try again with lower accuracy if high accuracy fails
+                if (isMobile && error.code === error.TIMEOUT) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            resolve({
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude,
+                            });
+                        },
+                        (retryError) => {
+                            handleGeolocationError(retryError, reject);
+                        },
+                        {
+                            enableHighAccuracy: false,
+                            timeout: 15000,
+                            maximumAge: 600000, // 10 min cache
+                        }
+                    );
+                    return;
                 }
+                handleGeolocationError(error, reject);
             },
             {
-                enableHighAccuracy: false, // Low power mode
-                timeout: 10000,
+                enableHighAccuracy: isMobile, // Use high accuracy on mobile for better results
+                timeout: isMobile ? 20000 : 10000, // Give mobile more time
                 maximumAge: 300000, // Cache for 5 minutes
             }
         );
     });
+}
+
+function handleGeolocationError(error: GeolocationPositionError, reject: (reason: Error) => void) {
+    switch (error.code) {
+    case error.PERMISSION_DENIED:
+        reject(new Error("Location permission denied. Please enable location access in your browser settings."));
+        break;
+    case error.POSITION_UNAVAILABLE:
+        reject(new Error("Location unavailable. Please ensure GPS/Location Services are enabled."));
+        break;
+    case error.TIMEOUT:
+        reject(new Error("Location request timed out. Please try again or check your connection."));
+        break;
+    default:
+        reject(new Error("Unable to get location. Please try again."));
+    }
 }
 
 // Reverse geocode to get country from coordinates (using a simple approach)
