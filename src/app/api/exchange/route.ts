@@ -68,6 +68,14 @@ export async function GET(request: NextRequest) {
         // Limit after filtering
         listings = listings.slice(0, limit);
 
+        // Get claim counts for all listings in one query
+        const listingIds = listings.map(l => l._id.toString());
+        const claimCounts = await ExchangeClaim.aggregate([
+            { $match: { listingId: { $in: listingIds } } },
+            { $group: { _id: "$listingId", count: { $sum: 1 } } }
+        ]);
+        const claimCountMap = new Map(claimCounts.map(c => [c._id, c.count]));
+
         return NextResponse.json({
             listings: listings.map((l) => {
                 // Calculate distance if coordinates available
@@ -91,11 +99,14 @@ export async function GET(request: NextRequest) {
                     currencyCountry: l.currencyCountry,
                     tradeItems: l.tradeItems,
                     country: l.country,
+                    latitude: l.latitude,
+                    longitude: l.longitude,
                     locationLabel: l.locationLabel,
                     distance,
                     status: l.status,
                     createdAt: l.createdAt,
                     isOwner: l.userId === session?.user?.id,
+                    claimCount: claimCountMap.get(l._id.toString()) || 0,
                 };
             }),
         });

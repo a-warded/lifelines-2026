@@ -91,6 +91,60 @@ export async function getCountryFromCoords(
     return "QA"; // Fallback to Qatar
 }
 
+// Reverse geocode to get a detailed location label from coordinates
+export async function getLocationLabel(
+    latitude: number,
+    longitude: number
+): Promise<string> {
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+        );
+        
+        if (response.ok) {
+            const data = await response.json();
+            const address = data.address;
+            if (address) {
+                // Build a detailed location string
+                const parts: string[] = [];
+                
+                // Add neighborhood/suburb
+                if (address.neighbourhood) parts.push(address.neighbourhood);
+                else if (address.suburb) parts.push(address.suburb);
+                
+                // Add city/town/village
+                if (address.city) parts.push(address.city);
+                else if (address.town) parts.push(address.town);
+                else if (address.village) parts.push(address.village);
+                else if (address.municipality) parts.push(address.municipality);
+                
+                // Add state/region
+                if (address.state) parts.push(address.state);
+                else if (address.region) parts.push(address.region);
+                
+                // Add country
+                if (address.country) parts.push(address.country);
+                
+                if (parts.length > 0) {
+                    return parts.join(", ");
+                }
+            }
+            // Fallback to display_name
+            if (data.display_name) {
+                // Truncate if too long
+                const displayName = data.display_name;
+                if (displayName.length > 60) {
+                    return displayName.substring(0, 57) + "...";
+                }
+                return displayName;
+            }
+        }
+    } catch {
+        console.error("Failed to get location label");
+    }
+    return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+}
+
 // Currency symbols by country code
 export const CURRENCY_BY_COUNTRY: Record<string, { code: string; symbol: string }> = {
     US: { code: "USD", symbol: "$" },
