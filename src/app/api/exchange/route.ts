@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         // Build query
         const query: Record<string, unknown> = {};
         
-        if (type && ["seeds", "produce", "tools", "other"].includes(type)) {
+        if (type && ["seeds", "produce", "tools", "fertilizer", "other"].includes(type)) {
             query.type = type;
         }
         if (status && ["available", "claimed", "completed", "cancelled"].includes(status)) {
@@ -138,6 +138,7 @@ export async function POST(request: NextRequest) {
             dealType,
             price,
             tradeItems,
+            deliveryMethod,
             latitude,
             longitude,
             country,
@@ -152,7 +153,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (!["seeds", "produce", "tools", "other"].includes(type)) {
+        if (!["seeds", "produce", "tools", "fertilizer", "other"].includes(type)) {
             return NextResponse.json({ error: "Invalid listing type" }, { status: 400 });
         }
 
@@ -194,6 +195,7 @@ export async function POST(request: NextRequest) {
             price: dealType === "price" ? price : undefined,
             currencyCountry: dealType === "price" ? country : undefined,
             tradeItems: dealType === "trade" ? tradeItems : undefined,
+            deliveryMethod: deliveryMethod || "pickup",
             latitude: latitude || undefined,
             longitude: longitude || undefined,
             country: country.toUpperCase(),

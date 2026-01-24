@@ -24,6 +24,7 @@ interface FarmMapProps {
     currentUserLocation?: { lat: number; lng: number };
     height?: string;
     onFarmClick?: (farm: Farm) => void;
+    showCompostLegend?: boolean;
 }
 
 export function FarmMap({
@@ -32,6 +33,7 @@ export function FarmMap({
     currentUserLocation,
     height = "500px",
     onFarmClick,
+    showCompostLegend = false,
 }: FarmMapProps) {
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
@@ -85,55 +87,85 @@ export function FarmMap({
         }).addTo(map);
 
         // Helper function to create a farm icon with custom emoji
-        const createFarmIcon = (emoji: string, isCurrentUser: boolean) => L.divIcon({
-            html: `<div style="
-                background: linear-gradient(135deg, ${isCurrentUser ? "#3B82F6, #2563EB" : "#80ED99, #57CC99"});
-                width: ${isCurrentUser ? "36px" : "32px"};
-                height: ${isCurrentUser ? "36px" : "32px"};
-                border-radius: 50% 50% 50% 0;
-                transform: rotate(-45deg);
-                border: ${isCurrentUser ? "3px" : "2px"} solid white;
-                box-shadow: 0 2px ${isCurrentUser ? "12px" : "8px"} rgba(${isCurrentUser ? "59, 130, 246" : "0,0,0"}, ${isCurrentUser ? "0.5" : "0.3"});
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            "><span style="transform: rotate(45deg); font-size: ${isCurrentUser ? "16px" : "14px"};">${emoji}</span></div>`,
-            className: isCurrentUser ? "current-farm-marker" : "farm-marker",
-            iconSize: isCurrentUser ? [36, 36] : [32, 32],
-            iconAnchor: isCurrentUser ? [18, 36] : [16, 32],
-            popupAnchor: [0, isCurrentUser ? -36 : -32],
-        });
+        const createFarmIcon = (emoji: string, isCurrentUser: boolean, isCompostSite: boolean = false) => {
+            const colors = isCurrentUser 
+                ? "#3B82F6, #2563EB" 
+                : isCompostSite 
+                    ? "#10B981, #059669" // Emerald for compost
+                    : "#80ED99, #57CC99"; // Green for farms
+            
+            const shadowColor = isCurrentUser 
+                ? "59, 130, 246" 
+                : isCompostSite 
+                    ? "16, 185, 129" 
+                    : "0,0,0";
+            
+            return L.divIcon({
+                html: `<div style="
+                    background: linear-gradient(135deg, ${colors});
+                    width: ${isCurrentUser ? "36px" : "32px"};
+                    height: ${isCurrentUser ? "36px" : "32px"};
+                    border-radius: 50% 50% 50% 0;
+                    transform: rotate(-45deg);
+                    border: ${isCurrentUser ? "3px" : "2px"} solid white;
+                    box-shadow: 0 2px ${isCurrentUser ? "12px" : "8px"} rgba(${shadowColor}, ${isCurrentUser ? "0.5" : "0.3"});
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                "><span style="transform: rotate(45deg); font-size: ${isCurrentUser ? "16px" : "14px"};">${emoji}</span></div>`,
+                className: isCurrentUser ? "current-farm-marker" : isCompostSite ? "compost-marker" : "farm-marker",
+                iconSize: isCurrentUser ? [36, 36] : [32, 32],
+                iconAnchor: isCurrentUser ? [18, 36] : [16, 32],
+                popupAnchor: [0, isCurrentUser ? -36 : -32],
+            });
+        };
 
         // Add markers for each farm
         markersRef.current = farms.map((farm) => {
             const isCurrentUser = farm.userId === currentUserId;
-            const emoji = farm.farmEmoji || "🌱";
-            const icon = createFarmIcon(emoji, isCurrentUser);
+            const isCompostSite = farm.spaceType?.includes("compost") || farm.farmEmoji === "♻️";
+            const emoji = farm.farmEmoji || (isCompostSite ? "♻️" : "🌱");
+            const icon = createFarmIcon(emoji, isCurrentUser, isCompostSite);
 
             const crops = farm.crops || [];
             const cropList = crops.length > 0
                 ? crops.slice(0, 3).map((c) => `${c.plantName} (${c.count})`).join(", ")
-                : "No crops yet";
+                : isCompostSite ? "Composting site" : "No crops yet";
 
-            const popupContent = `
-                <div style="min-width: 180px; font-family: system-ui, sans-serif;">
-                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #1a1a1a;">
-                        ${farm.farmName || (isCurrentUser ? "Your Farm" : "Farm")}
-                    </div>
-                    ${farm.userName ? `<div style="font-size: 12px; color: #666; margin-bottom: 8px;">by ${farm.userName}</div>` : ""}
-                    <div style="font-size: 12px; color: #444; margin-bottom: 4px;">
-                        <strong>Space:</strong> ${farm.spaceType}
-                    </div>
-                    <div style="font-size: 12px; color: #444; margin-bottom: 4px;">
-                        <strong>Growing:</strong> ${cropList}
-                    </div>
-                    ${farm.dailyWaterLiters > 0 ? `
-                        <div style="font-size: 12px; color: #0ea5e9; margin-top: 8px;">
-                            💧 ${farm.dailyWaterLiters.toFixed(1)}L/day
+            const popupContent = isCompostSite
+                ? `
+                    <div style="min-width: 180px; font-family: system-ui, sans-serif;">
+                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #1a1a1a;">
+                            ♻️ ${farm.farmName || "Compost Site"}
                         </div>
-                    ` : ""}
-                </div>
-            `;
+                        ${farm.userName ? `<div style="font-size: 12px; color: #666; margin-bottom: 8px;">by ${farm.userName}</div>` : ""}
+                        <div style="font-size: 12px; color: #444; margin-bottom: 4px;">
+                            <strong>Type:</strong> ${farm.spaceType.replace(" compost", "")}
+                        </div>
+                        <div style="font-size: 12px; color: #10b981; margin-top: 8px;">
+                            🌱 Organic Fertilizer Available
+                        </div>
+                    </div>
+                `
+                : `
+                    <div style="min-width: 180px; font-family: system-ui, sans-serif;">
+                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #1a1a1a;">
+                            ${farm.farmName || (isCurrentUser ? "Your Farm" : "Farm")}
+                        </div>
+                        ${farm.userName ? `<div style="font-size: 12px; color: #666; margin-bottom: 8px;">by ${farm.userName}</div>` : ""}
+                        <div style="font-size: 12px; color: #444; margin-bottom: 4px;">
+                            <strong>Space:</strong> ${farm.spaceType}
+                        </div>
+                        <div style="font-size: 12px; color: #444; margin-bottom: 4px;">
+                            <strong>Growing:</strong> ${cropList}
+                        </div>
+                        ${farm.dailyWaterLiters > 0 ? `
+                            <div style="font-size: 12px; color: #0ea5e9; margin-top: 8px;">
+                                💧 ${farm.dailyWaterLiters.toFixed(1)}L/day
+                            </div>
+                        ` : ""}
+                    </div>
+                `;
 
             const marker = L.marker([farm.latitude, farm.longitude], { icon })
                 .addTo(map)
@@ -186,14 +218,22 @@ export function FarmMap({
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-[10px]">
                         🏠
                     </span>
-                    <span>Your Farm</span>
+                    <span>Your Location</span>
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-sm">
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-500 text-[10px]">
                         🌱
                     </span>
-                    <span>Other Farms</span>
+                    <span>Farms</span>
                 </div>
+                {showCompostLegend && (
+                    <div className="mt-1 flex items-center gap-2 text-sm">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-[10px]">
+                            ♻️
+                        </span>
+                        <span>Compost Sites</span>
+                    </div>
+                )}
             </div>
 
             {/* Farm count */}

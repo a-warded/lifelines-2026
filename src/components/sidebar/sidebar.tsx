@@ -6,6 +6,7 @@ import {
   LogOut,
   Map,
   Menu,
+  Recycle,
   RefreshCw,
   Settings,
   User,
@@ -26,7 +27,8 @@ export function Sidebar() {
     const navItems = [
         { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
         { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
-        { href: "/dashboard/map", label: "Farm Map", icon: Map },
+        { href: "/dashboard/compost", label: t("nav.compost", "Composting"), icon: Recycle },
+        { href: "/dashboard/map", label: t("nav.map", "Map"), icon: Map },
         { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
         { href: "/dashboard/settings", label: t("nav.settings"), icon: Settings },
     ];

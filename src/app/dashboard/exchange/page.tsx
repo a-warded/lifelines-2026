@@ -36,6 +36,7 @@ interface Listing {
     price?: number;
     currencyCountry?: string;
     tradeItems?: string[];
+    deliveryMethod?: string;
     country: string;
     latitude?: number;
     longitude?: number;
@@ -47,9 +48,22 @@ interface Listing {
     claimCount?: number;
 }
 
-type ListingType = "seeds" | "produce" | "tools" | "other";
+type ListingType = "seeds" | "produce" | "tools" | "fertilizer" | "other";
 type ListingMode = "offering" | "seeking";
 type DealType = "price" | "trade" | "donation";
+type DeliveryMethod = "pickup" | "walking" | "bicycle" | "car" | "truck" | "boat" | "drone" | "helicopter" | "airdrop";
+
+const DELIVERY_METHODS: { value: DeliveryMethod; label: string; emoji: string }[] = [
+    { value: "pickup", label: "Pick-up at location", emoji: "📍" },
+    { value: "walking", label: "Walking delivery", emoji: "🚶" },
+    { value: "bicycle", label: "Bicycle delivery", emoji: "🚲" },
+    { value: "car", label: "Car delivery", emoji: "🚗" },
+    { value: "truck", label: "Truck delivery", emoji: "🚚" },
+    { value: "boat", label: "Boat/Water transport", emoji: "🚤" },
+    { value: "drone", label: "Drone delivery", emoji: "🛸" },
+    { value: "helicopter", label: "Helicopter/Care package", emoji: "🚁" },
+    { value: "airdrop", label: "Emergency airdrop", emoji: "🪂" },
+];
 
 export default function ExchangePage() {
     const { t } = useTranslation();
@@ -72,6 +86,7 @@ export default function ExchangePage() {
     const [filterType, setFilterType] = useState<string>("");
     const [filterStatus, setFilterStatus] = useState<string>("");
     const [filterMode, setFilterMode] = useState<string>("");
+    const [filterDelivery, setFilterDelivery] = useState<string>("");
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [showMobileFilters, setShowMobileFilters] = useState(false);
 
@@ -98,6 +113,7 @@ export default function ExchangePage() {
         price: "",
         tradeItems: [] as string[],
         newTradeItem: "",
+        deliveryMethod: "pickup" as DeliveryMethod,
     });
     const [creating, setCreating] = useState(false);
 
@@ -133,6 +149,36 @@ export default function ExchangePage() {
             openListingFromUrl(listingId);
         }
     }, [searchParams, listings, openListingFromUrl]);
+
+    // Handle URL params to auto-open create modal with pre-filled values
+    useEffect(() => {
+        const typeParam = searchParams.get("type");
+        const modeParam = searchParams.get("mode");
+        const titleParam = searchParams.get("title");
+        const descriptionParam = searchParams.get("description");
+        const quantityParam = searchParams.get("quantity");
+        const dealTypeParam = searchParams.get("dealType");
+        const deliveryParam = searchParams.get("delivery");
+        
+        if (typeParam || modeParam || titleParam) {
+            // Pre-fill the form based on URL params
+            setCreateForm(prev => ({
+                ...prev,
+                type: (typeParam as ListingType) || prev.type,
+                mode: (modeParam as ListingMode) || prev.mode,
+                title: titleParam || prev.title,
+                description: descriptionParam || prev.description,
+                quantity: quantityParam || prev.quantity,
+                dealType: (dealTypeParam as DealType) || prev.dealType,
+                deliveryMethod: (deliveryParam as DeliveryMethod) || prev.deliveryMethod,
+            }));
+            // Auto-open the create modal
+            setShowCreateModal(true);
+            
+            // Clear the URL params after processing
+            router.replace("/dashboard/exchange", { scroll: false });
+        }
+    }, [searchParams, router]);
 
     // Get user's location from farm profile on mount
     useEffect(() => {
@@ -247,6 +293,7 @@ export default function ExchangePage() {
                     dealType: createForm.dealType,
                     price: createForm.dealType === "price" ? parseFloat(createForm.price) : undefined,
                     tradeItems: createForm.dealType === "trade" ? createForm.tradeItems : undefined,
+                    deliveryMethod: createForm.deliveryMethod,
                     latitude: userLocation?.latitude,
                     longitude: userLocation?.longitude,
                     country: userCountry,
@@ -278,6 +325,7 @@ export default function ExchangePage() {
             price: "",
             tradeItems: [],
             newTradeItem: "",
+            deliveryMethod: "pickup",
         });
     };
 
@@ -470,20 +518,31 @@ export default function ExchangePage() {
         );
     };
 
-    // Filter listings by search query
+    // Filter listings by search query and delivery method
     const filteredListings = useMemo(() => {
-        if (!searchQuery.trim()) return listings;
-        const query = searchQuery.toLowerCase().trim();
-        return listings.filter((listing) => {
-            return (
-                listing.title.toLowerCase().includes(query) ||
-                listing.description?.toLowerCase().includes(query) ||
-                listing.userName?.toLowerCase().includes(query) ||
-                listing.locationLabel?.toLowerCase().includes(query) ||
-                listing.tradeItems?.some(item => item.toLowerCase().includes(query))
-            );
-        });
-    }, [listings, searchQuery]);
+        let result = listings;
+        
+        // Filter by delivery method
+        if (filterDelivery) {
+            result = result.filter((listing) => listing.deliveryMethod === filterDelivery);
+        }
+        
+        // Filter by search query
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase().trim();
+            result = result.filter((listing) => {
+                return (
+                    listing.title.toLowerCase().includes(query) ||
+                    listing.description?.toLowerCase().includes(query) ||
+                    listing.userName?.toLowerCase().includes(query) ||
+                    listing.locationLabel?.toLowerCase().includes(query) ||
+                    listing.tradeItems?.some(item => item.toLowerCase().includes(query))
+                );
+            });
+        }
+        
+        return result;
+    }, [listings, searchQuery, filterDelivery]);
 
     return (
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 min-h-[calc(100vh-8rem)]">
@@ -494,7 +553,7 @@ export default function ExchangePage() {
             >
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">Filters</span>
                 <div className="flex items-center gap-2">
-                    {(filterType || filterStatus || filterMode) && (
+                    {(filterType || filterStatus || filterMode || filterDelivery) && (
                         <span className="text-xs text-[var(--color-primary)]">Active</span>
                     )}
                     <svg className={`w-4 h-4 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -517,13 +576,14 @@ export default function ExchangePage() {
                     
                     <div className="flex items-center gap-2 mb-6">
                         <span className="text-xs text-[var(--color-text-secondary)]">
-                            {filterType || filterStatus || filterMode ? "Filters applied" : "No filters applied"}
+                            {filterType || filterStatus || filterMode || filterDelivery ? "Filters applied" : "No filters applied"}
                         </span>
                         <button
                             onClick={() => {
                                 setFilterType("");
                                 setFilterStatus("");
                                 setFilterMode("");
+                                setFilterDelivery("");
                             }}
                             className="p-1.5 rounded-lg bg-[var(--color-background)] hover:bg-[var(--color-border)] transition-colors"
                             title="Clear filters"
@@ -551,6 +611,7 @@ export default function ExchangePage() {
                                 { value: "", label: "All" },
                                 { value: "seeds", label: t("exchange.types.seeds") },
                                 { value: "produce", label: t("exchange.types.produce") },
+                                { value: "fertilizer", label: t("exchange.types.fertilizer", "🌱 Fertilizer") },
                                 { value: "tools", label: t("exchange.types.tools") },
                                 { value: "other", label: t("exchange.types.other") },
                             ].map((option) => (
@@ -641,6 +702,52 @@ export default function ExchangePage() {
                                         {filterMode === option.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                     </div>
                                     <span className="text-sm text-[var(--color-text-primary)]">{option.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Delivery Method Filter */}
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">DELIVERY</h3>
+                            <button onClick={() => setFilterDelivery("")} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <p className="text-xs text-[var(--color-text-secondary)] mb-2">
+                            Filter by delivery method
+                        </p>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                            <button
+                                type="button"
+                                onClick={() => setFilterDelivery("")}
+                                className="flex items-center gap-2 cursor-pointer w-full text-left hover:bg-[var(--color-background)] rounded p-1 -m-1 transition-colors"
+                            >
+                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                    filterDelivery === "" 
+                                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]" 
+                                        : "border-[var(--color-border)]"
+                                }`}>
+                                    {filterDelivery === "" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                                <span className="text-sm text-[var(--color-text-primary)]">All</span>
+                            </button>
+                            {DELIVERY_METHODS.map((method) => (
+                                <button
+                                    key={method.value}
+                                    type="button"
+                                    onClick={() => setFilterDelivery(method.value)}
+                                    className="flex items-center gap-2 cursor-pointer w-full text-left hover:bg-[var(--color-background)] rounded p-1 -m-1 transition-colors"
+                                >
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                        filterDelivery === method.value 
+                                            ? "border-[var(--color-primary)] bg-[var(--color-primary)]" 
+                                            : "border-[var(--color-border)]"
+                                    }`}>
+                                        {filterDelivery === method.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <span className="text-sm text-[var(--color-text-primary)]">{method.emoji} {method.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -850,7 +957,7 @@ export default function ExchangePage() {
                                     </div>
 
                                     {/* Stats */}
-                                    <div className="grid grid-cols-2 gap-4 py-3 border-t border-[var(--color-border)]">
+                                    <div className="grid grid-cols-3 gap-2 py-3 border-t border-[var(--color-border)]">
                                         <div className="text-center">
                                             <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide">Claims</p>
                                             <p className="text-lg font-semibold text-[var(--color-text-primary)]">{listing.claimCount || 0}</p>
@@ -860,7 +967,13 @@ export default function ExchangePage() {
                                             <p className="text-lg font-semibold text-[var(--color-text-primary)]">
                                                 {getListingDistance(listing) !== null 
                                                     ? `${getListingDistance(listing)}km` 
-                                                    : userLocation ? "N/A" : "Enable GPS"}
+                                                    : userLocation ? "N/A" : "GPS"}
+                                            </p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide">Delivery</p>
+                                            <p className="text-lg" title={DELIVERY_METHODS.find(m => m.value === listing.deliveryMethod)?.label || "Pick-up"}>
+                                                {DELIVERY_METHODS.find(m => m.value === listing.deliveryMethod)?.emoji || "📍"}
                                             </p>
                                         </div>
                                     </div>
@@ -958,6 +1071,7 @@ export default function ExchangePage() {
                         options={[
                             { value: "seeds", label: t("exchange.types.seeds") },
                             { value: "produce", label: t("exchange.types.produce") },
+                            { value: "fertilizer", label: t("exchange.types.fertilizer", "🌱 Fertilizer/Compost") },
                             { value: "tools", label: t("exchange.types.tools") },
                             { value: "other", label: t("exchange.types.other") },
                         ]}
@@ -1087,6 +1201,33 @@ export default function ExchangePage() {
                                 </Button>
                             )}
                         </div>
+                    </div>
+
+                    {/* Delivery Method */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            {t("exchange.create.deliveryLabel", "Delivery Method")}
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {DELIVERY_METHODS.map((method) => (
+                                <button
+                                    key={method.value}
+                                    type="button"
+                                    onClick={() => setCreateForm({ ...createForm, deliveryMethod: method.value })}
+                                    className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${
+                                        createForm.deliveryMethod === method.value
+                                            ? "border-primary bg-primary/10"
+                                            : "border-border hover:border-primary/50"
+                                    }`}
+                                >
+                                    <span className="text-2xl">{method.emoji}</span>
+                                    <span className="text-xs text-center">{method.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                            {t("exchange.create.deliveryNote", "Select how you can deliver or receive this item during emergencies")}
+                        </p>
                     </div>
 
                     {/* Submit */}
@@ -1238,6 +1379,13 @@ export default function ExchangePage() {
                                     <p className="text-sm font-medium">{getListingDistance(detailsListing)}km away</p>
                                 </div>
                             )}
+                            <div>
+                                <p className="text-xs text-[var(--color-text-secondary)] uppercase">Delivery</p>
+                                <p className="text-sm font-medium flex items-center gap-2">
+                                    <span>{DELIVERY_METHODS.find(m => m.value === detailsListing.deliveryMethod)?.emoji || "📍"}</span>
+                                    {DELIVERY_METHODS.find(m => m.value === detailsListing.deliveryMethod)?.label || "Pick-up at location"}
+                                </p>
+                            </div>
                         </div>
 
                         {/* Trade items if applicable */}

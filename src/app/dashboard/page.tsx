@@ -12,6 +12,7 @@ import {
     Map,
     MessageCircle,
     Plus,
+    Recycle,
     RefreshCw,
     Sparkles,
     Sprout,
@@ -278,6 +279,13 @@ export default function DashboardPage() {
             href: "/dashboard/exchange",
             icon: RefreshCw,
             color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+        },
+        {
+            title: t("dashboard.features.compost.title", "Waste to Fertilizer"),
+            description: t("dashboard.features.compost.description", "Turn agricultural waste into organic compost"),
+            href: "/dashboard/compost",
+            icon: Recycle,
+            color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
         },
         {
             title: t("dashboard.features.assistant.title"),

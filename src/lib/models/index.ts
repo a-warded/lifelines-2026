@@ -1,4 +1,5 @@
 export { AssistantMessage, type IAssistantMessage } from "./assistant-message";
+export { CompostSite, type ICompostSite } from "./compost-site";
 export { ExchangeClaim, type IExchangeClaim } from "./exchange-claim";
 export { ExchangeListing, type IExchangeListing } from "./exchange-listing";
 export { FarmProfile, type IFarmProfile, type ICropEntry } from "./farm-profile";
