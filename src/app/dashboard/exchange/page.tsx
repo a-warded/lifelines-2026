@@ -17,6 +17,7 @@ import {
 import { getPlantOptions } from "@/lib/plants";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Search, Bookmark, Share2, X, RotateCcw, Check } from "lucide-react";
 
 interface Listing {
     id: string;
@@ -38,6 +39,7 @@ interface Listing {
     status: string;
     createdAt: string;
     isOwner: boolean;
+    claimCount?: number;
 }
 
 type ListingType = "seeds" | "produce" | "tools" | "other";
@@ -285,12 +287,12 @@ export default function ExchangePage() {
         }
     };
 
-    const getModeBadge = (mode: string) => {
-        return mode === "seeking" ? (
-            <Badge className="bg-orange-100 text-orange-800">{t("exchange.mode.seeking")}</Badge>
-        ) : (
-            <Badge className="bg-teal-100 text-teal-800">{t("exchange.mode.offering")}</Badge>
-        );
+    // Helper to extract first image URL from text
+    const extractImageUrl = (text: string): string | null => {
+        if (!text) return null;
+        const imgUrlRegex = /(https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?\S*)?)/gi;
+        const match = imgUrlRegex.exec(text);
+        return match ? match[0] : null;
     };
 
     // Add helper to render description text and inline images for image URLs
@@ -334,187 +336,371 @@ export default function ExchangePage() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex justify-between items-start">
-                <div>
-                    <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-                        {t("exchange.title")}
-                    </h1>
-                    <p className="text-[var(--color-text-secondary)] mt-1">
-                        {t("exchange.subtitle")}
-                    </p>
-                </div>
-                <Button onClick={() => setShowCreateModal(true)}>
-                    + {t("exchange.listing.createButton")}
-                </Button>
-            </div>
+        <div className="flex gap-6 min-h-[calc(100vh-8rem)]">
+            {/* Left Sidebar - Filters */}
+            <div className="w-72 flex-shrink-0">
+                <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-5 sticky top-4">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Filters List</h2>
+                            <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                                Use the filters below to find the listings you are looking for
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-6">
+                        <span className="text-xs text-[var(--color-text-secondary)]">
+                            {filterType || filterStatus || filterMode ? "Filters applied" : "No filters applied"}
+                        </span>
+                        <button
+                            onClick={() => {
+                                setFilterType("");
+                                setFilterStatus("");
+                                setFilterMode("");
+                            }}
+                            className="p-1.5 rounded-lg bg-[var(--color-background)] hover:bg-[var(--color-border)] transition-colors"
+                            title="Clear filters"
+                        >
+                            <RotateCcw className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+                        </button>
+                        <button
+                            onClick={() => fetchListings()}
+                            className="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-xs font-medium flex items-center gap-1.5"
+                        >
+                            Apply <Check className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
 
-            {/* Location bar */}
-            <Card>
-                <CardContent className="py-3">
-                    <div className="flex items-center justify-between flex-wrap gap-3">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm">📍</span>
-                            {locationStatus === "success" ? (
-                                <span className="text-sm text-green-600">
-                                    {t("exchange.location.usingCountry", { country: getCountryName(userCountry) })}
-                                    {userLocation && ` (GPS: ${userLocation.latitude.toFixed(2)}, ${userLocation.longitude.toFixed(2)})`}
-                                </span>
-                            ) : locationStatus === "error" ? (
-                                <span className="text-sm text-orange-600">
-                                    {t("exchange.location.noPermission")} {getCountryName(userCountry)}
-                                </span>
-                            ) : (
-                                <span className="text-sm text-[var(--color-text-secondary)]">
-                                    {t("exchange.location.usingCountry", { country: getCountryName(userCountry) })}
-                                </span>
-                            )}
+                    {/* Listing Type Filter */}
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">LISTING TYPE</h3>
+                            <button onClick={() => setFilterType("")} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <div className="space-y-2">
+                            {[
+                                { value: "", label: "All" },
+                                { value: "seeds", label: t("exchange.types.seeds") },
+                                { value: "produce", label: t("exchange.types.produce") },
+                                { value: "tools", label: t("exchange.types.tools") },
+                                { value: "other", label: t("exchange.types.other") },
+                            ].map((option) => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => setFilterType(option.value)}
+                                    className="flex items-center gap-2 cursor-pointer w-full text-left hover:bg-[var(--color-background)] rounded p-1 -m-1 transition-colors"
+                                >
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                        filterType === option.value 
+                                            ? "border-[var(--color-primary)] bg-[var(--color-primary)]" 
+                                            : "border-[var(--color-border)]"
+                                    }`}>
+                                        {filterType === option.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <span className="text-sm text-[var(--color-text-primary)]">{option.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Listing Status Filter */}
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">LISTING STATUS</h3>
+                            <button onClick={() => setFilterStatus("")} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <p className="text-xs text-[var(--color-text-secondary)] mb-2">
+                            Find listings that are available, claimed, or completed
+                        </p>
+                        <div className="space-y-2">
+                            {[
+                                { value: "", label: "All" },
+                                { value: "available", label: t("exchange.status.available") },
+                                { value: "claimed", label: t("exchange.status.claimed") },
+                                { value: "completed", label: t("exchange.status.completed") },
+                            ].map((option) => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => setFilterStatus(option.value)}
+                                    className="flex items-center gap-2 cursor-pointer w-full text-left hover:bg-[var(--color-background)] rounded p-1 -m-1 transition-colors"
+                                >
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                        filterStatus === option.value 
+                                            ? "border-[var(--color-primary)] bg-[var(--color-primary)]" 
+                                            : "border-[var(--color-border)]"
+                                    }`}>
+                                        {filterStatus === option.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <span className="text-sm text-[var(--color-text-primary)]">{option.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Mode Filter */}
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">MODE</h3>
+                            <button onClick={() => setFilterMode("")} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <p className="text-xs text-[var(--color-text-secondary)] mb-2">
+                            Filter by offering or seeking
+                        </p>
+                        <div className="space-y-2">
+                            {[
+                                { value: "", label: "All" },
+                                { value: "offering", label: t("exchange.mode.offering") },
+                                { value: "seeking", label: t("exchange.mode.seeking") },
+                            ].map((option) => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => setFilterMode(option.value)}
+                                    className="flex items-center gap-2 cursor-pointer w-full text-left hover:bg-[var(--color-background)] rounded p-1 -m-1 transition-colors"
+                                >
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                        filterMode === option.value 
+                                            ? "border-[var(--color-primary)] bg-[var(--color-primary)]" 
+                                            : "border-[var(--color-border)]"
+                                    }`}>
+                                        {filterMode === option.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <span className="text-sm text-[var(--color-text-primary)]">{option.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">LOCATION</h3>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                            <span>📍</span>
+                            <span>{getCountryName(userCountry)}</span>
                         </div>
                         <Button
                             size="sm"
-                            variant="secondary"
+                            variant="outline"
                             onClick={detectLocation}
                             disabled={locationStatus === "detecting"}
+                            className="mt-2 w-full text-xs"
                         >
                             {locationStatus === "detecting"
                                 ? t("exchange.create.locationDetecting")
                                 : t("exchange.create.useMyLocation")}
                         </Button>
                     </div>
-                </CardContent>
-            </Card>
-
-            {/* Filters */}
-            <div className="flex flex-wrap gap-3">
-                <Select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    options={[
-                        { value: "", label: t("exchange.filters.allTypes") },
-                        { value: "seeds", label: t("exchange.types.seeds") },
-                        { value: "produce", label: t("exchange.types.produce") },
-                        { value: "tools", label: t("exchange.types.tools") },
-                        { value: "other", label: t("exchange.types.other") },
-                    ]}
-                    className="w-36"
-                />
-                <Select
-                    value={filterMode}
-                    onChange={(e) => setFilterMode(e.target.value)}
-                    options={[
-                        { value: "", label: t("exchange.filters.allModes") },
-                        { value: "offering", label: t("exchange.mode.offering") },
-                        { value: "seeking", label: t("exchange.mode.seeking") },
-                    ]}
-                    className="w-40"
-                />
-                <Select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    options={[
-                        { value: "available", label: t("exchange.status.available") },
-                        { value: "", label: t("exchange.filters.allStatuses") },
-                        { value: "claimed", label: t("exchange.status.claimed") },
-                        { value: "completed", label: t("exchange.status.completed") },
-                    ]}
-                    className="w-36"
-                />
+                </div>
             </div>
 
-            {/* Listings */}
-            {loading ? (
-                <div className="text-center py-12 text-[var(--color-text-secondary)]">
-                    {t("common.loading")}
-                </div>
-            ) : listings.length === 0 ? (
-                <Card>
-                    <CardContent className="py-12 text-center">
-                        <p className="text-[var(--color-text-secondary)]">
-                            {t("exchange.listing.noListings")}
-                        </p>
+            {/* Main Content */}
+            <div className="flex-1 min-w-0">
+                {/* Header with Search */}
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
+                            {t("exchange.title")}
+                        </h1>
                         <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                            {t("exchange.listing.noListingsDescription")}
+                            {t("exchange.subtitle")}
                         </p>
-                    </CardContent>
-                </Card>
-            ) : (
-                <div className="space-y-4">
-                    {listings.map((listing) => (
-                        <Card key={listing.id}>
-                            <CardContent className="py-4">
-                                <div className="flex justify-between items-start gap-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 flex-wrap mb-2">
-                                            {getModeBadge(listing.mode)}
-                                            <Badge variant="secondary">
-                                                {t(`exchange.types.${listing.type}`)}
-                                            </Badge>
-                                            {getDealTypeBadge(listing)}
-                                            {listing.distance !== undefined && (
-                                                <span className="text-xs text-[var(--color-text-secondary)]">
-                                                    {t("exchange.listing.distance", { distance: listing.distance })}
-                                                </span>
-                                            )}
+                    </div>
+                    <Button onClick={() => setShowCreateModal(true)}>
+                        + {t("exchange.listing.createButton")}
+                    </Button>
+                </div>
+
+                {/* Search Bar */}
+                <div className="relative mb-6">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)]" />
+                    <input
+                        type="text"
+                        placeholder="Search for a listing..."
+                        className="w-full pl-10 pr-16 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-1.5 py-0.5 rounded border border-[var(--color-border)]">
+                        ⌘K
+                    </span>
+                </div>
+
+                {/* Listings Grid */}
+                {loading ? (
+                    <div className="text-center py-12 text-[var(--color-text-secondary)]">
+                        {t("common.loading")}
+                    </div>
+                ) : listings.length === 0 ? (
+                    <Card>
+                        <CardContent className="py-12 text-center">
+                            <p className="text-[var(--color-text-secondary)]">
+                                {t("exchange.listing.noListings")}
+                            </p>
+                            <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                                {t("exchange.listing.noListingsDescription")}
+                            </p>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {listings.map((listing) => (
+                            <div key={listing.id} className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] overflow-hidden flex flex-col">
+                                {/* Card Image/Header */}
+                                <div className="relative h-36 bg-gradient-to-br from-green-800 to-green-950 overflow-hidden">
+                                    {/* Background image from description if available */}
+                                    {extractImageUrl(listing.description) && (
+                                        <img
+                                            src={extractImageUrl(listing.description)!}
+                                            alt={listing.title}
+                                            className="absolute inset-0 w-full h-full object-cover"
+                                        />
+                                    )}
+                                    {/* Status overlay for non-available */}
+                                    {listing.status !== "available" && (
+                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                                            <span className="text-white/80 text-2xl font-bold tracking-widest uppercase">
+                                                {listing.status}
+                                            </span>
                                         </div>
+                                    )}
+                                    {/* Decorative pattern (only show if no image) */}
+                                    {!extractImageUrl(listing.description) && (
+                                        <div className="absolute inset-0 opacity-20">
+                                            <div className="absolute top-4 right-4 w-24 h-24 border border-white/20 rounded-full" />
+                                            <div className="absolute bottom-4 left-4 w-16 h-16 border border-white/20 rounded-full" />
+                                        </div>
+                                    )}
+                                    {/* Bottom badges */}
+                                    <div className="absolute bottom-0 left-0 right-0 px-3 py-2 flex items-center justify-between bg-gradient-to-t from-black/40">
+                                        <div className="flex items-center gap-1.5 text-white text-xs">
+                                            <span>📦</span>
+                                            <span>{listing.quantity || "Qty N/A"}</span>
+                                        </div>
+                                        <Badge className={`text-xs font-medium ${
+                                            listing.type === "seeds" ? "bg-green-500 text-white" :
+                                            listing.type === "produce" ? "bg-amber-500 text-white" :
+                                            listing.type === "tools" ? "bg-blue-500 text-white" :
+                                            "bg-gray-500 text-white"
+                                        }`}>
+                                            {t(`exchange.types.${listing.type}`).toUpperCase()}
+                                        </Badge>
+                                    </div>
+                                    {/* Top right icon */}
+                                    <button className="absolute top-3 right-3 p-1.5 rounded bg-white/10 hover:bg-white/20 transition-colors">
+                                        <Bookmark className="w-4 h-4 text-white" />
+                                    </button>
+                                </div>
 
-                                        <h3 className="font-semibold text-lg">{listing.title}</h3>
-                                        
-                                        {listing.quantity && (
-                                            <p className="text-sm text-[var(--color-text-secondary)]">
-                                                {listing.quantity}
-                                            </p>
-                                        )}
-                                        
-                                        <span className="text-[var(--color-text-secondary)] mt-1 line-clamp-2">
-                                            {renderDescription(listing.description)}
-                                        </span>
-
-                                        {/* Trade items wanted */}
-                                        {listing.dealType === "trade" && listing.tradeItems && listing.tradeItems.length > 0 && (
-                                            <div className="mt-2">
-                                                <span className="text-sm font-medium">
-                                                    {listing.mode === "offering" 
-                                                        ? t("exchange.listing.wantsInReturn")
-                                                        : t("exchange.listing.lookingFor")}:
-                                                </span>
-                                                <div className="flex flex-wrap gap-1 mt-1">
-                                                    {listing.tradeItems.map((item, i) => (
-                                                        <Badge key={i} variant="secondary" className="text-xs">
-                                                            {item}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="flex items-center gap-3 mt-3 text-sm text-[var(--color-text-secondary)]">
-                                            {listing.userName && (
-                                                <span>👤 {listing.userName}</span>
-                                            )}
-                                            <span>📍 {getCountryName(listing.country)}</span>
+                                {/* Card Content */}
+                                <div className="p-4 flex-1 flex flex-col">
+                                    {/* ID */}
+                                    <p className="text-xs text-[var(--color-text-secondary)] font-mono mb-1">
+                                        # {listing.id.slice(0, 8)}...{listing.id.slice(-8)}
+                                    </p>
+                                    
+                                    {/* Title with actions */}
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                        <h3 className="font-semibold text-[var(--color-text-primary)] line-clamp-1">
+                                            {listing.title}
+                                        </h3>
+                                        <div className="flex items-center gap-1">
+                                            <button className="p-1 hover:bg-[var(--color-surface)] rounded transition-colors">
+                                                <Bookmark className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                                            </button>
+                                            <button className="p-1 hover:bg-[var(--color-surface)] rounded transition-colors">
+                                                <Share2 className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                                            </button>
                                         </div>
                                     </div>
 
-                                    {!listing.isOwner && listing.status === "available" && (
+                                    {/* Status & Deal Type Badges */}
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Badge className={`text-xs ${
+                                            listing.status === "available" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
+                                            listing.status === "claimed" ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" :
+                                            "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
+                                        }`}>
+                                            🔓 {listing.status.toUpperCase()}
+                                        </Badge>
+                                        {getDealTypeBadge(listing)}
+                                    </div>
+
+                                    {/* User */}
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className="w-6 h-6 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-xs text-white font-medium">
+                                            {(listing.userName || "U")[0].toUpperCase()}
+                                        </div>
+                                        <span className="text-sm text-[var(--color-primary)] font-medium">
+                                            {listing.userName || "Anonymous"}
+                                        </span>
+                                    </div>
+
+                                    {/* Stats */}
+                                    <div className="grid grid-cols-2 gap-4 py-3 border-t border-[var(--color-border)]">
+                                        <div className="text-center">
+                                            <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide">Claims</p>
+                                            <p className="text-lg font-semibold text-[var(--color-text-primary)]">{listing.claimCount || 0}</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide">Distance</p>
+                                            <p className="text-lg font-semibold text-[var(--color-text-primary)]">
+                                                {listing.distance !== undefined ? `${listing.distance}km` : "—"}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="grid grid-cols-2 gap-2 mt-auto pt-3">
                                         <Button
+                                            variant="outline"
                                             size="sm"
+                                            className="w-full text-xs"
                                             onClick={() => {
                                                 setClaimListing(listing);
                                                 setShowClaimModal(true);
                                             }}
                                         >
-                                            {listing.dealType === "trade"
-                                                ? t("exchange.listing.offerTradeButton")
-                                                : t("exchange.listing.claimButton")}
+                                            View Details
                                         </Button>
-                                    )}
+                                        {!listing.isOwner && listing.status === "available" && (
+                                            <Button
+                                                size="sm"
+                                                className="w-full text-xs"
+                                                onClick={() => {
+                                                    setClaimListing(listing);
+                                                    setShowClaimModal(true);
+                                                }}
+                                            >
+                                                {listing.dealType === "trade"
+                                                    ? t("exchange.listing.offerTradeButton")
+                                                    : t("exchange.listing.claimButton")} 👤
+                                            </Button>
+                                        )}
+                                        {(listing.isOwner || listing.status !== "available") && (
+                                            <Button
+                                                size="sm"
+                                                className="w-full text-xs"
+                                                variant="secondary"
+                                            >
+                                                View Status 👤
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
 
             {/* Create Modal */}
             <Modal
