@@ -98,7 +98,7 @@ export default function AilaRealtimeAssistant() {
                         prefix_padding_ms: 300,
                         silence_duration_ms: 500
                     },
-                    voice: "ash",
+                    voice: "coral",
                     instructions: getPrompt()
                 }
             };
@@ -368,7 +368,6 @@ export default function AilaRealtimeAssistant() {
             <div className="flex justify-center items-center space-x-4 mt-auto">
                 <CallAvatar
                     active={isRecording}
-                    profilePictureURL={"https://media1.tenor.com/m/K0AXcsdiTWIAAAAd/roxymigurdia-bagthebullet-roxy-mushoku-tensei.gif"}
                     voiceActivity={inputActivity}
                 />
                 <CallAvatar

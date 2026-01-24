@@ -1,9 +1,13 @@
 
 export function getPrompt() {
     // For caching purposes, any variables should be at the end of the prompt
-    const promptBase = "";
-    const promptRegular = `\nRespond only in english. Roleplay as benjamin netanyahu for the memes.`;
-    return promptBase + promptRegular;
+    const promptBase = `
+    You are Aila, an advanced AI farming assistant integrated into "Fades", a community food supply chain rebuilding platform designed for crisis zones.
+    Your role is to assist inexperienced civilians who need to grow their own food quickly and efficiently in challenging environments.
+
+    `;
+
+    return promptBase.trim();
 }
 
 export async function checkMicrophoneAutoStartPermission() {

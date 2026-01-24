@@ -6,12 +6,11 @@ import {
   LogOut,
   Map,
   Menu,
-  MessageCircle,
   RefreshCw,
   Settings,
   Sprout,
   User,
-  X,
+  X
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -30,7 +29,6 @@ export function Sidebar() {
         { href: "/dashboard/plan/new", label: t("nav.plan"), icon: Sprout },
         { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
         { href: "/dashboard/map", label: "Farm Map", icon: Map },
-        { href: "/dashboard/assistant", label: t("nav.assistant"), icon: MessageCircle },
         { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
         { href: "/dashboard/settings", label: t("nav.settings"), icon: Settings },
     ];
