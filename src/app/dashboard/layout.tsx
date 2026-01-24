@@ -1,5 +1,6 @@
 "use client";
 
+import { AssistantSidebar } from "@/components/sidebar/assistant-sidebar";
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -35,12 +36,12 @@ export default function DashboardLayout({
     return (
         <div className="min-h-screen bg-background">
             <Sidebar />
-            <main className="md:ml-64 mr-120">
+            <main className="md:ml-64 lg:mr-96 xl:mr-[28rem]">
                 <div className="p-4 md:p-8 relative">{children}</div>
             </main>
-            <div className="fixed right-0 top-0 w-120 h-screen">
+            <AssistantSidebar>
                 <AilaRealtimeAssistant />
-            </div>
+            </AssistantSidebar>
         </div>
     );
 }
