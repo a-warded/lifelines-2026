@@ -544,7 +544,7 @@ export default function AilaRealtimeAssistant() {
                 />
                 <CallAvatar
                     active={isConnected}
-                    profilePictureURL={"https://media1.tenor.com/m/oLao76Sc_GEAAAAd/%D7%91%D7%99%D7%91%D7%99-%D7%91%D7%99%D7%91%D7%99-%D7%A0%D7%AA%D7%A0%D7%99%D7%94%D7%95.gif"}
+                    profilePictureURL={"/images/aila_pfp.webp"}
                     voiceActivity={outputActivity}
                 />
             </div>
