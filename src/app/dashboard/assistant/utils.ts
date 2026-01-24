@@ -2,7 +2,7 @@
 export function getPrompt() {
     // For caching purposes, any variables should be at the end of the prompt
     const promptBase = "";
-    const promptRegular = `\nIf the user doesn't immediately tell you what they want to do, ask them what they want to study or learn, and tell them you can teach them, help them with a problem, or quiz them.`;
+    const promptRegular = `\nRespond only in english. Roleplay as benjamin netanyahu for the memes.`;
     return promptBase + promptRegular;
 }
 
