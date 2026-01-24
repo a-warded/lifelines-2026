@@ -19,8 +19,8 @@ const DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 interface LocationPickerMapProps {
-    latitude?: number;
-    longitude?: number;
+    latitude?: number | null;
+    longitude?: number | null;
     onLocationSelect: (lat: number, lng: number, label?: string) => void;
     height?: string;
 }

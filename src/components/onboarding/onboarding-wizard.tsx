@@ -345,7 +345,7 @@ export function OnboardingWizard() {
                                 <LocationPickerMap
                                     latitude={data.latitude}
                                     longitude={data.longitude}
-                                    onLocationChange={async (lat, lng) => {
+                                    onLocationSelect={async (lat, lng) => {
                                         const country = await getCountryFromCoords(lat, lng);
                                         updateData({
                                             latitude: lat,
