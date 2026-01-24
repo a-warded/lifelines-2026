@@ -3,15 +3,17 @@
 import { Badge, Button, Card, CardContent, Modal, OfflineBadge, Select } from "@/components/ui";
 import { CropManager } from "@/components/farm/crop-manager";
 import { cachePlan, getCachedPlan } from "@/lib/offline-storage";
-import { GrowthStage } from "@/lib/plants";
+import { getPlantByName, GrowthStage } from "@/lib/plants";
 import {
     ArrowRight,
     Calculator,
+    CheckCircle2,
     Leaf,
     Map,
     MessageCircle,
+    Plus,
     RefreshCw,
-    Settings2,
+    Sparkles,
     Sprout,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -99,7 +101,9 @@ export default function DashboardPage() {
     // UI state
     const [showMap, setShowMap] = useState(true);
     const [showRegeneratePlanModal, setShowRegeneratePlanModal] = useState(false);
+    const [showSuggestedCropsModal, setShowSuggestedCropsModal] = useState(false);
     const [regeneratingPlan, setRegeneratingPlan] = useState(false);
+    const [addingAllCrops, setAddingAllCrops] = useState(false);
     const [planFormData, setPlanFormData] = useState({
         waterAvailability: "medium",
         soilCondition: "normal",
@@ -162,6 +166,71 @@ export default function DashboardPage() {
             setLoading(false);
         });
     }, [fetchLatestPlan, fetchFarmProfile, fetchAllFarms]);
+
+    // Show suggested crops modal when user has a plan but no crops yet
+    useEffect(() => {
+        if (!loading && latestPlan && farmProfile && (!farmProfile.crops || farmProfile.crops.length === 0)) {
+            // Small delay for better UX
+            const timer = setTimeout(() => {
+                setShowSuggestedCropsModal(true);
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [loading, latestPlan, farmProfile]);
+
+    const addAllSuggestedCrops = async () => {
+        if (!latestPlan) return;
+        
+        setAddingAllCrops(true);
+        try {
+            const currentCrops = farmProfile?.crops || [];
+            
+            // Add all recommended crops with proper plant ID lookup
+            const newCrops = latestPlan.recommendedCrops.map((crop) => {
+                const plant = getPlantByName(crop.cropName);
+                return {
+                    plantId: plant?.id || crop.cropName.toLowerCase().replace(/\s+/g, "-"),
+                    plantName: plant?.name || crop.cropName,
+                    count: 1,
+                    stage: "seedling" as const,
+                };
+            });
+            
+            // Merge with existing crops
+            const updatedCrops = [...currentCrops];
+            for (const newCrop of newCrops) {
+                const existingIndex = updatedCrops.findIndex(
+                    (c) => c.plantId === newCrop.plantId
+                );
+                if (existingIndex >= 0) {
+                    updatedCrops[existingIndex] = {
+                        ...updatedCrops[existingIndex],
+                        count: updatedCrops[existingIndex].count + 1,
+                    };
+                } else {
+                    updatedCrops.push(newCrop);
+                }
+            }
+            
+            // Save to farm
+            const res = await fetch("/api/farm", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ crops: updatedCrops }),
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                setFarmProfile(data.profile);
+                setWaterCalculation(data.waterCalculation);
+                setShowSuggestedCropsModal(false);
+            }
+        } catch (error) {
+            console.error("Failed to add crops:", error);
+        } finally {
+            setAddingAllCrops(false);
+        }
+    };
 
     const loadDemoData = async () => {
         setDemoLoading(true);
@@ -434,11 +503,17 @@ export default function DashboardPage() {
                                                 {new Date(latestPlan.createdAt).toLocaleDateString()}
                                             </span>
                                         </div>
+                                        <button
+                                            onClick={openRegeneratePlanModal}
+                                            className="mt-3 text-xs text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200 underline underline-offset-2 transition-colors"
+                                        >
+                                            Generate a new farming plan
+                                        </button>
                                     </div>
                                     <div className="flex gap-2">
-                                        <Button size="sm" variant="outline" onClick={openRegeneratePlanModal}>
-                                            <Settings2 className="mr-1 h-3 w-3" />
-                                            Regenerate
+                                        <Button size="sm" variant="outline" onClick={() => setShowSuggestedCropsModal(true)}>
+                                            <Plus className="mr-1 h-3 w-3" />
+                                            Add Crops
                                         </Button>
                                         <Link href={`/dashboard/plan/${latestPlan.id}`}>
                                             <Button size="sm" variant="outline">
@@ -557,6 +632,73 @@ export default function DashboardPage() {
                         >
                             <Sprout className="mr-2 h-4 w-4" />
                             Generate New Plan
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Suggested Crops Modal */}
+            <Modal
+                isOpen={showSuggestedCropsModal}
+                onClose={() => setShowSuggestedCropsModal(false)}
+                title="Suggested Crops for You"
+            >
+                <div className="space-y-4">
+                    <div className="flex items-start gap-3 rounded-lg bg-green-50 p-4 dark:bg-green-950">
+                        <Sparkles className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
+                        <div>
+                            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                                We&apos;ve selected the best crops for you!
+                            </p>
+                            <p className="mt-1 text-sm text-green-700 dark:text-green-300">
+                                Based on your location, conditions, and goals, here are our top recommendations.
+                            </p>
+                        </div>
+                    </div>
+
+                    {latestPlan && (
+                        <div className="space-y-3">
+                            {latestPlan.recommendedCrops.map((crop, index) => (
+                                <div
+                                    key={crop.cropName}
+                                    className="flex items-center gap-3 rounded-lg border p-3"
+                                >
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-700 dark:bg-green-900 dark:text-green-300">
+                                        {index + 1}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-medium">{crop.cropName}</p>
+                                        <Badge 
+                                            variant={crop.difficulty === "easy" ? "success" : crop.difficulty === "medium" ? "warning" : "danger"}
+                                            className="mt-1"
+                                        >
+                                            {crop.difficulty}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            ))}
+
+                            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
+                                <p className="text-sm text-blue-700 dark:text-blue-300">
+                                    💧 Estimated daily water: <strong>{latestPlan.estimatedDailyWaterLiters}L</strong>
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex justify-end gap-3 pt-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowSuggestedCropsModal(false)}
+                        >
+                            Maybe Later
+                        </Button>
+                        <Button
+                            onClick={addAllSuggestedCrops}
+                            loading={addingAllCrops}
+                        >
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Add All to My Farm
                         </Button>
                     </div>
                 </div>

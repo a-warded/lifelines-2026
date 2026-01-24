@@ -1853,6 +1853,15 @@ export function getAllPlants(): PlantData[] {
     return Object.values(PLANTS);
 }
 
+export function getPlantByName(name: string): PlantData | undefined {
+    const normalizedName = name.toLowerCase().trim();
+    return Object.values(PLANTS).find((p) => 
+        p.name.toLowerCase() === normalizedName ||
+        p.id === normalizedName ||
+        p.id === normalizedName.replace(/\s+/g, "-")
+    );
+}
+
 export function getPlantOptions(): { value: string; label: string }[] {
     return Object.entries(PLANTS).map(([id, plant]) => ({
         value: id,
