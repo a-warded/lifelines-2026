@@ -51,39 +51,45 @@
     },
     "landing": {
         "hero": {
-            "title": "Community Farming",
-            "subtitle": "Grow food together. Build resilience. Share with your community.",
-            "description": "A platform for micro-farmers on rooftops, balconies, and small plots to coordinate and thrive."
+            "title": "Food Security for All",
+            "subtitle": "Preventing food insecurity through sustainable community farming and efficient resource matching. A circular economy approach for resilient agriculture in moments of crisis.",
+            "description": "Connect farmers, NGOs, and communities to grow food sustainably on rooftops, balconies, and small plots."
         },
         "features": {
             "title": "Features",
             "plan": {
-                "title": "Personalized Plans",
-                "description": "Get farming recommendations based on your water, space, and sunlight"
+                "title": "Sustainable Planning",
+                "description": "AI-powered crop plans that maximize yield with minimal water and resources"
             },
             "exchange": {
-                "title": "Community Exchange",
-                "description": "Share seeds, surplus produce, and tools with neighbors"
+                "title": "Stakeholder Matching",
+                "description": "Connect farmers, NGOs, and neighbors to share seeds, produce, and tools efficiently"
             },
             "water": {
-                "title": "Water Calculator",
-                "description": "Know exactly how much water your crops need"
+                "title": "Water Conservation",
+                "description": "Smart irrigation guidance to grow more with less water"
             },
             "assistant": {
-                "title": "AI Assistant",
-                "description": "Get instant help with voice or text questions"
+                "title": "Crisis Support",
+                "description": "24/7 AI assistance for farming challenges during emergencies"
             }
         },
+        "sustainability": {
+            "title": "Built for Sustainability",
+            "water": "Up to 70% water savings with smart irrigation",
+            "local": "100% local food production reduces carbon footprint",
+            "waste": "Zero waste through community exchange network"
+        },
         "lowResource": {
-            "title": "Designed for resilience",
-            "description": "Works offline, uses minimal data, and supports voice for low-literacy access."
+            "title": "Crisis-Ready Design",
+            "description": "Works offline during emergencies, uses minimal data, and supports voice for accessibility."
         },
         "cta": {
             "getStarted": "Get Started",
             "learnMore": "Learn More",
             "dashboard": "Go to Dashboard"
         },
-        "footer": "Built for community food resilience"
+        "footer": "Building food resilience for communities worldwide"
     },
     "auth": {
         "login": {

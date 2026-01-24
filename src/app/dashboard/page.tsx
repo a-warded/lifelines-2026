@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Button, Card, CardContent, OfflineBadge } from "@/components/ui";
+import { Badge, Button, Card, CardContent, Modal, OfflineBadge, Select } from "@/components/ui";
 import { CropManager } from "@/components/farm/crop-manager";
 import { cachePlan, getCachedPlan } from "@/lib/offline-storage";
 import { GrowthStage } from "@/lib/plants";
@@ -11,6 +11,7 @@ import {
     Map,
     MessageCircle,
     RefreshCw,
+    Settings2,
     Sprout,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -97,6 +98,16 @@ export default function DashboardPage() {
     
     // UI state
     const [showMap, setShowMap] = useState(true);
+    const [showRegeneratePlanModal, setShowRegeneratePlanModal] = useState(false);
+    const [regeneratingPlan, setRegeneratingPlan] = useState(false);
+    const [planFormData, setPlanFormData] = useState({
+        waterAvailability: "medium",
+        soilCondition: "normal",
+        spaceType: "containers",
+        sunlight: "medium",
+        primaryGoal: "nutrition",
+        experienceLevel: "beginner",
+    });
 
     const showDemo = searchParams.get("demo") === "true";
 
@@ -193,13 +204,6 @@ export default function DashboardPage() {
 
     const features = [
         {
-            title: t("dashboard.features.plan.title"),
-            description: t("dashboard.features.plan.description"),
-            href: "/dashboard/plan/new",
-            icon: Sprout,
-            color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-        },
-        {
             title: t("dashboard.features.exchange.title"),
             description: t("dashboard.features.exchange.description"),
             href: "/dashboard/exchange",
@@ -214,6 +218,92 @@ export default function DashboardPage() {
             color: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
         },
     ];
+
+    const waterOptions = [
+        { value: "none", label: t("plan.form.water.options.none") },
+        { value: "low", label: t("plan.form.water.options.low") },
+        { value: "medium", label: t("plan.form.water.options.medium") },
+        { value: "high", label: t("plan.form.water.options.high") },
+    ];
+
+    const soilOptions = [
+        { value: "normal", label: t("plan.form.soil.options.normal") },
+        { value: "salty", label: t("plan.form.soil.options.salty") },
+        { value: "unknown", label: t("plan.form.soil.options.unknown") },
+    ];
+
+    const spaceOptions = [
+        { value: "rooftop", label: t("plan.form.space.options.rooftop") },
+        { value: "balcony", label: t("plan.form.space.options.balcony") },
+        { value: "containers", label: t("plan.form.space.options.containers") },
+        { value: "backyard", label: t("plan.form.space.options.backyard") },
+        { value: "microplot", label: t("plan.form.space.options.microplot") },
+    ];
+
+    const sunlightOptions = [
+        { value: "low", label: t("plan.form.sunlight.options.low") },
+        { value: "medium", label: t("plan.form.sunlight.options.medium") },
+        { value: "high", label: t("plan.form.sunlight.options.high") },
+    ];
+
+    const goalOptions = [
+        { value: "calories", label: t("plan.form.goal.options.calories") },
+        { value: "nutrition", label: t("plan.form.goal.options.nutrition") },
+        { value: "fast", label: t("plan.form.goal.options.fast") },
+    ];
+
+    const experienceOptions = [
+        { value: "beginner", label: t("plan.form.experience.options.beginner") },
+        { value: "intermediate", label: t("plan.form.experience.options.intermediate") },
+        { value: "advanced", label: t("plan.form.experience.options.advanced") },
+    ];
+
+    const handleRegeneratePlan = async () => {
+        setRegeneratingPlan(true);
+        try {
+            // First update farm profile with new conditions
+            await fetch("/api/farm", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(planFormData),
+            });
+
+            // Then generate new plan
+            const res = await fetch("/api/plans", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(planFormData),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.plan) {
+                    setLatestPlan(data.plan);
+                    cachePlan(data.plan);
+                }
+                setShowRegeneratePlanModal(false);
+            }
+        } catch (error) {
+            console.error("Failed to regenerate plan:", error);
+        } finally {
+            setRegeneratingPlan(false);
+        }
+    };
+
+    const openRegeneratePlanModal = () => {
+        // Pre-fill with current farm profile values if available
+        if (farmProfile) {
+            setPlanFormData({
+                waterAvailability: (farmProfile as unknown as { waterAvailability?: string }).waterAvailability || "medium",
+                soilCondition: (farmProfile as unknown as { soilCondition?: string }).soilCondition || "normal",
+                spaceType: farmProfile.spaceType || "containers",
+                sunlight: (farmProfile as unknown as { sunlight?: string }).sunlight || "medium",
+                primaryGoal: (farmProfile as unknown as { primaryGoal?: string }).primaryGoal || "nutrition",
+                experienceLevel: (farmProfile as unknown as { experienceLevel?: string }).experienceLevel || "beginner",
+            });
+        }
+        setShowRegeneratePlanModal(true);
+    };
 
     if (loading) {
         return (
@@ -345,18 +435,24 @@ export default function DashboardPage() {
                                             </span>
                                         </div>
                                     </div>
-                                    <Link href={`/dashboard/plan/${latestPlan.id}`}>
-                                        <Button size="sm" variant="outline">
-                                            {t("dashboard.latestPlan.view")}
+                                    <div className="flex gap-2">
+                                        <Button size="sm" variant="outline" onClick={openRegeneratePlanModal}>
+                                            <Settings2 className="mr-1 h-3 w-3" />
+                                            Regenerate
                                         </Button>
-                                    </Link>
+                                        <Link href={`/dashboard/plan/${latestPlan.id}`}>
+                                            <Button size="sm" variant="outline">
+                                                {t("dashboard.latestPlan.view")}
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
                     )}
 
-                    {/* Getting Started - Only if no crops */}
-                    {!latestPlan && (!farmProfile?.crops || farmProfile.crops.length === 0) && (
+                    {/* Getting Started - Only if no plan */}
+                    {!latestPlan && (
                         <Card className="border-dashed">
                             <CardContent className="py-8 text-center">
                                 <Sprout className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -367,12 +463,10 @@ export default function DashboardPage() {
                                     {t("dashboard.getStarted.description")}
                                 </p>
                                 <div className="mt-6">
-                                    <Link href="/dashboard/plan/new">
-                                        <Button size="lg">
-                                            <Sprout className="mr-2 h-5 w-5" />
-                                            {t("dashboard.getStarted.cta")}
-                                        </Button>
-                                    </Link>
+                                    <Button size="lg" onClick={openRegeneratePlanModal}>
+                                        <Sprout className="mr-2 h-5 w-5" />
+                                        {t("dashboard.getStarted.cta")}
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
@@ -381,6 +475,92 @@ export default function DashboardPage() {
             </div>
 
             <OfflineBadge />
+
+            {/* Regenerate Plan Modal */}
+            <Modal
+                isOpen={showRegeneratePlanModal}
+                onClose={() => setShowRegeneratePlanModal(false)}
+                title="Update Farming Conditions"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        Update your farming conditions to get new personalized crop recommendations.
+                    </p>
+
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.water.label")}</label>
+                            <Select
+                                value={planFormData.waterAvailability}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, waterAvailability: e.target.value }))}
+                                options={waterOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.soil.label")}</label>
+                            <Select
+                                value={planFormData.soilCondition}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, soilCondition: e.target.value }))}
+                                options={soilOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.space.label")}</label>
+                            <Select
+                                value={planFormData.spaceType}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, spaceType: e.target.value }))}
+                                options={spaceOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.sunlight.label")}</label>
+                            <Select
+                                value={planFormData.sunlight}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, sunlight: e.target.value }))}
+                                options={sunlightOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.goal.label")}</label>
+                            <Select
+                                value={planFormData.primaryGoal}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, primaryGoal: e.target.value }))}
+                                options={goalOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.experience.label")}</label>
+                            <Select
+                                value={planFormData.experienceLevel}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, experienceLevel: e.target.value }))}
+                                options={experienceOptions}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowRegeneratePlanModal(false)}
+                            disabled={regeneratingPlan}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleRegeneratePlan}
+                            loading={regeneratingPlan}
+                        >
+                            <Sprout className="mr-2 h-4 w-4" />
+                            Generate New Plan
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

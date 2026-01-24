@@ -8,7 +8,6 @@ import {
   Menu,
   RefreshCw,
   Settings,
-  Sprout,
   User,
   X
 } from "lucide-react";
@@ -26,7 +25,6 @@ export function Sidebar() {
 
     const navItems = [
         { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
-        { href: "/dashboard/plan/new", label: t("nav.plan"), icon: Sprout },
         { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
         { href: "/dashboard/map", label: "Farm Map", icon: Map },
         { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
