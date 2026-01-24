@@ -8,16 +8,19 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
+    calculateDistance,
     formatPrice,
     GeoLocation,
     getCountryFromCoords,
     getCountryName,
+    getLocationLabel,
     getUserLocation,
 } from "@/lib/geo";
 import { getPlantOptions } from "@/lib/plants";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, Bookmark, Share2, X, RotateCcw, Check } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Search, Bookmark, Share2, X, RotateCcw, Check, BookmarkCheck, Link as LinkIcon } from "lucide-react";
 
 interface Listing {
     id: string;
@@ -34,6 +37,8 @@ interface Listing {
     currencyCountry?: string;
     tradeItems?: string[];
     country: string;
+    latitude?: number;
+    longitude?: number;
     locationLabel?: string;
     distance?: number;
     status: string;
@@ -48,6 +53,8 @@ type DealType = "price" | "trade" | "donation";
 
 export default function ExchangePage() {
     const { t } = useTranslation();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const plantOptions = useMemo(() => getPlantOptions(), []);
 
     // Location state
@@ -63,8 +70,18 @@ export default function ExchangePage() {
 
     // Filters
     const [filterType, setFilterType] = useState<string>("");
-    const [filterStatus, setFilterStatus] = useState<string>("available");
+    const [filterStatus, setFilterStatus] = useState<string>("");
     const [filterMode, setFilterMode] = useState<string>("");
+
+    // Saved/bookmarked listings
+    const [savedListings, setSavedListings] = useState<Set<string>>(new Set());
+
+    // View details modal state (separate from claim)
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [detailsListing, setDetailsListing] = useState<Listing | null>(null);
+
+    // Link copied toast
+    const [linkCopied, setLinkCopied] = useState(false);
 
     // Create modal state
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -88,6 +105,32 @@ export default function ExchangePage() {
     const [claimMessage, setClaimMessage] = useState("");
     const [claimTradeOffer, setClaimTradeOffer] = useState("");
     const [claiming, setClaiming] = useState(false);
+
+    // Load saved listings from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem("savedExchangeListings");
+        if (saved) {
+            try {
+                setSavedListings(new Set(JSON.parse(saved)));
+            } catch {}
+        }
+    }, []);
+
+    // Handle URL params for opening specific listing modal
+    const openListingFromUrl = useCallback((listingId: string) => {
+        const listing = listings.find(l => l.id === listingId);
+        if (listing) {
+            setDetailsListing(listing);
+            setShowDetailsModal(true);
+        }
+    }, [listings]);
+
+    useEffect(() => {
+        const listingId = searchParams.get("listing");
+        if (listingId && listings.length > 0) {
+            openListingFromUrl(listingId);
+        }
+    }, [searchParams, listings, openListingFromUrl]);
 
     // Get user's location from farm profile on mount
     useEffect(() => {
@@ -134,11 +177,15 @@ export default function ExchangePage() {
 
         try {
             const location = await getUserLocation();
-            const country = await getCountryFromCoords(location.latitude, location.longitude);
+            const [country, locationLabel] = await Promise.all([
+                getCountryFromCoords(location.latitude, location.longitude),
+                getLocationLabel(location.latitude, location.longitude)
+            ]);
             
             setUserLocation({
                 ...location,
                 country,
+                locationLabel,
             });
             setUserCountry(country);
             setLocationStatus("success");
@@ -160,6 +207,12 @@ export default function ExchangePage() {
             if (filterStatus) params.set("status", filterStatus);
             if (filterMode) params.set("mode", filterMode);
             if (userCountry) params.set("country", userCountry);
+            
+            // Pass user coordinates for distance calculation
+            if (userLocation?.latitude && userLocation?.longitude) {
+                params.set("lat", userLocation.latitude.toString());
+                params.set("lon", userLocation.longitude.toString());
+            }
 
             const response = await fetch(`/api/exchange?${params}`);
             const data = await response.json();
@@ -243,6 +296,65 @@ export default function ExchangePage() {
         });
     };
 
+    // Toggle save/bookmark listing
+    const toggleSaveListing = (listingId: string) => {
+        setSavedListings(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(listingId)) {
+                newSet.delete(listingId);
+            } else {
+                newSet.add(listingId);
+            }
+            localStorage.setItem("savedExchangeListings", JSON.stringify([...newSet]));
+            return newSet;
+        });
+    };
+
+    // Share listing - copy link to clipboard
+    const shareListing = async (listingId: string) => {
+        const url = `${window.location.origin}/dashboard/exchange?listing=${listingId}`;
+        try {
+            await navigator.clipboard.writeText(url);
+            setLinkCopied(true);
+            setTimeout(() => setLinkCopied(false), 2000);
+        } catch {
+            // Fallback for older browsers
+            const input = document.createElement("input");
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand("copy");
+            document.body.removeChild(input);
+            setLinkCopied(true);
+            setTimeout(() => setLinkCopied(false), 2000);
+        }
+    };
+
+    // Open view details modal
+    const openDetails = (listing: Listing) => {
+        setDetailsListing(listing);
+        setShowDetailsModal(true);
+        // Update URL without navigation
+        window.history.pushState({}, "", `/dashboard/exchange?listing=${listing.id}`);
+    };
+
+    // Close view details modal
+    const closeDetails = () => {
+        setShowDetailsModal(false);
+        setDetailsListing(null);
+        // Remove listing param from URL
+        window.history.pushState({}, "", "/dashboard/exchange");
+    };
+
+    // Open claim modal from details
+    const openClaimFromDetails = () => {
+        if (detailsListing) {
+            setClaimListing(detailsListing);
+            setShowDetailsModal(false);
+            setShowClaimModal(true);
+        }
+    };
+
     const handleClaim = async () => {
         if (!claimListing) return;
 
@@ -293,6 +405,27 @@ export default function ExchangePage() {
         const imgUrlRegex = /(https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?\S*)?)/gi;
         const match = imgUrlRegex.exec(text);
         return match ? match[0] : null;
+    };
+
+    // Helper to get distance to a listing (from API or calculated client-side)
+    const getListingDistance = (listing: Listing): number | null => {
+        // Use API-provided distance if available
+        if (listing.distance !== undefined) {
+            return listing.distance;
+        }
+        
+        // Calculate client-side if we have user location and listing coordinates
+        if (userLocation?.latitude && userLocation?.longitude && listing.latitude && listing.longitude) {
+            const distance = calculateDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                listing.latitude,
+                listing.longitude
+            );
+            return Math.round(distance * 10) / 10;
+        }
+        
+        return null;
     };
 
     // Add helper to render description text and inline images for image URLs
@@ -485,10 +618,18 @@ export default function ExchangePage() {
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">LOCATION</h3>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
-                            <span>📍</span>
-                            <span>{getCountryName(userCountry)}</span>
+                        <div className="flex items-start gap-2 text-sm text-[var(--color-text-secondary)]">
+                            <span className="flex-1">
+                                {userLocation?.locationLabel 
+                                    ? userLocation.locationLabel 
+                                    : getCountryName(userCountry)}
+                            </span>
                         </div>
+                        {userLocation?.latitude && userLocation?.longitude && (
+                            <p className="text-xs text-[var(--color-text-secondary)] mt-1">
+                                {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
+                            </p>
+                        )}
                         <Button
                             size="sm"
                             variant="outline"
@@ -498,7 +639,7 @@ export default function ExchangePage() {
                         >
                             {locationStatus === "detecting"
                                 ? t("exchange.create.locationDetecting")
-                                : t("exchange.create.useMyLocation")}
+                                : userLocation ? "Update Location" : t("exchange.create.useMyLocation")}
                         </Button>
                     </div>
                 </div>
@@ -582,7 +723,6 @@ export default function ExchangePage() {
                                     {/* Bottom badges */}
                                     <div className="absolute bottom-0 left-0 right-0 px-3 py-2 flex items-center justify-between bg-gradient-to-t from-black/40">
                                         <div className="flex items-center gap-1.5 text-white text-xs">
-                                            <span>📦</span>
                                             <span>{listing.quantity || "Qty N/A"}</span>
                                         </div>
                                         <Badge className={`text-xs font-medium ${
@@ -594,9 +734,16 @@ export default function ExchangePage() {
                                             {t(`exchange.types.${listing.type}`).toUpperCase()}
                                         </Badge>
                                     </div>
-                                    {/* Top right icon */}
-                                    <button className="absolute top-3 right-3 p-1.5 rounded bg-white/10 hover:bg-white/20 transition-colors">
-                                        <Bookmark className="w-4 h-4 text-white" />
+                                    {/* Top right bookmark icon */}
+                                    <button 
+                                        onClick={() => toggleSaveListing(listing.id)}
+                                        className="absolute top-3 right-3 p-1.5 rounded bg-white/10 hover:bg-white/20 transition-colors"
+                                    >
+                                        {savedListings.has(listing.id) ? (
+                                            <BookmarkCheck className="w-4 h-4 text-yellow-400" />
+                                        ) : (
+                                            <Bookmark className="w-4 h-4 text-white" />
+                                        )}
                                     </button>
                                 </div>
 
@@ -613,11 +760,23 @@ export default function ExchangePage() {
                                             {listing.title}
                                         </h3>
                                         <div className="flex items-center gap-1">
-                                            <button className="p-1 hover:bg-[var(--color-surface)] rounded transition-colors">
-                                                <Bookmark className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                                            <button 
+                                                onClick={() => toggleSaveListing(listing.id)}
+                                                className="p-1 hover:bg-[var(--color-surface)] rounded transition-colors"
+                                                title={savedListings.has(listing.id) ? "Remove from saved" : "Save listing"}
+                                            >
+                                                {savedListings.has(listing.id) ? (
+                                                    <BookmarkCheck className="w-4 h-4 text-yellow-500" />
+                                                ) : (
+                                                    <Bookmark className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                                                )}
                                             </button>
-                                            <button className="p-1 hover:bg-[var(--color-surface)] rounded transition-colors">
-                                                <Share2 className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                                            <button 
+                                                onClick={() => shareListing(listing.id)}
+                                                className="p-1 hover:bg-[var(--color-surface)] rounded transition-colors"
+                                                title="Copy link"
+                                            >
+                                                <LinkIcon className="w-4 h-4 text-[var(--color-text-secondary)]" />
                                             </button>
                                         </div>
                                     </div>
@@ -629,7 +788,7 @@ export default function ExchangePage() {
                                             listing.status === "claimed" ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" :
                                             "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
                                         }`}>
-                                            🔓 {listing.status.toUpperCase()}
+                                            {listing.status.toUpperCase()}
                                         </Badge>
                                         {getDealTypeBadge(listing)}
                                     </div>
@@ -653,7 +812,9 @@ export default function ExchangePage() {
                                         <div className="text-center">
                                             <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wide">Distance</p>
                                             <p className="text-lg font-semibold text-[var(--color-text-primary)]">
-                                                {listing.distance !== undefined ? `${listing.distance}km` : "—"}
+                                                {getListingDistance(listing) !== null 
+                                                    ? `${getListingDistance(listing)}km` 
+                                                    : userLocation ? "N/A" : "Enable GPS"}
                                             </p>
                                         </div>
                                     </div>
@@ -664,10 +825,7 @@ export default function ExchangePage() {
                                             variant="outline"
                                             size="sm"
                                             className="w-full text-xs"
-                                            onClick={() => {
-                                                setClaimListing(listing);
-                                                setShowClaimModal(true);
-                                            }}
+                                            onClick={() => openDetails(listing)}
                                         >
                                             View Details
                                         </Button>
@@ -682,7 +840,7 @@ export default function ExchangePage() {
                                             >
                                                 {listing.dealType === "trade"
                                                     ? t("exchange.listing.offerTradeButton")
-                                                    : t("exchange.listing.claimButton")} 👤
+                                                    : t("exchange.listing.claimButton")}
                                             </Button>
                                         )}
                                         {(listing.isOwner || listing.status !== "available") && (
@@ -690,14 +848,22 @@ export default function ExchangePage() {
                                                 size="sm"
                                                 className="w-full text-xs"
                                                 variant="secondary"
+                                                onClick={() => openDetails(listing)}
                                             >
-                                                View Status 👤
+                                                View Status
                                             </Button>
                                         )}
                                     </div>
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* Link copied toast */}
+                {linkCopied && (
+                    <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in">
+                        Link copied to clipboard!
                     </div>
                 )}
             </div>
@@ -860,7 +1026,7 @@ export default function ExchangePage() {
                         </label>
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-[var(--color-text-secondary)]">
-                                📍 {getCountryName(userCountry)}
+                                {getCountryName(userCountry)}
                                 {userLocation && ` (GPS enabled)`}
                             </span>
                             {!userLocation && (
@@ -943,6 +1109,146 @@ export default function ExchangePage() {
                             >
                                 {t("common.cancel")}
                             </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
+            {/* View Details Modal */}
+            <Modal
+                isOpen={showDetailsModal}
+                onClose={closeDetails}
+                title="Listing Details"
+            >
+                {detailsListing && (
+                    <div className="space-y-4">
+                        {/* Image */}
+                        {extractImageUrl(detailsListing.description) && (
+                            <div className="rounded-lg overflow-hidden">
+                                <img
+                                    src={extractImageUrl(detailsListing.description)!}
+                                    alt={detailsListing.title}
+                                    className="w-full h-48 object-cover"
+                                />
+                            </div>
+                        )}
+
+                        {/* Title and badges */}
+                        <div>
+                            <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">
+                                {detailsListing.title}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                <Badge className={`text-xs ${
+                                    detailsListing.status === "available" ? "bg-green-100 text-green-800" :
+                                    detailsListing.status === "claimed" ? "bg-amber-100 text-amber-800" :
+                                    "bg-gray-100 text-gray-800"
+                                }`}>
+                                    {detailsListing.status.toUpperCase()}
+                                </Badge>
+                                <Badge className={`text-xs ${
+                                    detailsListing.type === "seeds" ? "bg-green-500 text-white" :
+                                    detailsListing.type === "produce" ? "bg-amber-500 text-white" :
+                                    detailsListing.type === "tools" ? "bg-blue-500 text-white" :
+                                    "bg-gray-500 text-white"
+                                }`}>
+                                    {t(`exchange.types.${detailsListing.type}`).toUpperCase()}
+                                </Badge>
+                                {getDealTypeBadge(detailsListing)}
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <div className="p-3 bg-[var(--color-surface)] rounded-lg">
+                            <p className="text-sm font-medium mb-1">Description</p>
+                            <div className="text-sm text-[var(--color-text-secondary)]">
+                                {renderDescription(detailsListing.description)}
+                            </div>
+                        </div>
+
+                        {/* Details grid */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {detailsListing.quantity && (
+                                <div>
+                                    <p className="text-xs text-[var(--color-text-secondary)] uppercase">Quantity</p>
+                                    <p className="text-sm font-medium">{detailsListing.quantity}</p>
+                                </div>
+                            )}
+                            <div>
+                                <p className="text-xs text-[var(--color-text-secondary)] uppercase">Mode</p>
+                                <p className="text-sm font-medium">{detailsListing.mode === "offering" ? "Offering" : "Seeking"}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-[var(--color-text-secondary)] uppercase">Posted by</p>
+                                <p className="text-sm font-medium">{detailsListing.userName || "Anonymous"}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-[var(--color-text-secondary)] uppercase">Location</p>
+                                <p className="text-sm font-medium">{detailsListing.locationLabel || getCountryName(detailsListing.country)}</p>
+                            </div>
+                            {getListingDistance(detailsListing) !== null && (
+                                <div>
+                                    <p className="text-xs text-[var(--color-text-secondary)] uppercase">Distance</p>
+                                    <p className="text-sm font-medium">{getListingDistance(detailsListing)}km away</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Trade items if applicable */}
+                        {detailsListing.dealType === "trade" && detailsListing.tradeItems && detailsListing.tradeItems.length > 0 && (
+                            <div>
+                                <p className="text-sm font-medium mb-2">
+                                    {detailsListing.mode === "offering" ? "Wants in return:" : "Looking for:"}
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                    {detailsListing.tradeItems.map((item, i) => (
+                                        <Badge key={i} variant="secondary" className="text-xs">
+                                            {item}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    toggleSaveListing(detailsListing.id);
+                                }}
+                                className="flex items-center gap-2"
+                            >
+                                {savedListings.has(detailsListing.id) ? (
+                                    <>
+                                        <BookmarkCheck className="w-4 h-4" />
+                                        Saved
+                                    </>
+                                ) : (
+                                    <>
+                                        <Bookmark className="w-4 h-4" />
+                                        Save
+                                    </>
+                                )}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => shareListing(detailsListing.id)}
+                                className="flex items-center gap-2"
+                            >
+                                <LinkIcon className="w-4 h-4" />
+                                Share
+                            </Button>
+                            {!detailsListing.isOwner && detailsListing.status === "available" && (
+                                <Button
+                                    onClick={openClaimFromDetails}
+                                    className="flex-1"
+                                >
+                                    {detailsListing.dealType === "trade"
+                                        ? t("exchange.listing.offerTradeButton")
+                                        : t("exchange.listing.claimButton")}
+                                </Button>
+                            )}
                         </div>
                     </div>
                 )}

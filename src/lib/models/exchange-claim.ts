@@ -3,9 +3,10 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 export interface IExchangeClaim extends Document {
   listingId: string;
   ownerId: string;
-  claimerId?: string;
-  claimerName: string;
-  claimerContact: string;
+  claimerId: string;
+  claimerName?: string;
+  message?: string;
+  tradeOffer?: string;
   status: "pending" | "confirmed" | "completed" | "cancelled";
   createdAt: Date;
   updatedAt: Date;
@@ -15,9 +16,10 @@ const ExchangeClaimSchema = new Schema<IExchangeClaim>(
     {
         listingId: { type: String, required: true, index: true },
         ownerId: { type: String, required: true },
-        claimerId: { type: String, required: false },
-        claimerName: { type: String, required: true },
-        claimerContact: { type: String, required: true },
+        claimerId: { type: String, required: true },
+        claimerName: { type: String },
+        message: { type: String },
+        tradeOffer: { type: String },
         status: {
             type: String,
             enum: ["pending", "confirmed", "completed", "cancelled"],

@@ -12,11 +12,11 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { listingId, claimerName, claimerContact } = body;
+        const { listingId, message, tradeOffer } = body;
 
-        if (!listingId || !claimerName || !claimerContact) {
+        if (!listingId) {
             return NextResponse.json(
-                { error: "Missing required fields" },
+                { error: "Missing listing ID" },
                 { status: 400 }
             );
         }
@@ -43,19 +43,32 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create claim
+        // Check if user already claimed this listing
+        const existingClaim = await ExchangeClaim.findOne({
+            listingId: listing._id.toString(),
+            claimerId: session.user.id,
+        });
+
+        if (existingClaim) {
+            return NextResponse.json(
+                { error: "You have already expressed interest in this listing" },
+                { status: 400 }
+            );
+        }
+
+        // Create claim (expression of interest)
         const claim = await ExchangeClaim.create({
             listingId: listing._id.toString(),
             ownerId: listing.userId,
             claimerId: session.user.id,
-            claimerName: claimerName.trim(),
-            claimerContact: claimerContact.trim(),
+            claimerName: session.user.name || "Anonymous",
+            message: message?.trim() || "",
+            tradeOffer: tradeOffer?.trim() || "",
             status: "pending",
         });
 
-        // Update listing status
-        listing.status = "claimed";
-        await listing.save();
+        // Don't change listing status - allow multiple people to express interest
+        // Owner can choose who to give it to
 
         return NextResponse.json({
             success: true,
@@ -101,7 +114,8 @@ export async function GET(request: NextRequest) {
                 id: c._id.toString(),
                 listingId: c.listingId,
                 claimerName: c.claimerName,
-                claimerContact: c.claimerContact,
+                message: c.message,
+                tradeOffer: c.tradeOffer,
                 status: c.status,
                 createdAt: c.createdAt,
             })),
