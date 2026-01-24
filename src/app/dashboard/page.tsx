@@ -1,16 +1,20 @@
 "use client";
 
-import { Badge, Button, Card, CardContent, OfflineBadge } from "@/components/ui";
+import { Badge, Button, Card, CardContent, Modal, OfflineBadge, Select } from "@/components/ui";
 import { CropManager } from "@/components/farm/crop-manager";
 import { cachePlan, getCachedPlan } from "@/lib/offline-storage";
-import { GrowthStage } from "@/lib/plants";
+import { getPlantByName, GrowthStage } from "@/lib/plants";
 import {
     ArrowRight,
     Calculator,
+    CheckCircle2,
     Leaf,
     Map,
     MessageCircle,
+    Plus,
+    Recycle,
     RefreshCw,
+    Sparkles,
     Sprout,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -97,6 +101,18 @@ export default function DashboardPage() {
     
     // UI state
     const [showMap, setShowMap] = useState(true);
+    const [showRegeneratePlanModal, setShowRegeneratePlanModal] = useState(false);
+    const [showSuggestedCropsModal, setShowSuggestedCropsModal] = useState(false);
+    const [regeneratingPlan, setRegeneratingPlan] = useState(false);
+    const [addingAllCrops, setAddingAllCrops] = useState(false);
+    const [planFormData, setPlanFormData] = useState({
+        waterAvailability: "medium",
+        soilCondition: "normal",
+        spaceType: "containers",
+        sunlight: "medium",
+        primaryGoal: "nutrition",
+        experienceLevel: "beginner",
+    });
 
     const showDemo = searchParams.get("demo") === "true";
 
@@ -152,6 +168,71 @@ export default function DashboardPage() {
         });
     }, [fetchLatestPlan, fetchFarmProfile, fetchAllFarms]);
 
+    // Show suggested crops modal when user has a plan but no crops yet
+    useEffect(() => {
+        if (!loading && latestPlan && farmProfile && (!farmProfile.crops || farmProfile.crops.length === 0)) {
+            // Small delay for better UX
+            const timer = setTimeout(() => {
+                setShowSuggestedCropsModal(true);
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [loading, latestPlan, farmProfile]);
+
+    const addAllSuggestedCrops = async () => {
+        if (!latestPlan) return;
+        
+        setAddingAllCrops(true);
+        try {
+            const currentCrops = farmProfile?.crops || [];
+            
+            // Add all recommended crops with proper plant ID lookup
+            const newCrops = latestPlan.recommendedCrops.map((crop) => {
+                const plant = getPlantByName(crop.cropName);
+                return {
+                    plantId: plant?.id || crop.cropName.toLowerCase().replace(/\s+/g, "-"),
+                    plantName: plant?.name || crop.cropName,
+                    count: 1,
+                    stage: "seedling" as const,
+                };
+            });
+            
+            // Merge with existing crops
+            const updatedCrops = [...currentCrops];
+            for (const newCrop of newCrops) {
+                const existingIndex = updatedCrops.findIndex(
+                    (c) => c.plantId === newCrop.plantId
+                );
+                if (existingIndex >= 0) {
+                    updatedCrops[existingIndex] = {
+                        ...updatedCrops[existingIndex],
+                        count: updatedCrops[existingIndex].count + 1,
+                    };
+                } else {
+                    updatedCrops.push(newCrop);
+                }
+            }
+            
+            // Save to farm
+            const res = await fetch("/api/farm", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ crops: updatedCrops }),
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                setFarmProfile(data.profile);
+                setWaterCalculation(data.waterCalculation);
+                setShowSuggestedCropsModal(false);
+            }
+        } catch (error) {
+            console.error("Failed to add crops:", error);
+        } finally {
+            setAddingAllCrops(false);
+        }
+    };
+
     const loadDemoData = async () => {
         setDemoLoading(true);
         try {
@@ -193,18 +274,18 @@ export default function DashboardPage() {
 
     const features = [
         {
-            title: t("dashboard.features.plan.title"),
-            description: t("dashboard.features.plan.description"),
-            href: "/dashboard/plan/new",
-            icon: Sprout,
-            color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-        },
-        {
             title: t("dashboard.features.exchange.title"),
             description: t("dashboard.features.exchange.description"),
             href: "/dashboard/exchange",
             icon: RefreshCw,
             color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+        },
+        {
+            title: t("dashboard.features.compost.title", "Waste to Fertilizer"),
+            description: t("dashboard.features.compost.description", "Turn agricultural waste into organic compost"),
+            href: "/dashboard/compost",
+            icon: Recycle,
+            color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
         },
         {
             title: t("dashboard.features.assistant.title"),
@@ -214,6 +295,92 @@ export default function DashboardPage() {
             color: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
         },
     ];
+
+    const waterOptions = [
+        { value: "none", label: t("plan.form.water.options.none") },
+        { value: "low", label: t("plan.form.water.options.low") },
+        { value: "medium", label: t("plan.form.water.options.medium") },
+        { value: "high", label: t("plan.form.water.options.high") },
+    ];
+
+    const soilOptions = [
+        { value: "normal", label: t("plan.form.soil.options.normal") },
+        { value: "salty", label: t("plan.form.soil.options.salty") },
+        { value: "unknown", label: t("plan.form.soil.options.unknown") },
+    ];
+
+    const spaceOptions = [
+        { value: "rooftop", label: t("plan.form.space.options.rooftop") },
+        { value: "balcony", label: t("plan.form.space.options.balcony") },
+        { value: "containers", label: t("plan.form.space.options.containers") },
+        { value: "backyard", label: t("plan.form.space.options.backyard") },
+        { value: "microplot", label: t("plan.form.space.options.microplot") },
+    ];
+
+    const sunlightOptions = [
+        { value: "low", label: t("plan.form.sunlight.options.low") },
+        { value: "medium", label: t("plan.form.sunlight.options.medium") },
+        { value: "high", label: t("plan.form.sunlight.options.high") },
+    ];
+
+    const goalOptions = [
+        { value: "calories", label: t("plan.form.goal.options.calories") },
+        { value: "nutrition", label: t("plan.form.goal.options.nutrition") },
+        { value: "fast", label: t("plan.form.goal.options.fast") },
+    ];
+
+    const experienceOptions = [
+        { value: "beginner", label: t("plan.form.experience.options.beginner") },
+        { value: "intermediate", label: t("plan.form.experience.options.intermediate") },
+        { value: "advanced", label: t("plan.form.experience.options.advanced") },
+    ];
+
+    const handleRegeneratePlan = async () => {
+        setRegeneratingPlan(true);
+        try {
+            // First update farm profile with new conditions
+            await fetch("/api/farm", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(planFormData),
+            });
+
+            // Then generate new plan
+            const res = await fetch("/api/plans", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(planFormData),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.plan) {
+                    setLatestPlan(data.plan);
+                    cachePlan(data.plan);
+                }
+                setShowRegeneratePlanModal(false);
+            }
+        } catch (error) {
+            console.error("Failed to regenerate plan:", error);
+        } finally {
+            setRegeneratingPlan(false);
+        }
+    };
+
+    const openRegeneratePlanModal = () => {
+        // Pre-fill with current farm profile values if available
+        if (farmProfile) {
+            setPlanFormData({
+                waterAvailability: (farmProfile as unknown as { waterAvailability?: string }).waterAvailability || "medium",
+                soilCondition: (farmProfile as unknown as { soilCondition?: string }).soilCondition || "normal",
+                spaceType: farmProfile.spaceType || "containers",
+                sunlight: (farmProfile as unknown as { sunlight?: string }).sunlight || "medium",
+                primaryGoal: (farmProfile as unknown as { primaryGoal?: string }).primaryGoal || "nutrition",
+                experienceLevel: (farmProfile as unknown as { experienceLevel?: string }).experienceLevel || "beginner",
+            });
+        }
+        setShowRegeneratePlanModal(true);
+    };
 
     if (loading) {
         return (
@@ -344,19 +511,31 @@ export default function DashboardPage() {
                                                 {new Date(latestPlan.createdAt).toLocaleDateString()}
                                             </span>
                                         </div>
+                                        <button
+                                            onClick={openRegeneratePlanModal}
+                                            className="mt-3 text-xs text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200 underline underline-offset-2 transition-colors"
+                                        >
+                                            Generate a new farming plan
+                                        </button>
                                     </div>
-                                    <Link href={`/dashboard/plan/${latestPlan.id}`}>
-                                        <Button size="sm" variant="outline">
-                                            {t("dashboard.latestPlan.view")}
+                                    <div className="flex gap-2">
+                                        <Button size="sm" variant="outline" onClick={() => setShowSuggestedCropsModal(true)}>
+                                            <Plus className="mr-1 h-3 w-3" />
+                                            Add Crops
                                         </Button>
-                                    </Link>
+                                        <Link href={`/dashboard/plan/${latestPlan.id}`}>
+                                            <Button size="sm" variant="outline">
+                                                {t("dashboard.latestPlan.view")}
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
                     )}
 
-                    {/* Getting Started - Only if no crops */}
-                    {!latestPlan && (!farmProfile?.crops || farmProfile.crops.length === 0) && (
+                    {/* Getting Started - Only if no plan */}
+                    {!latestPlan && (
                         <Card className="border-dashed">
                             <CardContent className="py-8 text-center">
                                 <Sprout className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -367,12 +546,10 @@ export default function DashboardPage() {
                                     {t("dashboard.getStarted.description")}
                                 </p>
                                 <div className="mt-6">
-                                    <Link href="/dashboard/plan/new">
-                                        <Button size="lg">
-                                            <Sprout className="mr-2 h-5 w-5" />
-                                            {t("dashboard.getStarted.cta")}
-                                        </Button>
-                                    </Link>
+                                    <Button size="lg" onClick={openRegeneratePlanModal}>
+                                        <Sprout className="mr-2 h-5 w-5" />
+                                        {t("dashboard.getStarted.cta")}
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
@@ -381,6 +558,159 @@ export default function DashboardPage() {
             </div>
 
             <OfflineBadge />
+
+            {/* Regenerate Plan Modal */}
+            <Modal
+                isOpen={showRegeneratePlanModal}
+                onClose={() => setShowRegeneratePlanModal(false)}
+                title="Update Farming Conditions"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        Update your farming conditions to get new personalized crop recommendations.
+                    </p>
+
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.water.label")}</label>
+                            <Select
+                                value={planFormData.waterAvailability}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, waterAvailability: e.target.value }))}
+                                options={waterOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.soil.label")}</label>
+                            <Select
+                                value={planFormData.soilCondition}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, soilCondition: e.target.value }))}
+                                options={soilOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.space.label")}</label>
+                            <Select
+                                value={planFormData.spaceType}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, spaceType: e.target.value }))}
+                                options={spaceOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.sunlight.label")}</label>
+                            <Select
+                                value={planFormData.sunlight}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, sunlight: e.target.value }))}
+                                options={sunlightOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.goal.label")}</label>
+                            <Select
+                                value={planFormData.primaryGoal}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, primaryGoal: e.target.value }))}
+                                options={goalOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium">{t("plan.form.experience.label")}</label>
+                            <Select
+                                value={planFormData.experienceLevel}
+                                onChange={(e) => setPlanFormData(prev => ({ ...prev, experienceLevel: e.target.value }))}
+                                options={experienceOptions}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowRegeneratePlanModal(false)}
+                            disabled={regeneratingPlan}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleRegeneratePlan}
+                            loading={regeneratingPlan}
+                        >
+                            <Sprout className="mr-2 h-4 w-4" />
+                            Generate New Plan
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Suggested Crops Modal */}
+            <Modal
+                isOpen={showSuggestedCropsModal}
+                onClose={() => setShowSuggestedCropsModal(false)}
+                title="Suggested Crops for You"
+            >
+                <div className="space-y-4">
+                    <div className="flex items-start gap-3 rounded-lg bg-green-50 p-4 dark:bg-green-950">
+                        <Sparkles className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
+                        <div>
+                            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                                We&apos;ve selected the best crops for you!
+                            </p>
+                            <p className="mt-1 text-sm text-green-700 dark:text-green-300">
+                                Based on your location, conditions, and goals, here are our top recommendations.
+                            </p>
+                        </div>
+                    </div>
+
+                    {latestPlan && (
+                        <div className="space-y-3">
+                            {latestPlan.recommendedCrops.map((crop, index) => (
+                                <div
+                                    key={crop.cropName}
+                                    className="flex items-center gap-3 rounded-lg border p-3"
+                                >
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-700 dark:bg-green-900 dark:text-green-300">
+                                        {index + 1}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-medium">{crop.cropName}</p>
+                                        <Badge 
+                                            variant={crop.difficulty === "easy" ? "success" : crop.difficulty === "medium" ? "warning" : "danger"}
+                                            className="mt-1"
+                                        >
+                                            {crop.difficulty}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            ))}
+
+                            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
+                                <p className="text-sm text-blue-700 dark:text-blue-300">
+                                    💧 Estimated daily water: <strong>{latestPlan.estimatedDailyWaterLiters}L</strong>
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex justify-end gap-3 pt-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowSuggestedCropsModal(false)}
+                        >
+                            Maybe Later
+                        </Button>
+                        <Button
+                            onClick={addAllSuggestedCrops}
+                            loading={addingAllCrops}
+                        >
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Add All to My Farm
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

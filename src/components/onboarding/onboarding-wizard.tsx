@@ -164,6 +164,24 @@ export function OnboardingWizard() {
             });
 
             if (response.ok) {
+                // Generate the initial plan immediately so the dashboard isn't empty.
+                const planResponse = await fetch("/api/plans", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        waterAvailability: data.waterAvailability,
+                        soilCondition: data.soilCondition,
+                        spaceType: data.spaceType,
+                        sunlight: data.sunlight,
+                        primaryGoal: data.primaryGoal,
+                        experienceLevel: data.experienceLevel,
+                    }),
+                });
+
+                if (!planResponse.ok) {
+                    console.error("Failed to generate initial plan");
+                }
+
                 router.push("/dashboard");
             } else {
                 console.error("Failed to save profile");

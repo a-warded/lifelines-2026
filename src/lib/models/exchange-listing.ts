@@ -1,9 +1,10 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
-export type ListingType = "seeds" | "produce" | "tools" | "other";
+export type ListingType = "seeds" | "produce" | "tools" | "fertilizer" | "other";
 export type ListingMode = "offering" | "seeking";
 export type DealType = "price" | "trade" | "donation";
 export type ListingStatus = "available" | "claimed" | "completed" | "cancelled";
+export type DeliveryMethod = "pickup" | "walking" | "bicycle" | "car" | "truck" | "boat" | "drone" | "helicopter" | "airdrop";
 
 export interface IExchangeListing extends Document {
     userId: string;
@@ -25,6 +26,9 @@ export interface IExchangeListing extends Document {
     currencyCountry?: string; // ISO country code for currency display
     tradeItems?: string[]; // Items wanted in exchange for dealType === "trade"
     
+    // Delivery method
+    deliveryMethod?: DeliveryMethod;
+    
     // Location
     latitude?: number;
     longitude?: number;
@@ -45,7 +49,7 @@ const ExchangeListingSchema = new Schema<IExchangeListing>(
         
         type: {
             type: String,
-            enum: ["seeds", "produce", "tools", "other"],
+            enum: ["seeds", "produce", "tools", "fertilizer", "other"],
             required: true,
         },
         plantId: { type: String },
@@ -67,6 +71,12 @@ const ExchangeListingSchema = new Schema<IExchangeListing>(
         price: { type: Number, min: 0 },
         currencyCountry: { type: String },
         tradeItems: [{ type: String }],
+        
+        deliveryMethod: {
+            type: String,
+            enum: ["pickup", "walking", "bicycle", "car", "truck", "boat", "drone", "helicopter", "airdrop"],
+            default: "pickup",
+        },
         
         latitude: { type: Number },
         longitude: { type: Number },

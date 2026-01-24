@@ -2,6 +2,7 @@
 
 import { Badge, Button, Card, CardContent, OfflineBadge } from "@/components/ui";
 import { cachePlan, getCachedPlan } from "@/lib/offline-storage";
+import { getPlantByName } from "@/lib/plants";
 import {
     AlertTriangle,
     ArrowLeft,
@@ -11,6 +12,7 @@ import {
     Droplets,
     Leaf,
     Loader2,
+    Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -55,6 +57,8 @@ export default function PlanViewPage() {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [isOffline, setIsOffline] = useState(false);
+    const [addingCrops, setAddingCrops] = useState(false);
+    const [addedCrops, setAddedCrops] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         const fetchPlan = async () => {
@@ -87,6 +91,119 @@ export default function PlanViewPage() {
 
         fetchPlan();
     }, [params.id]);
+
+    const addCropToFarm = async (cropName: string) => {
+        if (addedCrops.has(cropName)) return;
+        
+        setAddingCrops(true);
+        try {
+            // First get current crops
+            const farmRes = await fetch("/api/farm");
+            if (!farmRes.ok) throw new Error("Failed to fetch farm");
+            const farmData = await farmRes.json();
+            const currentCrops = farmData.profile?.crops || [];
+            
+            // Look up the plant by name to get proper ID
+            const plant = getPlantByName(cropName);
+            const plantId = plant?.id || cropName.toLowerCase().replace(/\s+/g, "-");
+            const plantName = plant?.name || cropName;
+            
+            // Add new crop
+            const newCrop = {
+                plantId,
+                plantName,
+                count: 1,
+                stage: "seedling",
+            };
+            
+            // Check if crop already exists
+            const existingIndex = currentCrops.findIndex(
+                (c: { plantId: string }) => c.plantId === newCrop.plantId
+            );
+            
+            let updatedCrops;
+            if (existingIndex >= 0) {
+                // Increment count
+                updatedCrops = [...currentCrops];
+                updatedCrops[existingIndex] = {
+                    ...updatedCrops[existingIndex],
+                    count: updatedCrops[existingIndex].count + 1,
+                };
+            } else {
+                updatedCrops = [...currentCrops, newCrop];
+            }
+            
+            // Save to farm
+            const res = await fetch("/api/farm", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ crops: updatedCrops }),
+            });
+            
+            if (res.ok) {
+                setAddedCrops((prev) => new Set([...prev, cropName]));
+            }
+        } catch (error) {
+            console.error("Failed to add crop:", error);
+        } finally {
+            setAddingCrops(false);
+        }
+    };
+
+    const addAllCropsToFarm = async () => {
+        if (!plan) return;
+        
+        setAddingCrops(true);
+        try {
+            // First get current crops
+            const farmRes = await fetch("/api/farm");
+            if (!farmRes.ok) throw new Error("Failed to fetch farm");
+            const farmData = await farmRes.json();
+            const currentCrops = farmData.profile?.crops || [];
+            
+            // Add all recommended crops with proper plant ID lookup
+            const newCrops = plan.recommendedCrops.map((crop) => {
+                const plant = getPlantByName(crop.cropName);
+                return {
+                    plantId: plant?.id || crop.cropName.toLowerCase().replace(/\s+/g, "-"),
+                    plantName: plant?.name || crop.cropName,
+                    count: 1,
+                    stage: "seedling" as const,
+                };
+            });
+            
+            // Merge with existing crops
+            const updatedCrops = [...currentCrops];
+            for (const newCrop of newCrops) {
+                const existingIndex = updatedCrops.findIndex(
+                    (c: { plantId: string }) => c.plantId === newCrop.plantId
+                );
+                if (existingIndex >= 0) {
+                    updatedCrops[existingIndex] = {
+                        ...updatedCrops[existingIndex],
+                        count: updatedCrops[existingIndex].count + 1,
+                    };
+                } else {
+                    updatedCrops.push(newCrop);
+                }
+            }
+            
+            // Save to farm
+            const res = await fetch("/api/farm", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ crops: updatedCrops }),
+            });
+            
+            if (res.ok) {
+                setAddedCrops(new Set(plan.recommendedCrops.map((c) => c.cropName)));
+            }
+        } catch (error) {
+            console.error("Failed to add crops:", error);
+        } finally {
+            setAddingCrops(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -168,10 +285,31 @@ export default function PlanViewPage() {
             {/* Recommended Crops */}
             <Card>
                 <CardContent>
-                    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                        <Leaf className="h-5 w-5 text-green-600" />
-                        {t("plan.view.recommendedCrops.title")}
-                    </h2>
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="flex items-center gap-2 text-lg font-semibold">
+                            <Leaf className="h-5 w-5 text-green-600" />
+                            {t("plan.view.recommendedCrops.title")}
+                        </h2>
+                        {!isOffline && plan.recommendedCrops.length > 0 && (
+                            <Button
+                                size="sm"
+                                onClick={addAllCropsToFarm}
+                                disabled={addingCrops || addedCrops.size === plan.recommendedCrops.length}
+                            >
+                                {addedCrops.size === plan.recommendedCrops.length ? (
+                                    <>
+                                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                                        Added All
+                                    </>
+                                ) : (
+                                    <>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add All to Farm
+                                    </>
+                                )}
+                            </Button>
+                        )}
+                    </div>
                     <div className="space-y-4">
                         {plan.recommendedCrops.map((crop, index) => (
                             <div
@@ -196,6 +334,21 @@ export default function PlanViewPage() {
                                         {crop.reason}
                                     </p>
                                 </div>
+                                {!isOffline && (
+                                    <Button
+                                        size="sm"
+                                        variant={addedCrops.has(crop.cropName) ? "secondary" : "outline"}
+                                        onClick={() => addCropToFarm(crop.cropName)}
+                                        disabled={addingCrops || addedCrops.has(crop.cropName)}
+                                        className="shrink-0"
+                                    >
+                                        {addedCrops.has(crop.cropName) ? (
+                                            <CheckCircle2 className="h-4 w-4" />
+                                        ) : (
+                                            <Plus className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                )}
                             </div>
                         ))}
                     </div>

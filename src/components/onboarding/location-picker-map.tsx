@@ -34,11 +34,22 @@ export function LocationPickerMap({
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const markerRef = useRef<L.Marker | null>(null);
+    const isMountedRef = useRef(true);
     const [searching, setSearching] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
-        if (!mapRef.current || mapInstanceRef.current) return;
+        isMountedRef.current = true;
+        
+        if (!mapRef.current) return;
+        
+        // Check if container already has a map (prevents double initialization)
+        if (mapInstanceRef.current) return;
+        
+        const container = mapRef.current;
+        if ((container as unknown as { _leaflet_id?: number })._leaflet_id) {
+            return;
+        }
 
         // Initialize map centered on user location or default
         const initialLat = latitude || 20;
@@ -86,8 +97,23 @@ export function LocationPickerMap({
         mapInstanceRef.current = map;
 
         return () => {
-            map.remove();
-            mapInstanceRef.current = null;
+            isMountedRef.current = false;
+            if (markerRef.current) {
+                try {
+                    markerRef.current.remove();
+                } catch {
+                    // Ignore errors during cleanup
+                }
+                markerRef.current = null;
+            }
+            if (mapInstanceRef.current) {
+                try {
+                    mapInstanceRef.current.remove();
+                } catch {
+                    // Ignore errors during cleanup
+                }
+                mapInstanceRef.current = null;
+            }
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

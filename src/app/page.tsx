@@ -1,6 +1,6 @@
 "use client";
 
-import { Droplets, Leaf, MessageCircle, RefreshCw, Sprout } from "lucide-react";
+import { Droplets, Leaf, MessageCircle, RefreshCw, Shield, Sprout, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
@@ -16,7 +16,7 @@ export default function Home() {
       description: t("landing.features.plan.description"),
     },
     {
-      icon: RefreshCw,
+      icon: Users,
       title: t("landing.features.exchange.title"),
       description: t("landing.features.exchange.description"),
     },
@@ -26,7 +26,7 @@ export default function Home() {
       description: t("landing.features.water.description"),
     },
     {
-      icon: MessageCircle,
+      icon: Shield,
       title: t("landing.features.assistant.title"),
       description: t("landing.features.assistant.description"),
     },
@@ -98,6 +98,39 @@ export default function Home() {
               </div>
             );
           })}
+        </div>
+
+        {/* Sustainability Stats */}
+        <div className="mt-12 w-full max-w-4xl">
+          <h2 className="mb-6 text-center text-xl font-semibold text-foreground">
+            {t("landing.sustainability.title")}
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-center dark:border-green-800 dark:bg-green-950">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+                <Droplets className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                {t("landing.sustainability.water")}
+              </p>
+            </div>
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-center dark:border-blue-800 dark:bg-blue-950">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                <Leaf className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                {t("landing.sustainability.local")}
+              </p>
+            </div>
+            <div className="rounded-xl border border-purple-200 bg-purple-50 p-4 text-center dark:border-purple-800 dark:bg-purple-950">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
+                <RefreshCw className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <p className="text-sm font-medium text-purple-800 dark:text-purple-200">
+                {t("landing.sustainability.waste")}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Low-resource note */}

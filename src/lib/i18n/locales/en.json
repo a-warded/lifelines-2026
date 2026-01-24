@@ -41,6 +41,8 @@
         "plan": "Farming Plan",
         "newPlan": "Get Farming Plan",
         "exchange": "Exchange",
+        "compost": "Composting",
+        "map": "Community Map",
         "water": "Water Calculator",
         "assistant": "AI Assistant",
         "profile": "Profile",
@@ -51,39 +53,45 @@
     },
     "landing": {
         "hero": {
-            "title": "Community Farming",
-            "subtitle": "Grow food together. Build resilience. Share with your community.",
-            "description": "A platform for micro-farmers on rooftops, balconies, and small plots to coordinate and thrive."
+            "title": "Food Security for All",
+            "subtitle": "Preventing food insecurity through sustainable community farming and efficient resource matching. A circular economy approach for resilient agriculture in moments of crisis.",
+            "description": "Connect farmers, NGOs, and communities to grow food sustainably on rooftops, balconies, and small plots."
         },
         "features": {
             "title": "Features",
             "plan": {
-                "title": "Personalized Plans",
-                "description": "Get farming recommendations based on your water, space, and sunlight"
+                "title": "Sustainable Planning",
+                "description": "AI-powered crop plans that maximize yield with minimal water and resources"
             },
             "exchange": {
-                "title": "Community Exchange",
-                "description": "Share seeds, surplus produce, and tools with neighbors"
+                "title": "Stakeholder Matching",
+                "description": "Connect farmers, NGOs, and neighbors to share seeds, produce, and tools efficiently"
             },
             "water": {
-                "title": "Water Calculator",
-                "description": "Know exactly how much water your crops need"
+                "title": "Water Conservation",
+                "description": "Smart irrigation guidance to grow more with less water"
             },
             "assistant": {
-                "title": "AI Assistant",
-                "description": "Get instant help with voice or text questions"
+                "title": "Crisis Support",
+                "description": "24/7 AI assistance for farming challenges during emergencies"
             }
         },
+        "sustainability": {
+            "title": "Built for Sustainability",
+            "water": "Up to 70% water savings with smart irrigation",
+            "local": "100% local food production reduces carbon footprint",
+            "waste": "Zero waste through community exchange network"
+        },
         "lowResource": {
-            "title": "Designed for resilience",
-            "description": "Works offline, uses minimal data, and supports voice for low-literacy access."
+            "title": "Crisis-Ready Design",
+            "description": "Works offline during emergencies, uses minimal data, and supports voice for accessibility."
         },
         "cta": {
             "getStarted": "Get Started",
             "learnMore": "Learn More",
             "dashboard": "Go to Dashboard"
         },
-        "footer": "Built for community food resilience"
+        "footer": "Building food resilience for communities worldwide"
     },
     "auth": {
         "login": {
@@ -128,6 +136,10 @@
             "exchange": {
                 "title": "Exchange Seeds & Surplus",
                 "description": "Share and find resources in your community"
+            },
+            "compost": {
+                "title": "Waste to Fertilizer",
+                "description": "Turn agricultural waste into organic compost"
             },
             "water": {
                 "title": "Water Calculator",
@@ -279,6 +291,7 @@
         "types": {
             "seeds": "Seeds",
             "produce": "Produce",
+            "fertilizer": "🌱 Fertilizer/Compost",
             "tools": "Tools",
             "other": "Other"
         },
@@ -334,6 +347,19 @@
             "locationDetecting": "Detecting location...",
             "locationError": "Could not detect location",
             "locationSuccess": "Location detected",
+            "deliveryLabel": "Delivery Method",
+            "deliveryNote": "Select how you can deliver or receive this item during emergencies",
+            "deliveryMethods": {
+                "pickup": "Pick-up at location",
+                "walking": "Walking delivery",
+                "bicycle": "Bicycle delivery",
+                "car": "Car delivery",
+                "truck": "Truck delivery",
+                "boat": "Boat/Water transport",
+                "drone": "Drone delivery",
+                "helicopter": "Helicopter/Care package",
+                "airdrop": "Emergency airdrop"
+            },
             "submitButton": "Post Listing"
         },
         "claim": {
@@ -497,5 +523,66 @@
         "days": "days",
         "cm": "cm",
         "kg": "kg"
+    },
+    "compost": {
+        "badge": "Circular Economy",
+        "title": "Turn Waste into Gold",
+        "subtitle": "Transform your agricultural waste into nutrient-rich organic fertilizer. Save money, reduce waste, and grow healthier crops.",
+        "calculator": {
+            "title": "What waste do you have?",
+            "subtitle": "Add your excess agricultural waste and we'll calculate your fertilizer potential"
+        },
+        "wasteType": "Waste Type",
+        "selectWaste": "Select waste type...",
+        "amount": "Amount (kg)",
+        "addMore": "Add More Waste",
+        "results": {
+            "yourYield": "Your Fertilizer Yield",
+            "ofFertilizer": "of organic fertilizer",
+            "wasteInput": "waste input",
+            "conversion": "conversion",
+            "timeline": "Processing Time",
+            "timelineNote": "With proper turning and moisture",
+            "estimatedValue": "Estimated Value",
+            "valueNote": "If sold as organic compost",
+            "nutrientBalance": "Nutrient Balance",
+            "breakdown": "Breakdown by Material",
+            "tips": "Pro Tips",
+            "recommendedMethod": "Recommended Method",
+            "requirements": "What you'll need"
+        },
+        "listFertilizer": "List Fertilizer for Exchange",
+        "viewMap": "View Compost Sites Map",
+        "nearbySites": "Nearby Compost Sites",
+        "noNearbySites": "No composting sites nearby yet",
+        "addSite": "Add Your Site",
+        "viewAllSites": "View All on Map",
+        "quickTips": {
+            "title": "Did You Know?",
+            "tip1": "Composting reduces methane emissions from landfills by up to 50%",
+            "tip2": "Organic fertilizer can cost 2-3x more than homemade compost",
+            "tip3": "Compost improves soil water retention by up to 20%"
+        },
+        "exchange": {
+            "title": "Exchange Fertilizer",
+            "description": "Have extra compost? Share it with your community or trade for seeds and produce.",
+            "viewListings": "View Fertilizer Listings"
+        },
+        "addSiteModal": {
+            "title": "Add Composting Site",
+            "siteName": "Site Name",
+            "siteNamePlaceholder": "e.g., Community Garden Compost",
+            "siteType": "Site Type",
+            "description": "Description",
+            "descriptionPlaceholder": "What kind of waste do you accept? Any special instructions?",
+            "acceptsWaste": "Accept waste from others",
+            "sellsFertilizer": "Have fertilizer available",
+            "capacity": "Capacity (kg)",
+            "capacityPlaceholder": "e.g., 500",
+            "contact": "Contact Info",
+            "contactPlaceholder": "Phone or email (optional)",
+            "location": "Location",
+            "submit": "Add Site"
+        }
     }
 }
