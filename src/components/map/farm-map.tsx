@@ -2,7 +2,7 @@
 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 interface Farm {
     userId: string;
@@ -36,14 +36,27 @@ export function FarmMap({
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const markersRef = useRef<L.Marker[]>([]);
+    const isMountedRef = useRef(true);
+
+    // Memoize onFarmClick to prevent unnecessary re-renders
+    const onFarmClickRef = useRef(onFarmClick);
+    onFarmClickRef.current = onFarmClick;
 
     useEffect(() => {
+        isMountedRef.current = true;
+        
         if (!mapRef.current) return;
 
-        // Clean up existing map
+        // Check if container already has a map (prevents double initialization)
         if (mapInstanceRef.current) {
             mapInstanceRef.current.remove();
             mapInstanceRef.current = null;
+        }
+        
+        // Ensure the container is clean
+        const container = mapRef.current;
+        if ((container as unknown as { _leaflet_id?: number })._leaflet_id) {
+            return;
         }
 
         // Determine initial view
@@ -126,15 +139,15 @@ export function FarmMap({
                 .addTo(map)
                 .bindPopup(popupContent);
 
-            if (onFarmClick) {
-                marker.on("click", () => onFarmClick(farm));
+            if (onFarmClickRef.current) {
+                marker.on("click", () => onFarmClickRef.current?.(farm));
             }
 
             return marker;
         });
 
         // Fit bounds if multiple farms
-        if (farms.length > 1) {
+        if (farms.length > 1 && isMountedRef.current) {
             const bounds = L.latLngBounds(farms.map((f) => [f.latitude, f.longitude]));
             map.fitBounds(bounds, { padding: [50, 50] });
         }
@@ -142,11 +155,25 @@ export function FarmMap({
         mapInstanceRef.current = map;
 
         return () => {
-            map.remove();
-            mapInstanceRef.current = null;
+            isMountedRef.current = false;
+            markersRef.current.forEach(marker => {
+                try {
+                    marker.remove();
+                } catch {
+                    // Ignore errors during cleanup
+                }
+            });
             markersRef.current = [];
+            if (mapInstanceRef.current) {
+                try {
+                    mapInstanceRef.current.remove();
+                } catch {
+                    // Ignore errors during cleanup
+                }
+                mapInstanceRef.current = null;
+            }
         };
-    }, [farms, currentUserId, currentUserLocation, onFarmClick]);
+    }, [farms, currentUserId, currentUserLocation]);
 
     return (
         <div className="relative overflow-hidden rounded-xl border shadow-sm" style={{ isolation: "isolate" }}>
