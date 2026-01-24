@@ -45,19 +45,46 @@ export async function POST(request: NextRequest) {
 
         const profile = await FarmProfile.findOneAndUpdate(
             { userId: session.user.id },
-            profileData,
-            { upsert: true, new: true }
+            { $set: profileData },
+            { upsert: true, new: true, runValidators: true }
         );
 
         // Generate plan
         const planDraft = generatePlan(profile);
 
-        // Save plan
-        const plan = await Plan.create({
+        // Save plan (prefer updating an existing placeholder plan created at signup)
+        const placeholderPlan = await Plan.findOne({
             userId: session.user.id,
-            farmProfileId: profile._id.toString(),
-            ...planDraft,
-        });
+            $or: [
+                { farmProfileId: { $exists: false } },
+                { farmProfileId: null },
+                { farmProfileId: "" },
+            ],
+        }).sort({ createdAt: -1 });
+
+        const plan = placeholderPlan
+            ? await Plan.findByIdAndUpdate(
+                placeholderPlan._id,
+                {
+                    $set: {
+                        farmProfileId: profile._id.toString(),
+                        ...planDraft,
+                    },
+                },
+                { new: true, runValidators: true }
+            )
+            : await Plan.create({
+                userId: session.user.id,
+                farmProfileId: profile._id.toString(),
+                ...planDraft,
+            });
+
+        if (!plan) {
+            return NextResponse.json(
+                { error: "Failed to create plan" },
+                { status: 500 }
+            );
+        }
 
         return NextResponse.json({
             success: true,
@@ -109,8 +136,10 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ plan: null });
         }
 
-        // Get associated profile
-        const profile = await FarmProfile.findById(plan.farmProfileId);
+        // Get associated profile (optional for placeholder plans)
+        const profile = plan.farmProfileId
+            ? await FarmProfile.findById(plan.farmProfileId)
+            : null;
 
         return NextResponse.json({
             plan: {

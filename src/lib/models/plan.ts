@@ -14,7 +14,7 @@ export interface ITimelineBlock {
 
 export interface IPlan extends Document {
   userId: string;
-  farmProfileId: string;
+  farmProfileId?: string;
   recommendedCrops: IRecommendedCrop[];
   timeline: ITimelineBlock[];
   setupChecklist: string[];
@@ -53,11 +53,12 @@ const TimelineBlockSchema = new Schema<ITimelineBlock>(
 const PlanSchema = new Schema<IPlan>(
     {
         userId: { type: String, required: true, index: true },
-        farmProfileId: { type: String, required: true },
-        recommendedCrops: [RecommendedCropSchema],
-        timeline: [TimelineBlockSchema],
-        setupChecklist: [{ type: String }],
-        estimatedDailyWaterLiters: { type: Number, required: true },
+        // Optional: allows a placeholder plan to exist before onboarding creates a farm profile.
+        farmProfileId: { type: String, required: false },
+        recommendedCrops: { type: [RecommendedCropSchema], default: [] },
+        timeline: { type: [TimelineBlockSchema], default: [] },
+        setupChecklist: { type: [{ type: String }], default: [] },
+        estimatedDailyWaterLiters: { type: Number, default: 0 },
         fallbackNotes: { type: String, default: "" },
     },
     { timestamps: true }
