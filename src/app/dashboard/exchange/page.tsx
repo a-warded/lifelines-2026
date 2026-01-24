@@ -73,6 +73,7 @@ export default function ExchangePage() {
     const [filterStatus, setFilterStatus] = useState<string>("");
     const [filterMode, setFilterMode] = useState<string>("");
     const [searchQuery, setSearchQuery] = useState<string>("");
+    const [showMobileFilters, setShowMobileFilters] = useState(false);
 
     // Saved/bookmarked listings
     const [savedListings, setSavedListings] = useState<Set<string>>(new Set());
@@ -485,9 +486,25 @@ export default function ExchangePage() {
     }, [listings, searchQuery]);
 
     return (
-        <div className="flex gap-6 min-h-[calc(100vh-8rem)]">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 min-h-[calc(100vh-8rem)]">
+            {/* Mobile Filter Toggle Button */}
+            <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="lg:hidden flex items-center justify-between w-full px-4 py-3 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)]"
+            >
+                <span className="text-sm font-medium text-[var(--color-text-primary)]">Filters</span>
+                <div className="flex items-center gap-2">
+                    {(filterType || filterStatus || filterMode) && (
+                        <span className="text-xs text-[var(--color-primary)]">Active</span>
+                    )}
+                    <svg className={`w-4 h-4 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </button>
+
             {/* Left Sidebar - Filters */}
-            <div className="w-72 flex-shrink-0">
+            <div className={`${showMobileFilters ? 'block' : 'hidden'} lg:block w-full lg:w-72 flex-shrink-0`}>
                 <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-5 sticky top-4">
                     <div className="flex items-center justify-between mb-4">
                         <div>

@@ -149,11 +149,11 @@ export function FarmMap({
     }, [farms, currentUserId, currentUserLocation, onFarmClick]);
 
     return (
-        <div className="relative overflow-hidden rounded-xl border shadow-sm">
-            <div ref={mapRef} style={{ height, width: "100%" }} />
+        <div className="relative overflow-hidden rounded-xl border shadow-sm" style={{ isolation: "isolate" }}>
+            <div ref={mapRef} style={{ height, width: "100%" }} className="z-0" />
             
             {/* Legend */}
-            <div className="absolute bottom-4 left-4 z-[1000] rounded-lg bg-white/95 p-3 shadow-lg backdrop-blur dark:bg-zinc-800/95">
+            <div className="absolute bottom-4 left-4 z-10 rounded-lg bg-white/95 p-3 shadow-lg backdrop-blur dark:bg-zinc-800/95">
                 <div className="mb-2 text-xs font-semibold text-muted-foreground">Legend</div>
                 <div className="flex items-center gap-2 text-sm">
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-[10px]">
@@ -170,7 +170,7 @@ export function FarmMap({
             </div>
 
             {/* Farm count */}
-            <div className="absolute right-4 top-4 z-[1000] rounded-lg bg-white/95 px-3 py-2 shadow-lg backdrop-blur dark:bg-zinc-800/95">
+            <div className="absolute right-4 top-4 z-10 rounded-lg bg-white/95 px-3 py-2 shadow-lg backdrop-blur dark:bg-zinc-800/95">
                 <span className="text-sm font-medium">{farms.length} farms</span>
             </div>
         </div>
