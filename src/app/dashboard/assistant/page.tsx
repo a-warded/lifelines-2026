@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Head from "next/head";
 import { MicIcon, PhoneOff } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import CallAvatar from '@/components/ui/call-avatar';
 import {
@@ -24,7 +23,7 @@ declare global {
     }
 }
 
-export default function RealtimePage() {
+export default function AilaRealtimeAssistant() {
     const [isRecording, setIsRecording] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
     const [isConnected, setIsConnected] = useState(false);
@@ -42,18 +41,32 @@ export default function RealtimePage() {
     const outputAnalyserRef = useRef<AnalyserNode | null>(null);
     const animationRef = useRef<number | null>(null);
 
+    // add ref to hold latest mute state for synchronous reads in audio callback
+    const isMutedRef = useRef(isMuted);
+
     function toggleMute() {
         if (!isRecording) {
             setIsMuted(false);
             startRecordingInternal();
         } else {
-            setIsMuted(!isMuted);
+            // flip mute state and, if we're unmuting, resume the audio context so processing runs
+            const newMuted = !isMuted;
+            setIsMuted(newMuted);
+            if (!newMuted) {
+                try {
+                    audioContextRef.current?.resume?.();
+                } catch { /* ignore */ }
+            }
         }
     }
 
-    if (typeof window !== "undefined") {
-        window._isMuted = isMuted;
-    }
+    // ensure we only touch window after mount / on updates (avoid run-time during render)
+    useEffect(() => {
+        isMutedRef.current = isMuted; // keep ref in sync
+        if (typeof window !== "undefined") {
+            window._isMuted = isMuted;
+        }
+    }, [isMuted]);
 
     async function startRecordingInternal() {
         setIsRecording(true);
@@ -62,6 +75,10 @@ export default function RealtimePage() {
             const AudioContextClass = window.AudioContext || window.webkitAudioContext;
             audioContextRef.current = new AudioContextClass!({ sampleRate: 24000 });
             audioQueueTimeRef.current = audioContextRef.current.currentTime;
+            // ensure context is running (some browsers leave it suspended until a user gesture)
+            try {
+                await audioContextRef.current.resume();
+            } catch (e) { /* ignore */ }
         }
 
         const ws = new WebSocket(`wss://api.studyable.app/v1/realtime?model=gpt-realtime`, [
@@ -81,7 +98,7 @@ export default function RealtimePage() {
                         prefix_padding_ms: 300,
                         silence_duration_ms: 500
                     },
-                    voice: "marin",
+                    voice: "ash",
                     instructions: getPrompt()
                 }
             };
@@ -112,6 +129,11 @@ export default function RealtimePage() {
             const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaStreamRef.current = mediaStream;
             const audioCtx = audioContextRef.current!;
+            // ensure context running before wiring nodes
+            try {
+                await audioCtx.resume();
+            } catch (e) { /* ignore */ }
+
             const source = audioCtx.createMediaStreamSource(mediaStream);
 
             // Create processor
@@ -139,7 +161,8 @@ export default function RealtimePage() {
                     audio: base64Audio
                 };
 
-                if (typeof window !== "undefined" && !window._isMuted && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+                // read synchronous mute state from ref to avoid race between state update and audio callback
+                if (!isMutedRef.current && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
                     websocketRef.current.send(JSON.stringify(audioCommand));
                 }
             };
@@ -182,28 +205,28 @@ export default function RealtimePage() {
 
     function handleWebSocketMessage(message: any) {
         switch (message.type) {
-            case 'response.audio.delta':
-                if (message.delta) {
-                    playAudio(message.delta);
-                }
-                break;
-            case 'response.done':
-                break;
-            case 'input_audio_buffer.speech_started':
-                stopAssistantAudioInternal();
-                break;
-            case 'error':
-                console.error('Error message from server:', JSON.stringify(message, null, 2));
-                break;
-            case 'conversation.item.created':
-                if (message.item) window.conversationID = message.item.id;
-                break;
-            case 'session.created':
-                window.isConnected = true;
-                setIsConnected(true);
-                break;
-            default:
-                console.log('Unhandled message type:', message.type);
+        case 'response.audio.delta':
+            if (message.delta) {
+                playAudio(message.delta);
+            }
+            break;
+        case 'response.done':
+            break;
+        case 'input_audio_buffer.speech_started':
+            stopAssistantAudioInternal();
+            break;
+        case 'error':
+            console.error('Error message from server:', JSON.stringify(message, null, 2));
+            break;
+        case 'conversation.item.created':
+            if (message.item) window.conversationID = message.item.id;
+            break;
+        case 'session.created':
+            window.isConnected = true;
+            setIsConnected(true);
+            break;
+        default:
+            console.log('Unhandled message type:', message.type);
         }
     }
 
@@ -338,54 +361,50 @@ export default function RealtimePage() {
     }, []);
 
     return (
-        <div className="fullScreen">
-            <Head>
-                <link rel="manifest" href="/realtime/manifest.json" crossOrigin="use-credentials" />
-            </Head>
-            <div
-                className="fullScreen fixed inset-0 z-10 w-full p-5 flex flex-col items-center justify-center bg-black/50"
-            >
-                <div className="flex justify-center items-center space-x-4 mt-auto">
-                    <CallAvatar
-                        active={isRecording}
-                        profilePictureURL={"https://media1.tenor.com/m/K0AXcsdiTWIAAAAd/roxymigurdia-bagthebullet-roxy-mushoku-tensei.gif"}
-                        voiceActivity={inputActivity}
-                    />
-                    <CallAvatar
-                        active={isConnected}
-                        profilePictureURL={"https://app.a-warded.org/assets/images/aila/static.webp"}
-                        voiceActivity={outputActivity}
-                    />
-                </div>
+        <div
+            className="absolute h-screen inset-0 z-10 w-full p-5 flex flex-col items-center justify-center"
+            style={{ backgroundImage: "url('/images/aila_bg.webp')", backgroundSize: "contain", backgroundPosition: "center" }}
+        >
+            <div className="flex justify-center items-center space-x-4 mt-auto">
+                <CallAvatar
+                    active={isRecording}
+                    profilePictureURL={"https://media1.tenor.com/m/K0AXcsdiTWIAAAAd/roxymigurdia-bagthebullet-roxy-mushoku-tensei.gif"}
+                    voiceActivity={inputActivity}
+                />
+                <CallAvatar
+                    active={isConnected}
+                    profilePictureURL={"https://media1.tenor.com/m/oLao76Sc_GEAAAAd/%D7%91%D7%99%D7%91%D7%99-%D7%91%D7%99%D7%91%D7%99-%D7%A0%D7%AA%D7%A0%D7%99%D7%94%D7%95.gif"}
+                    voiceActivity={outputActivity}
+                />
+            </div>
 
-                {/* Controls */}
-                <div className="w-full flex justify-around pb-7 items-center mt-auto">
+            {/* Controls */}
+            <div className="w-full flex justify-around pb-7 items-center mt-auto">
+                <button
+                    onClick={toggleMute}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-sm transition-colors ${isMuted ? 'bg-[#eee]' : 'bg-white'
+                    }`}
+                    aria-pressed={isMuted}
+                >
+                    <div className="relative w-6 h-6 bg-transparent">
+                        <MicIcon className={isMuted ? 'text-[#999]' : 'text-black'} />
+                        {isMuted && (
+                            <div
+                                className="absolute inset-0 mt-auto mb-auto h-[2px] bg-[#e74c3c]"
+                                style={{ transform: 'rotate(45deg)' }}
+                            />
+                        )}
+                    </div>
+                </button>
+
+                {(typeof window !== "undefined" && window.hangUpCall) && (
                     <button
-                        onClick={toggleMute}
-                        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-sm transition-colors ${isMuted ? 'bg-[#eee]' : 'bg-white'
-                            }`}
-                        aria-pressed={isMuted}
+                        onClick={() => { window.hangUpCall?.(); }}
+                        className="w-14 h-14 rounded-full bg-[#f25b5b] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
                     >
-                        <div className="relative w-6 h-6 bg-transparent">
-                            <MicIcon className={isMuted ? 'text-[#999]' : 'text-black'} />
-                            {isMuted && (
-                                <div
-                                    className="absolute inset-0 mt-auto mb-auto h-[2px] bg-[#e74c3c]"
-                                    style={{ transform: 'rotate(45deg)' }}
-                                />
-                            )}
-                        </div>
+                        <PhoneOff />
                     </button>
-
-                    {(typeof window !== "undefined" && window.hangUpCall) && (
-                        <button
-                            onClick={() => { window.hangUpCall?.(); }}
-                            className="w-14 h-14 rounded-full bg-[#f25b5b] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
-                        >
-                            <PhoneOff />
-                        </button>
-                    )}
-                </div>
+                )}
             </div>
         </div>
     );
