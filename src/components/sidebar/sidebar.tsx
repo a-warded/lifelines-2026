@@ -1,10 +1,10 @@
 "use client";
 
 import {
-    Droplets,
     Home,
     LayoutDashboard,
     LogOut,
+    Map,
     Menu,
     MessageCircle,
     RefreshCw,
@@ -20,20 +20,20 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export function Sidebar() {
-  const pathname = usePathname();
-  const { data: session } = useSession();
-  const [isOpen, setIsOpen] = useState(false);
-  const { t } = useTranslation();
+    const pathname = usePathname();
+    const { data: session } = useSession();
+    const [isOpen, setIsOpen] = useState(false);
+    const { t } = useTranslation();
 
-  const navItems = [
-    { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
-    { href: "/dashboard/plan/new", label: t("nav.plan"), icon: Sprout },
-    { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
-    { href: "/dashboard/water", label: t("nav.water"), icon: Droplets },
-    { href: "/dashboard/assistant", label: t("nav.assistant"), icon: MessageCircle },
-    { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
-    { href: "/dashboard/settings", label: t("nav.settings"), icon: Settings },
-  ];
+    const navItems = [
+        { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+        { href: "/dashboard/plan/new", label: t("nav.plan"), icon: Sprout },
+        { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
+        { href: "/dashboard/map", label: "Farm Map", icon: Map },
+        { href: "/dashboard/assistant", label: t("nav.assistant"), icon: MessageCircle },
+        { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
+        { href: "/dashboard/settings", label: t("nav.settings"), icon: Settings },
+    ];
 
   return (
     <>

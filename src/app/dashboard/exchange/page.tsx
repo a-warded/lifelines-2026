@@ -87,9 +87,9 @@ export default function ExchangePage() {
     const [claimTradeOffer, setClaimTradeOffer] = useState("");
     const [claiming, setClaiming] = useState(false);
 
-    // Get user's country on mount
+    // Get user's location from farm profile on mount
     useEffect(() => {
-        fetchUserCountry();
+        fetchUserProfile();
     }, []);
 
     // Fetch listings when location is available
@@ -99,12 +99,28 @@ export default function ExchangePage() {
         }
     }, [userCountry, filterType, filterStatus, filterMode]);
 
-    const fetchUserCountry = async () => {
+    const fetchUserProfile = async () => {
         try {
-            // First try to get from API (Cloudflare header)
+            // First try to get from farm profile (already has location)
+            const profileRes = await fetch("/api/farm");
+            if (profileRes.ok) {
+                const data = await profileRes.json();
+                if (data.profile && data.profile.latitude && data.profile.longitude) {
+                    setUserLocation({
+                        latitude: data.profile.latitude,
+                        longitude: data.profile.longitude,
+                        country: data.profile.country,
+                        locationLabel: data.profile.locationLabel,
+                    });
+                    setUserCountry(data.profile.country || "US");
+                    setLocationStatus("success");
+                    return;
+                }
+            }
+            // Fallback to IP-based country detection
             const response = await fetch("/api/geo");
-            const data = await response.json();
-            setUserCountry(data.country);
+            const geoData = await response.json();
+            setUserCountry(geoData.country);
         } catch {
             setUserCountry("US"); // Fallback
         }

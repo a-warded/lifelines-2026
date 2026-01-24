@@ -1,5 +1,6 @@
 "use client";
 
+import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -41,7 +42,19 @@ export default function RegisterPage() {
       if (!res.ok) {
         setError(data.error || "Something went wrong");
       } else {
-        router.push("/login?registered=true");
+        // Auto sign in after registration
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (result?.ok) {
+          router.push("/onboarding");
+        } else {
+          // Fallback to login if auto-signin fails
+          router.push("/login?registered=true");
+        }
       }
     } catch {
       setError("Something went wrong");
