@@ -339,6 +339,7 @@ export default function RealtimePage() {
     return (
         <div
             className="absolute h-screen inset-0 z-10 w-full p-5 flex flex-col items-center justify-center"
+            style={{ backgroundImage: "url('/images/aila_bg.webp')", backgroundSize: "contain", backgroundPosition: "center" }}
         >
             <div className="flex justify-center items-center space-x-4 mt-auto">
                 <CallAvatar
