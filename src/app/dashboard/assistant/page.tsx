@@ -30,6 +30,7 @@ export default function AilaRealtimeAssistant() {
     const [outputActivity, setOutputActivity] = useState(0);
     const [inputActivity, setInputActivity] = useState(0);
     const [isCameraOn, setIsCameraOn] = useState(false);
+    const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
 
     // Refs
     const websocketRef = useRef<WebSocket | null>(null);
@@ -47,9 +48,10 @@ export default function AilaRealtimeAssistant() {
 
     // Camera refs
     const videoRef = useRef<HTMLVideoElement | null>(null);
+    const previewVideoRef = useRef<HTMLVideoElement | null>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const cameraStreamRef = useRef<MediaStream | null>(null);
-    const cameraIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const cameraIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const isCameraOnRef = useRef(isCameraOn);
 
     function toggleMute() {
@@ -81,6 +83,39 @@ export default function AilaRealtimeAssistant() {
         isCameraOnRef.current = isCameraOn;
     }, [isCameraOn]);
 
+    // Wire up preview element to the current camera stream
+    useEffect(() => {
+        const el = previewVideoRef.current;
+        if (!el) return;
+
+        if (!cameraStream) {
+            el.srcObject = null;
+            return;
+        }
+
+        el.srcObject = cameraStream;
+
+        // Some browsers won't start playback unless we explicitly call play()
+        const tryPlay = async () => {
+            try {
+                await el.play();
+            } catch {
+                // ignore autoplay restrictions; user gesture may be required
+            }
+        };
+
+        // If metadata isn't loaded yet, wait for it
+        if (el.readyState >= 1) {
+            void tryPlay();
+        } else {
+            const onLoaded = () => {
+                void tryPlay();
+            };
+            el.addEventListener('loadedmetadata', onLoaded, { once: true });
+            return () => el.removeEventListener('loadedmetadata', onLoaded);
+        }
+    }, [cameraStream, isCameraOn]);
+
     async function toggleCamera() {
         if (isCameraOn) {
             stopCamera();
@@ -95,13 +130,16 @@ export default function AilaRealtimeAssistant() {
                 video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } 
             });
             cameraStreamRef.current = stream;
+            setCameraStream(stream);
+            setIsCameraOn(true);
             
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-                await videoRef.current.play();
+                // Best-effort play; don't block UI on this
+                videoRef.current.play().catch(() => {
+                    // ignore autoplay restrictions
+                });
             }
-            
-            setIsCameraOn(true);
             
             // Start sending frames every 2 seconds
             cameraIntervalRef.current = setInterval(() => {
@@ -124,6 +162,8 @@ export default function AilaRealtimeAssistant() {
             cameraStreamRef.current.getTracks().forEach(track => track.stop());
             cameraStreamRef.current = null;
         }
+
+        setCameraStream(null);
         
         if (videoRef.current) {
             videoRef.current.srcObject = null;
@@ -485,18 +525,14 @@ export default function AilaRealtimeAssistant() {
             <canvas ref={canvasRef} className="hidden" />
 
             {/* Camera preview (shown when camera is on) */}
-            {isCameraOn && cameraStreamRef.current && (
+            {isCameraOn && cameraStream && (
                 <div className="absolute top-4 right-4 w-32 h-24 rounded-lg overflow-hidden border-2 border-white shadow-lg">
                     <video
                         className="w-full h-full object-cover"
                         playsInline
                         muted
                         autoPlay
-                        ref={(el) => {
-                            if (el && cameraStreamRef.current) {
-                                el.srcObject = cameraStreamRef.current;
-                            }
-                        }}
+                        ref={previewVideoRef}
                     />
                 </div>
             )}
