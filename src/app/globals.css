@@ -62,9 +62,9 @@ body {
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: #98E2F4;
+  --primary: #80ED99;
   --primary-foreground: #0e182b;
-  --tertiary: #0E94ED;
+  --tertiary: #57CC99;
   --tertiary-foreground: #FFFFFF;
   --secondary: #1b3758;
   --secondary-foreground: rgb(255, 255, 255);
