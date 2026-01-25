@@ -291,7 +291,7 @@ export function OnboardingWizard() {
             />
             
 
-            <div className="z-10 mx-auto max-w-2xl min-w-2xl px-4 py-8 transition-all">
+            <div className="z-10 mx-auto lg:max-w-2xl lg:min-w-2xl max-w-screen min-w-screen px-4 py-8 transition-all">
                 {/* Progress Steps */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between">
