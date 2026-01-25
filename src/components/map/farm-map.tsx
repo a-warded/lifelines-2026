@@ -2,7 +2,7 @@
 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 interface Farm {
     userId: string;
@@ -108,7 +108,6 @@ export function FarmMap({
                     border-radius: 50% 50% 50% 0;
                     transform: rotate(-45deg);
                     border: ${isCurrentUser ? "3px" : "2px"} solid white;
-                    box-shadow: 0 2px ${isCurrentUser ? "12px" : "8px"} rgba(${shadowColor}, ${isCurrentUser ? "0.5" : "0.3"});
                     display: flex;
                     align-items: center;
                     justify-content: center;
