@@ -241,7 +241,7 @@ export function FarmMap({
     }, [currentUserLocation]);
 
     return (
-        <div className="relative overflow-hidden rounded-xl border shadow-sm" style={{ isolation: "isolate" }}>
+        <div className="relative overflow-hidden rounded-md border" style={{ isolation: "isolate" }}>
             <div ref={mapRef} style={{ height, width: "100%" }} className="z-0" />
             
             {/* Legend */}

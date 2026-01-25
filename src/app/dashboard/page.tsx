@@ -1,7 +1,7 @@
 "use client";
 
 import { CropManager } from "@/components/farm/crop-manager";
-import { Button, Card, CardContent, Modal, OfflineBadge } from "@/components/ui";
+import { Button, Modal, OfflineBadge } from "@/components/ui";
 import { BarChart3, Calculator, MapPin, Recycle, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
@@ -11,20 +11,19 @@ import { useTranslation } from "react-i18next";
 
 // Hooks
 import {
-  useCropManager,
-  useDashboardData,
-  useDemoData,
-  useRegeneratePlan,
-  useSuggestedCrops,
+    useCropManager,
+    useDashboardData,
+    useDemoData,
+    useRegeneratePlan,
+    useSuggestedCrops,
 } from "./hooks";
 
 // Components
 import {
-  GetStartedCard,
-  LatestPlanCard,
-  QuickActionsList,
-  RegeneratePlanModal,
-  SuggestedCropsModal,
+    GetStartedCard,
+    LatestPlanCard,
+    RegeneratePlanModal,
+    SuggestedCropsModal
 } from "./components";
 
 // Constants
@@ -36,7 +35,7 @@ const FarmMap = dynamic(
     {
         ssr: false,
         loading: () => (
-            <div className="flex h-[400px] items-center justify-center rounded-xl bg-muted">
+            <div className="flex h-[400px] items-center justify-center rounded-sm bg-muted">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
         ),
@@ -233,10 +232,10 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                   <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-                      {t("dashboard.welcome", { name: session?.user?.name || "" })}
+                      {t("dashboard.welcome", { name: farmProfile?.userName || "" })}
                   </h1>
                   <p className="mt-1 text-muted-foreground">
-                      {farmProfile?.farmName || t("dashboard.tagline")}
+                      {t("dashboard.tagline", { name: farmProfile?.farmName || "" })}
                   </p>
               </div>
               <div className="flex gap-2">
@@ -269,38 +268,36 @@ export default function DashboardPage() {
 
           {/* Farm Map */}
           {showMap && mapItems.length > 0 && (
-              <Card>
-                  <CardContent className="overflow-hidden rounded-xl p-0 relative">
+              <div className="overflow-hidden rounded-xl p-0 relative">
 
-                      {/* Stats Button */}
-                      <div className="absolute top-4 right-4 z-10">
-                          <button
-                              onClick={() => {
-                                  if (compostSitesHook.sites.length === 0) {
-                                      compostSitesHook.fetchSites();
-                                  }
-                                  setShowStatsModal(true);
-                              }}
-                              className="flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 transition-colors hover:bg-white dark:bg-zinc-800/95 dark:hover:bg-zinc-700"
-                          >
-                              <BarChart3 className="h-4 w-4 text-primary" />
-                              <span className="text-sm font-medium">Stats</span>
-                          </button>
-                      </div>
+                  {/* Stats Button */}
+                  <div className="absolute top-4 right-4 z-10">
+                      <button
+                          onClick={() => {
+                              if (compostSitesHook.sites.length === 0) {
+                                  compostSitesHook.fetchSites();
+                              }
+                              setShowStatsModal(true);
+                          }}
+                          className="flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 transition-colors hover:bg-white dark:bg-zinc-800/95 dark:hover:bg-zinc-700"
+                      >
+                          <BarChart3 className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">Stats</span>
+                      </button>
+                  </div>
 
-                      <FarmMap
-                          farms={mapItems}
-                          currentUserId={session?.user?.id}
-                          currentUserLocation={
-                              farmProfile
-                                  ? { lat: farmProfile.latitude, lng: farmProfile.longitude }
-                                  : undefined
-                          }
-                          height="400px"
-                          showCompostLegend={showCompostLocations}
-                      />
-                  </CardContent>
-              </Card>
+                  <FarmMap
+                      farms={mapItems}
+                      currentUserId={session?.user?.id}
+                      currentUserLocation={
+                          farmProfile
+                              ? { lat: farmProfile.latitude, lng: farmProfile.longitude }
+                              : undefined
+                      }
+                      height="400px"
+                      showCompostLegend={showCompostLocations}
+                  />
+              </div>
           )}
 
           {/* Two Column Layout */}
@@ -317,7 +314,6 @@ export default function DashboardPage() {
 
               {/* Right Column - Quick Actions & Plan */}
               <div className="space-y-6">
-                  <QuickActionsList features={features} />
 
                   {latestPlan ? (
                       <LatestPlanCard
