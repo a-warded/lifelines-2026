@@ -72,6 +72,7 @@
             "error": "Invalid email or password"
         },
         "register": {
+            "demo": "Create Demo Account",
             "title": "Create Account",
             "subtitle": "Join the community",
             "nameLabel": "Full Name",
