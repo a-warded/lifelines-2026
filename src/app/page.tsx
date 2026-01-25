@@ -24,7 +24,7 @@ export default function Home() {
                 noise={0.1}
                 transparent
                 autoRotate={0}
-                className="fixed left-0 top-0 h-full w-full"
+                className="fixed left-0 top-0 h-full w-full opacity-30"
             />
 
 

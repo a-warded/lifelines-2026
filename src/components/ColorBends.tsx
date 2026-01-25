@@ -98,8 +98,12 @@ void main() {
       col = clamp(col, 0.0, 1.0);
     }
 
-    vec3 rgb = (uTransparent > 0) ? col * a : col;
-    gl_FragColor = vec4(rgb, a);
+    // Output non-premultiplied color when using transparency so edges fade to the background color
+    if (uTransparent > 0) {
+      gl_FragColor = vec4(col, a);
+    } else {
+      gl_FragColor = vec4(col, 1.0);
+    }
 }
 `;
 
