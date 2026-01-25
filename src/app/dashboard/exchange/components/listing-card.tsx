@@ -31,7 +31,8 @@ export function ListingCard({
   onClaim,
   t,
 }: ListingCardProps) {
-  const imageUrl = extractImageUrl(listing.description);
+  // Use imageUrl field first, then try to extract from description
+  const imageUrl = listing.imageUrl || extractImageUrl(listing.description);
   const distance = getListingDistance(listing, userLocation);
   const deliveryMethod = DELIVERY_METHODS.find(m => m.value === listing.deliveryMethod);
 
@@ -145,7 +146,7 @@ export function ListingCard({
           <StatItem label="Claims" value={listing.claimCount || 0} />
           <StatItem 
             label="Distance" 
-            value={distance !== null ? `${distance}km` : "—"} 
+            value={formatDistance(distance)} 
           />
           <StatItem 
             label="Delivery" 
@@ -240,6 +241,13 @@ function extractImageUrl(text: string): string | null {
   const imgUrlRegex = /(https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?\S*)?)/gi;
   const match = imgUrlRegex.exec(text);
   return match ? match[0] : null;
+}
+
+function formatDistance(distance: number | null): string {
+  if (distance === null || distance === undefined) return "—";
+  if (distance < 1) return "<1km";
+  if (distance >= 1000) return `${Math.round(distance / 100) / 10}k km`;
+  return `${Math.round(distance)}km`;
 }
 
 function getListingDistance(listing: Listing, userLocation: GeoLocation | null): number | null {

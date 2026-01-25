@@ -138,7 +138,13 @@ export function useSuggestedCrops(
   setWaterCalculation: (w: WaterCalculation | null) => void
 ) {
   const [showModal, setShowModal] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [adding, setAdding] = useState(false);
+
+  const closeModal = useCallback(() => {
+    setShowModal(false);
+    setDismissed(true); // Mark as dismissed so it won't reopen
+  }, []);
 
   const addAllSuggestedCrops = useCallback(async () => {
     if (!latestPlan) return;
@@ -194,6 +200,8 @@ export function useSuggestedCrops(
   return {
     showModal,
     setShowModal,
+    closeModal,
+    dismissed,
     adding,
     addAllSuggestedCrops,
   };
