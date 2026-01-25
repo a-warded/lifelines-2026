@@ -1,7 +1,6 @@
 "use client";
 
 import {
-    Home,
     LayoutDashboard,
     LogOut,
     Menu,
@@ -16,6 +15,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { FadesLogo } from "../fades-logo";
+import SplitText from "../SplitText";
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -57,10 +58,23 @@ export function Sidebar() {
             >
                 <div className="flex h-full flex-col">
                     {/* Logo */}
-                    <div className="flex h-16 items-center border-b border-sidebar-border px-6">
+                    <div className="flex h-16 items-center px-6">
                         <Link href="/" className="flex items-center gap-2">
-                            <Home className="h-6 w-6 text-primary" />
-                            <span className="text-xl font-bold text-sidebar-foreground">Lifelines</span>
+                            <FadesLogo className="h-14 w-14" fill="var(--primary)" />
+                            
+                            <SplitText
+                                text="FADES"
+                                className="text-3xl fades-font mt-1 font-semibold text-center  text-primary"
+                                duration={1.25}
+                                ease="power3.out"
+                                splitType="chars"
+                                from={{ opacity: 0, y: 40 }}
+                                to={{ opacity: 1, y: 0 }}
+                                threshold={0.1}
+                                rootMargin="-100px"
+                                textAlign="center"
+                            />
+
                         </Link>
                     </div>
 
