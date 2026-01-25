@@ -1,6 +1,7 @@
 "use client";
 
 import ColorBends from "@/components/ColorBends";
+import { FadesLogo } from "@/components/fades-logo";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
@@ -30,7 +31,7 @@ export default function Home() {
 
             <div className="z-10 relative sm:mx-auto sm:w-full sm:max-w-sm min-h-screen flex flex-col items-center justify-center">
 
-                <img src="/images/logo_wordmark_full.png" alt="FADES Logo" />
+                <FadesLogo fill="var(--primary)" className="px-12"/>
                 <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
                     {status === "loading" ? (
                         <div className="h-12 w-32 animate-pulse rounded-lg bg-card" />
