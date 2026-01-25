@@ -20,7 +20,7 @@ interface ExchangeFiltersProps {
   userCountry: string;
   userLocation: GeoLocation | null;
   locationError: string;
-  locationStatus: "idle" | "detecting" | "success" | "error";
+  locationStatus: "idle" | "loading" | "detecting" | "success" | "error";
   onDetectLocation: () => void;
   t: TranslateFunction;
 }
