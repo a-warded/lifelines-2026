@@ -61,7 +61,7 @@ function SitesList({
       {sites.map((site) => (
         <SiteCard key={site.id} site={site} />
       ))}
-      <Link href="/dashboard/map?layer=compost">
+      <Link href="/dashboard?showCompost=true">
         <Button variant="outline" className="w-full">
           {t("compost.viewAllSites", "View All on Map")}
           <ArrowRight className="ml-2 h-4 w-4" />

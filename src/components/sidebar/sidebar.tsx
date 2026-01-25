@@ -1,16 +1,15 @@
 "use client";
 
 import {
-  Home,
-  LayoutDashboard,
-  LogOut,
-  Map,
-  Menu,
-  Recycle,
-  RefreshCw,
-  Settings,
-  User,
-  X
+    Home,
+    LayoutDashboard,
+    LogOut,
+    Menu,
+    Recycle,
+    RefreshCw,
+    Settings,
+    User,
+    X
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -28,7 +27,6 @@ export function Sidebar() {
         { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
         { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
         { href: "/dashboard/compost", label: t("nav.compost", "Composting"), icon: Recycle },
-        { href: "/dashboard/map", label: t("nav.map", "Map"), icon: Map },
         { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
         { href: "/dashboard/settings", label: t("nav.settings"), icon: Settings },
     ];

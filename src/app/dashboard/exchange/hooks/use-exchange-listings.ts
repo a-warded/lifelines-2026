@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
 import type { GeoLocation } from "@/lib/geo";
-import type { Listing, ExchangeFilters, CreateListingForm } from "../types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_CREATE_FORM } from "../constants";
+import type { CreateListingForm, ExchangeFilters, Listing } from "../types";
 
 interface Pagination {
   page: number;
@@ -55,6 +55,10 @@ export function useExchangeListings({
     delivery: "",
     searchQuery: "",
   });
+  
+  // Use refs to track fetch state and prevent race conditions
+  const fetchIdRef = useRef(0);
+  const hasFetchedRef = useRef(false);
 
   const setFilter = useCallback(<K extends keyof ExchangeFilters>(
     key: K, 
@@ -80,7 +84,12 @@ export function useExchangeListings({
   }, []);
 
   const fetchListings = useCallback(async () => {
-    setLoading(true);
+    const fetchId = ++fetchIdRef.current;
+    
+    // Only show loading on initial fetch, not on refetch
+    if (!hasFetchedRef.current) {
+      setLoading(true);
+    }
     setError("");
 
     try {
@@ -99,6 +108,12 @@ export function useExchangeListings({
       }
 
       const response = await fetch(`/api/exchange?${params}`);
+      
+      // Check if this fetch is still the latest one
+      if (fetchId !== fetchIdRef.current) {
+        return; // Abort if a newer fetch has been initiated
+      }
+      
       const data = await response.json();
 
       if (!response.ok) {
@@ -109,10 +124,17 @@ export function useExchangeListings({
       if (data.pagination) {
         setPagination(data.pagination);
       }
+      hasFetchedRef.current = true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load listings");
+      // Only set error if this is still the latest fetch
+      if (fetchId === fetchIdRef.current) {
+        setError(err instanceof Error ? err.message : "Failed to load listings");
+      }
     } finally {
-      setLoading(false);
+      // Only update loading if this is still the latest fetch
+      if (fetchId === fetchIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [userLocation, filters.type, filters.status, filters.mode, currentPage]);
 
