@@ -38,6 +38,7 @@ export default function ExchangePage() {
     locationStatus,
     locationError,
     detectLocation,
+    isReady: isLocationReady,
   } = useUserLocation();
 
   // Listings
@@ -48,7 +49,9 @@ export default function ExchangePage() {
     clearFilters,
     refetch,
     filteredListings,
-  } = useExchangeListings({ userCountry, userLocation });
+    pagination,
+    setPage,
+  } = useExchangeListings({ userCountry, userLocation, isLocationReady });
 
   // Saved listings
   const { isSaved, toggleSave } = useSavedListings();
@@ -338,22 +341,81 @@ export default function ExchangePage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredListings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                userCountry={userCountry}
-                userLocation={userLocation}
-                isSaved={isSaved(listing.id)}
-                onToggleSave={() => toggleSave(listing.id)}
-                onShare={() => shareListing(listing.id)}
-                onViewDetails={() => openDetails(listing)}
-                onClaim={() => openClaim(listing)}
-                t={t}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredListings.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  userCountry={userCountry}
+                  userLocation={userLocation}
+                  isSaved={isSaved(listing.id)}
+                  onToggleSave={() => toggleSave(listing.id)}
+                  onShare={() => shareListing(listing.id)}
+                  onViewDetails={() => openDetails(listing)}
+                  onClaim={() => openClaim(listing)}
+                  t={t}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <button
+                  onClick={() => setPage(pagination.page - 1)}
+                  disabled={pagination.page <= 1}
+                  className="px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--color-border)] transition-colors"
+                >
+                  ← Previous
+                </button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      // Show first, last, current, and adjacent pages
+                      if (page === 1 || page === pagination.totalPages) return true;
+                      if (Math.abs(page - pagination.page) <= 1) return true;
+                      return false;
+                    })
+                    .map((page, index, arr) => {
+                      // Add ellipsis if there's a gap
+                      const showEllipsisBefore = index > 0 && page - arr[index - 1] > 1;
+                      return (
+                        <span key={page} className="flex items-center gap-1">
+                          {showEllipsisBefore && (
+                            <span className="px-2 text-[var(--color-text-secondary)]">...</span>
+                          )}
+                          <button
+                            onClick={() => setPage(page)}
+                            className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
+                              page === pagination.page
+                                ? "bg-[var(--color-primary)] text-white"
+                                : "border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-border)]"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        </span>
+                      );
+                    })}
+                </div>
+
+                <button
+                  onClick={() => setPage(pagination.page + 1)}
+                  disabled={!pagination.hasMore}
+                  className="px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--color-border)] transition-colors"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+
+            {/* Results count */}
+            <p className="text-center text-sm text-[var(--color-text-secondary)] mt-4">
+              Showing {(pagination.page - 1) * pagination.limit + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} listings
+            </p>
+          </>
         )}
 
         {/* Link copied toast */}

@@ -5,9 +5,18 @@ import type { GeoLocation } from "@/lib/geo";
 import type { Listing, ExchangeFilters, CreateListingForm } from "../types";
 import { DEFAULT_CREATE_FORM } from "../constants";
 
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
 interface UseExchangeListingsOptions {
   userCountry: string;
   userLocation: GeoLocation | null;
+  isLocationReady: boolean;
 }
 
 interface UseExchangeListingsReturn {
@@ -19,15 +28,26 @@ interface UseExchangeListingsReturn {
   clearFilters: () => void;
   refetch: () => Promise<void>;
   filteredListings: Listing[];
+  pagination: Pagination;
+  setPage: (page: number) => void;
 }
 
 export function useExchangeListings({ 
   userCountry, 
-  userLocation 
+  userLocation,
+  isLocationReady,
 }: UseExchangeListingsOptions): UseExchangeListingsReturn {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    limit: 12,
+    total: 0,
+    totalPages: 0,
+    hasMore: false,
+  });
   const [filters, setFilters] = useState<ExchangeFilters>({
     type: "",
     status: "",
@@ -41,6 +61,7 @@ export function useExchangeListings({
     value: ExchangeFilters[K]
   ) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+    setCurrentPage(1); // Reset to first page when filters change
   }, []);
 
   const clearFilters = useCallback(() => {
@@ -51,11 +72,14 @@ export function useExchangeListings({
       delivery: "",
       searchQuery: "",
     });
+    setCurrentPage(1);
+  }, []);
+
+  const setPage = useCallback((page: number) => {
+    setCurrentPage(page);
   }, []);
 
   const fetchListings = useCallback(async () => {
-    if (!userCountry) return;
-
     setLoading(true);
     setError("");
 
@@ -64,7 +88,10 @@ export function useExchangeListings({
       if (filters.type) params.set("type", filters.type);
       if (filters.status) params.set("status", filters.status);
       if (filters.mode) params.set("mode", filters.mode);
-      params.set("country", userCountry);
+      // Don't filter by country - show all listings globally
+      // This allows seeing seeded data regardless of user's location
+      params.set("page", currentPage.toString());
+      params.set("limit", "12");
 
       if (userLocation?.latitude && userLocation?.longitude) {
         params.set("lat", userLocation.latitude.toString());
@@ -79,19 +106,22 @@ export function useExchangeListings({
       }
 
       setListings(data.listings || []);
+      if (data.pagination) {
+        setPagination(data.pagination);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load listings");
     } finally {
       setLoading(false);
     }
-  }, [userCountry, userLocation, filters.type, filters.status, filters.mode]);
+  }, [userLocation, filters.type, filters.status, filters.mode, currentPage]);
 
-  // Fetch on mount and when dependencies change
+  // Fetch on mount and when dependencies change, but only after location is ready
   useEffect(() => {
-    if (userCountry) {
+    if (isLocationReady) {
       fetchListings();
     }
-  }, [fetchListings, userCountry]);
+  }, [fetchListings, isLocationReady]);
 
   // Client-side filtering for delivery method and search
   const filteredListings = useMemo(() => {
@@ -124,6 +154,8 @@ export function useExchangeListings({
     clearFilters,
     refetch: fetchListings,
     filteredListings,
+    pagination,
+    setPage,
   };
 }
 

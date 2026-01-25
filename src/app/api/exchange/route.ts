@@ -17,7 +17,8 @@ export async function GET(request: NextRequest) {
         const type = searchParams.get("type"); // seeds/produce/tools/other
         const status = searchParams.get("status"); // available/claimed/completed
         const mode = searchParams.get("mode"); // offering/seeking
-        const limit = parseInt(searchParams.get("limit") || "50");
+        const limit = parseInt(searchParams.get("limit") || "12");
+        const page = parseInt(searchParams.get("page") || "1");
         const myListings = searchParams.get("my") === "true";
         
         // Location filtering
@@ -46,27 +47,32 @@ export async function GET(request: NextRequest) {
             query.userId = session.user.id;
         }
         
-        // Country filtering (required for non-my listings)
+        // Country filtering (optional - if provided, filter by country)
         if (!myListings && country) {
             query.country = country.toUpperCase();
         }
+        // Note: If no country provided, show all countries (useful for testing/demo)
+
+        // Get total count for pagination
+        const totalCount = await ExchangeListing.countDocuments(query);
+        const skip = (page - 1) * limit;
 
         let listings = await ExchangeListing.find(query)
             .sort({ createdAt: -1 })
-            .limit(limit * 2) // Fetch extra for distance filtering
+            .skip(skip)
+            .limit(limit)
             .lean();
 
-        // Filter by distance if coordinates provided
-        if (!myListings && !isNaN(lat) && !isNaN(lon)) {
-            listings = listings.filter((l) => {
-                if (!l.latitude || !l.longitude) return false;
-                const distance = calculateDistance(lat, lon, l.latitude, l.longitude);
-                return distance <= MAX_LISTING_DISTANCE_KM;
-            });
-        }
-
-        // Limit after filtering
-        listings = listings.slice(0, limit);
+        // Distance filtering is disabled to show all listings globally
+        // This allows testing with seeded data from any location
+        // Uncomment below to re-enable location-based filtering:
+        // if (!myListings && !isNaN(lat) && !isNaN(lon)) {
+        //     listings = listings.filter((l) => {
+        //         if (!l.latitude || !l.longitude) return false;
+        //         const distance = calculateDistance(lat, lon, l.latitude, l.longitude);
+        //         return distance <= MAX_LISTING_DISTANCE_KM;
+        //     });
+        // }
 
         // Get claim counts for all listings in one query
         const listingIds = listings.map(l => l._id.toString());
@@ -93,6 +99,7 @@ export async function GET(request: NextRequest) {
                     title: l.title,
                     description: l.description,
                     quantity: l.quantity,
+                    imageUrl: l.imageUrl,
                     mode: l.mode,
                     dealType: l.dealType,
                     price: l.price,
@@ -109,6 +116,13 @@ export async function GET(request: NextRequest) {
                     claimCount: claimCountMap.get(l._id.toString()) || 0,
                 };
             }),
+            pagination: {
+                page,
+                limit,
+                total: totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+                hasMore: page * limit < totalCount,
+            },
         });
     } catch (error) {
         console.error("Listings fetch error:", error);

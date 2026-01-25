@@ -258,17 +258,17 @@ export function OnboardingWizard() {
             ? "border-[#80ED99] bg-[#80ED99]/10" 
             : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:border-[#80ED99]/50 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
         }
-                ${size === "large" ? "p-5" : "p-4"}
+                ${size === "large" ? "p-4 sm:p-5" : "p-3 sm:p-4"}
             `}
         >
             {selected && (
-                <div className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#80ED99]">
-                    <Check className="h-3 w-3 text-zinc-900" />
+                <div className="absolute right-2 top-2 sm:right-3 sm:top-3 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#80ED99]">
+                    <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-zinc-900" />
                 </div>
             )}
-            <span className={size === "large" ? "text-2xl mb-2" : "text-xl mb-1"}>{emoji}</span>
-            <span className="font-semibold text-foreground">{label}</span>
-            <span className="text-xs text-muted-foreground mt-0.5">{desc}</span>
+            <span className={size === "large" ? "text-xl sm:text-2xl mb-1 sm:mb-2" : "text-lg sm:text-xl mb-1"}>{emoji}</span>
+            <span className="font-semibold text-foreground text-sm sm:text-base">{label}</span>
+            <span className="text-xs text-muted-foreground mt-0.5 hidden sm:block">{desc}</span>
         </button>
     );
 
@@ -291,7 +291,7 @@ export function OnboardingWizard() {
             />
             
 
-            <div className="z-10 mx-auto max-w-2xl min-w-2xl px-4 py-8 transition-all">
+            <div className="z-10 mx-auto lg:max-w-2xl lg:min-w-2xl max-w-screen min-w-screen px-4 py-8 transition-all">
                 {/* Progress Steps */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between">

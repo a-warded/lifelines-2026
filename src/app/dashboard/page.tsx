@@ -86,13 +86,19 @@ export default function DashboardPage() {
 
   // Show suggested crops modal when user has a plan but no crops yet
   useEffect(() => {
-    if (!loading && latestPlan && farmProfile && (!farmProfile.crops || farmProfile.crops.length === 0)) {
+    if (
+      !loading && 
+      latestPlan && 
+      farmProfile && 
+      (!farmProfile.crops || farmProfile.crops.length === 0) &&
+      !suggestedCrops.dismissed
+    ) {
       const timer = setTimeout(() => {
         suggestedCrops.setShowModal(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [loading, latestPlan, farmProfile, suggestedCrops]);
+  }, [loading, latestPlan, farmProfile, suggestedCrops.dismissed, suggestedCrops.setShowModal]);
 
   const features = getQuickActions(t);
 
@@ -190,7 +196,7 @@ export default function DashboardPage() {
 
       <SuggestedCropsModal
         isOpen={suggestedCrops.showModal}
-        onClose={() => suggestedCrops.setShowModal(false)}
+        onClose={suggestedCrops.closeModal}
         plan={latestPlan}
         onAddAll={suggestedCrops.addAllSuggestedCrops}
         loading={suggestedCrops.adding}

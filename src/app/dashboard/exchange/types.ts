@@ -12,6 +12,7 @@ export interface Listing {
   title: string;
   description: string;
   quantity?: string;
+  imageUrl?: string;
   mode: ListingMode;
   dealType: DealType;
   price?: number;

@@ -16,6 +16,7 @@ export interface IExchangeListing extends Document {
     title: string;
     description: string;
     quantity?: string; // Free-form: "50 seeds", "2 kg", etc.
+    imageUrl?: string; // Optional image URL for the listing
     
     // Mode: offering something or looking for something
     mode: ListingMode;
@@ -56,6 +57,7 @@ const ExchangeListingSchema = new Schema<IExchangeListing>(
         title: { type: String, required: true },
         description: { type: String, required: true, maxlength: 1000 },
         quantity: { type: String },
+        imageUrl: { type: String },
         
         mode: {
             type: String,

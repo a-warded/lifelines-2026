@@ -8,7 +8,7 @@ import {
   getLocationLabel 
 } from "@/lib/geo";
 
-type LocationStatus = "idle" | "detecting" | "success" | "error";
+type LocationStatus = "idle" | "loading" | "detecting" | "success" | "error";
 
 interface UseUserLocationReturn {
   userLocation: GeoLocation | null;
@@ -16,12 +16,13 @@ interface UseUserLocationReturn {
   locationStatus: LocationStatus;
   locationError: string;
   detectLocation: () => Promise<void>;
+  isReady: boolean;
 }
 
 export function useUserLocation(): UseUserLocationReturn {
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
   const [userCountry, setUserCountry] = useState<string>("");
-  const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>("loading");
   const [locationError, setLocationError] = useState<string>("");
 
   // Fetch from farm profile on mount
@@ -30,6 +31,7 @@ export function useUserLocation(): UseUserLocationReturn {
   }, []);
 
   const fetchUserProfile = async () => {
+    setLocationStatus("loading");
     try {
       const profileRes = await fetch("/api/farm");
       if (profileRes.ok) {
@@ -41,7 +43,7 @@ export function useUserLocation(): UseUserLocationReturn {
             country: data.profile.country,
             locationLabel: data.profile.locationLabel,
           });
-          setUserCountry(data.profile.country || "US");
+          setUserCountry(data.profile.country || "");
           setLocationStatus("success");
           return;
         }
@@ -50,9 +52,11 @@ export function useUserLocation(): UseUserLocationReturn {
       // Fallback to IP-based country detection
       const response = await fetch("/api/geo");
       const geoData = await response.json();
-      setUserCountry(geoData.country);
+      setUserCountry(geoData.country || "");
+      setLocationStatus("success");
     } catch {
-      setUserCountry("US"); // Fallback
+      setUserCountry(""); // Don't filter by country on error
+      setLocationStatus("success"); // Still mark as ready so listings can load
     }
   };
 
@@ -86,5 +90,6 @@ export function useUserLocation(): UseUserLocationReturn {
     locationStatus,
     locationError,
     detectLocation,
+    isReady: locationStatus === "success" || locationStatus === "error",
   };
 }
