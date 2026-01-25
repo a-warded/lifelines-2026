@@ -1,7 +1,7 @@
 export function FadesLogo(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg className={props.className || ""} version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="100%" viewBox="0 0 452 452" enable-background="new 0 0 452 452" xmlSpace="preserve">
+	 width="100%" viewBox="0 0 452 452" enableBackground="new 0 0 452 452" xmlSpace="preserve">
             <path fill={props.fill} opacity="1.000000" stroke="none" 
                 d="
 M429.305359,310.229980 

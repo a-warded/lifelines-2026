@@ -156,11 +156,13 @@ body {
 
 @keyframes lifelinesScaleIn {
   0% {
-    transform: scale(1.02);
+    transform: scale(1.2);
+    filter: blur(20px);
     opacity: 0;
   }
   100% {
     transform: scale(1);
+    filter: blur(0px);
     opacity: 1;
   }
 }
@@ -234,4 +236,9 @@ body {
 .leaflet-control-container .leaflet-top,
 .leaflet-control-container .leaflet-bottom {
   z-index: 5 !important;
+}
+
+
+.fades-fancy-ahh {
+  animation: lifelinesScaleIn 2000ms cubic-bezier(.17,.67,.41,.99);
 }
