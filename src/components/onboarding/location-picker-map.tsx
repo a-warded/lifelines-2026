@@ -1,6 +1,5 @@
 "use client";
 
-import { getCountryFromCoords } from "@/lib/geo";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
@@ -83,8 +82,7 @@ export function LocationPickerMap({
             // Reverse geocode
             try {
                 const response = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-                    { headers: { "User-Agent": "Lifelines-App/1.0" } }
+                    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
                 );
                 const data = await response.json();
                 const label = data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
@@ -138,8 +136,7 @@ export function LocationPickerMap({
         setSearching(true);
         try {
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1`,
-                { headers: { "User-Agent": "Lifelines-App/1.0" } }
+                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1`
             );
             const results = await response.json();
 

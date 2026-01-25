@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Lifelines",
+    title: "FADES",
     description: "Lifelines 2026",
 };
 

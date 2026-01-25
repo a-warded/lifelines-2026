@@ -3,21 +3,24 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getCountryFromCoords, getUserLocation } from "@/lib/geo";
+import { getCountryFromCoords, getCountryName, getUserLocation } from "@/lib/geo";
 import {
     ArrowLeft,
     ArrowRight,
     Check,
     Droplets,
+    HomeIcon,
     Leaf,
     MapPin,
-    Sparkles,
     Sun,
-    Target,
+    Target
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import ColorBends from "../ColorBends";
+import { FadesLogo } from "../fades-logo";
+import SplitText from "../SplitText";
 
 // Dynamically import the map to avoid SSR issues
 const LocationPickerMap = dynamic(
@@ -47,7 +50,7 @@ interface OnboardingData {
 }
 
 const STEPS = [
-    { id: "welcome", title: "Welcome", icon: Sparkles },
+    { id: "welcome", title: "Welcome", icon: HomeIcon },
     { id: "location", title: "Location", icon: MapPin },
     { id: "space", title: "Your Space", icon: Leaf },
     { id: "conditions", title: "Conditions", icon: Droplets },
@@ -252,9 +255,9 @@ export function OnboardingWizard() {
                 relative flex flex-col items-start rounded-xl border-2 text-left
                 transition-all duration-200 cursor-pointer active:scale-[0.98]
                 ${selected 
-                    ? "border-[#80ED99] bg-[#80ED99]/10 shadow-md" 
-                    : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:border-[#80ED99]/50 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
-                }
+            ? "border-[#80ED99] bg-[#80ED99]/10" 
+            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:border-[#80ED99]/50 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+        }
                 ${size === "large" ? "p-5" : "p-4"}
             `}
         >
@@ -270,8 +273,25 @@ export function OnboardingWizard() {
     );
 
     return (
-        <div className="min-h-screen bg-background">
-            <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className="min-h-screen flex items-center justify-center bg-background">
+
+            <ColorBends
+                colors={["#0fff83"]}
+                rotation={0}
+                speed={0.2}
+                scale={1}
+                frequency={1}
+                warpStrength={1}
+                mouseInfluence={1}
+                parallax={0.5}
+                noise={0.1}
+                transparent
+                autoRotate={0}
+                className="fixed left-0 top-0 h-full w-full opacity-30"
+            />
+            
+
+            <div className="z-10 mx-auto max-w-2xl min-w-2xl px-4 py-8 transition-all">
                 {/* Progress Steps */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between">
@@ -287,11 +307,11 @@ export function OnboardingWizard() {
                                             className={`
                                                 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all
                                                 ${isComplete 
-                                                    ? "border-[#80ED99] bg-[#80ED99] text-zinc-900" 
-                                                    : isCurrent 
-                                                        ? "border-[#80ED99] bg-[#80ED99]/20 text-[#80ED99]" 
-                                                        : "border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-muted-foreground"
-                                                }
+                                    ? "border-[#80ED99] bg-[#80ED99] text-zinc-900" 
+                                    : isCurrent 
+                                        ? "border-[#80ED99] text-[#80ED99]" 
+                                        : "border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-muted-foreground"
+                                }
                                             `}
                                         >
                                             {isComplete ? (
@@ -321,41 +341,37 @@ export function OnboardingWizard() {
                 <Card className="border-zinc-200 dark:border-zinc-700 shadow-lg overflow-hidden">
                     {/* Step: Welcome */}
                     {currentStep === 0 && (
-                        <div className="p-8 text-center">
-                            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#80ED99]/20">
-                                <Leaf className="h-10 w-10 text-[#80ED99]" />
+                        <div className="p-8 text-center fade-onboard-step">
+                            <div className="mx-auto fades-fancy-ahh-fast mb-6 flex h-40 w-40 items-center justify-center">
+                                <FadesLogo fill="var(--primary)" className="h-full w-full" />
                             </div>
-                            <h1 className="text-3xl font-bold text-foreground">
-                                Welcome to Lifelines 🌱
-                            </h1>
+
+                            <SplitText
+                                text="Welcome to FADES"
+                                className="text-2xl font-semibold text-center"
+                                duration={0.5}
+                                ease="power3.out"
+                                splitType="chars"
+                                from={{ opacity: 0, y: 40 }}
+                                to={{ opacity: 1, y: 0 }}
+                                threshold={0.1}
+                                rootMargin="-100px"
+                                textAlign="center"
+                            />
+
                             <p className="mt-4 text-lg text-muted-foreground max-w-md mx-auto">
-                                Let&apos;s set up your farm profile. We&apos;ll personalize your
-                                experience to help you grow food that matters.
+                                Set up your profile so we can help you grow the most efficient crops for your situation.
                             </p>
-                            <div className="mt-8 flex flex-wrap justify-center gap-3">
-                                <div className="flex items-center gap-2 rounded-full bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm">
-                                    <MapPin className="h-4 w-4 text-[#80ED99]" />
-                                    <span>Set your location</span>
-                                </div>
-                                <div className="flex items-center gap-2 rounded-full bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm">
-                                    <Droplets className="h-4 w-4 text-blue-400" />
-                                    <span>Your conditions</span>
-                                </div>
-                                <div className="flex items-center gap-2 rounded-full bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm">
-                                    <Target className="h-4 w-4 text-amber-400" />
-                                    <span>Your goals</span>
-                                </div>
-                            </div>
                         </div>
                     )}
 
                     {/* Step: Location */}
                     {currentStep === 1 && (
-                        <div className="p-6">
+                        <div className="py-6 fade-onboard-step">
                             <div className="mb-6 text-center">
                                 <h2 className="text-2xl font-bold text-foreground">Your Location</h2>
                                 <p className="mt-1 text-muted-foreground">
-                                    Help us find crops suited to your climate
+                                    Farm together with your local community to build a resilient food supply, immune to disruptions.
                                 </p>
                             </div>
 
@@ -373,10 +389,10 @@ export function OnboardingWizard() {
                                     }}
                                 />
 
-                                <div className="flex items-center justify-between rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-4">
+                                <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-foreground">
-                                            {data.locationLabel || "No location selected"}
+                                            {getCountryName(data.locationLabel) || "No location selected"}
                                         </p>
                                         {data.latitude && (
                                             <p className="text-xs text-muted-foreground">
@@ -401,7 +417,7 @@ export function OnboardingWizard() {
 
                     {/* Step: Space */}
                     {currentStep === 2 && (
-                        <div className="p-6">
+                        <div className="p-6 fade-onboard-step">
                             <div className="mb-6 text-center">
                                 <h2 className="text-2xl font-bold text-foreground">Your Growing Space</h2>
                                 <p className="mt-1 text-muted-foreground">
@@ -430,17 +446,16 @@ export function OnboardingWizard() {
                                         <Input
                                             value={data.farmName}
                                             onChange={(e) => updateData({ farmName: e.target.value })}
-                                            placeholder="e.g., My Balcony Garden"
+                                            placeholder="eg: Aura Farm"
                                             className="flex-1 text-base"
                                         />
                                     </div>
-                                    <p className="mt-2 text-xs text-muted-foreground">Click the emoji to change your farm icon</p>
                                 </div>
 
                                 {/* Emoji Grid */}
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-foreground">
-                                        Or pick from these icons
+                                        Choose a farm icon
                                     </label>
                                     <div className="grid grid-cols-8 gap-2">
                                         {FARM_EMOJI_OPTIONS.map((emoji) => (
@@ -451,9 +466,9 @@ export function OnboardingWizard() {
                                                 className={`
                                                     flex h-10 w-10 items-center justify-center rounded-lg text-xl transition-all
                                                     ${data.farmEmoji === emoji
-                                                        ? "bg-[#80ED99] shadow-md"
-                                                        : "bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
-                                                    }
+                                                ? "bg-[#80ED99]"
+                                                : "bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+                                            }
                                                 `}
                                             >
                                                 {emoji}
@@ -485,7 +500,7 @@ export function OnboardingWizard() {
 
                     {/* Step: Conditions */}
                     {currentStep === 3 && (
-                        <div className="p-6">
+                        <div className="p-6 fade-onboard-step">
                             <div className="mb-6 text-center">
                                 <h2 className="text-2xl font-bold text-foreground">Growing Conditions</h2>
                                 <p className="mt-1 text-muted-foreground">
@@ -556,7 +571,7 @@ export function OnboardingWizard() {
 
                     {/* Step: Goals */}
                     {currentStep === 4 && (
-                        <div className="p-6">
+                        <div className="p-6 fade-onboard-step">
                             <div className="mb-6 text-center">
                                 <h2 className="text-2xl font-bold text-foreground">Your Goals</h2>
                                 <p className="mt-1 text-muted-foreground">
@@ -607,15 +622,15 @@ export function OnboardingWizard() {
 
                     {/* Step: Complete */}
                     {currentStep === 5 && (
-                        <div className="p-8 text-center">
+                        <div className="p-8 text-center fade-onboard-step">
                             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#80ED99]/20">
                                 <Check className="h-10 w-10 text-[#80ED99]" />
                             </div>
                             <h2 className="text-3xl font-bold text-foreground">
-                                You&apos;re All Set! 🎉
+                                You&apos;re All Set
                             </h2>
                             <p className="mt-4 text-lg text-muted-foreground max-w-md mx-auto">
-                                Your farm profile is ready. Let&apos;s start growing!
+                                Let&apos;s start rebuilding a resilient food system, one farm at a time.
                             </p>
                             
                             <div className="mt-8 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-6 text-left">
@@ -627,7 +642,7 @@ export function OnboardingWizard() {
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Location</span>
-                                        <span className="font-medium">{data.locationLabel}</span>
+                                        <span className="font-medium">{getCountryName(data.locationLabel)}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Space Type</span>
@@ -643,7 +658,7 @@ export function OnboardingWizard() {
                     )}
 
                     {/* Navigation */}
-                    <div className="flex items-center justify-between border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-4">
+                    <div className="flex items-center justify-between">
                         <Button
                             variant="ghost"
                             onClick={prevStep}
@@ -666,7 +681,6 @@ export function OnboardingWizard() {
                             ) : currentStep === STEPS.length - 1 ? (
                                 <>
                                     Get Started
-                                    <Sparkles className="h-4 w-4" />
                                 </>
                             ) : (
                                 <>
@@ -677,13 +691,6 @@ export function OnboardingWizard() {
                         </Button>
                     </div>
                 </Card>
-
-                {/* Skip Option */}
-                {currentStep < STEPS.length - 1 && (
-                    <p className="mt-4 text-center text-sm text-muted-foreground">
-                        You can always update these settings later in your profile
-                    </p>
-                )}
             </div>
         </div>
     );

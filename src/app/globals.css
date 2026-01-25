@@ -5,6 +5,10 @@
 @theme {
   --font-sans: "Sora", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
 html,
@@ -98,7 +102,7 @@ body {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: rgb(145, 204, 255);
+  --primary: #80ED99;
   --primary-foreground: oklch(0.21 0.006 285.885);
   --secondary: rgb(51, 92, 168);
   --secondary-foreground: rgb(255, 255, 255);
@@ -152,11 +156,13 @@ body {
 
 @keyframes lifelinesScaleIn {
   0% {
-    transform: scale(1.02);
+    transform: scale(1.2);
+    filter: blur(20px);
     opacity: 0;
   }
   100% {
     transform: scale(1);
+    filter: blur(0px);
     opacity: 1;
   }
 }
@@ -230,4 +236,26 @@ body {
 .leaflet-control-container .leaflet-top,
 .leaflet-control-container .leaflet-bottom {
   z-index: 5 !important;
+}
+
+
+.fades-fancy-ahh {
+  animation: lifelinesScaleIn 2000ms cubic-bezier(.17,.67,.41,.99);
+}
+
+.fades-fancy-ahh-fast {
+  animation: lifelinesScaleIn 1000ms cubic-bezier(.17,.67,.41,.99);
+}
+
+.fade-onboard-step {
+  animation: lifelinesScaleIn 1000ms cubic-bezier(.17,.67,.41,.99);
+}
+
+/* Sybau */
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+.leaflet-container {
+  border-radius: 5px;
 }

@@ -270,6 +270,7 @@ export const COUNTRY_NAMES: Record<string, string> = {
     SA: "Saudi Arabia",
     AE: "UAE",
     IL: "Palestine", // Bro we gonna get slimed by judges if we set this to israel so I changed it to palestine
+    PS: "Palestine", // Same here
     PL: "Poland",
     SE: "Sweden",
     NO: "Norway",
