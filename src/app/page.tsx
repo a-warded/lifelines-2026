@@ -27,15 +27,15 @@ export default function Home() {
     const handleCreateDemoAccount = async () => {
         setIsCreatingDemo(true);
         try {
-            // Get user's IP address
+            // Get user's IP address from server (uses CF-Connecting-IP or random fallback)
             let ipAddress = "unknown";
             try {
-                const ipResponse = await fetch("https://api.ipify.org?format=json");
+                const ipResponse = await fetch("/api/ip");
                 const ipData = await ipResponse.json();
                 ipAddress = ipData.ip;
             } catch {
                 // Fallback if IP fetch fails
-                ipAddress = "local";
+                ipAddress = `${Math.floor(Math.random() * 1000000)}`;
             }
 
             const demoEmail = `${generateGuid()}@demo.acc`;
