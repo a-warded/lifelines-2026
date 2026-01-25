@@ -242,3 +242,20 @@ body {
 .fades-fancy-ahh {
   animation: lifelinesScaleIn 2000ms cubic-bezier(.17,.67,.41,.99);
 }
+
+.fades-fancy-ahh-fast {
+  animation: lifelinesScaleIn 1000ms cubic-bezier(.17,.67,.41,.99);
+}
+
+.fade-onboard-step {
+  animation: lifelinesScaleIn 1000ms cubic-bezier(.17,.67,.41,.99);
+}
+
+/* Sybau */
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+.leaflet-container {
+  border-radius: 5px;
+}

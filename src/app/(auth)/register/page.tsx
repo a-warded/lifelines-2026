@@ -62,7 +62,7 @@ export default function RegisterPage() {
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-foreground">Create an account</h1>
-                    <p className="mt-2 ">Get started with Lifelines</p>
+                    <p className="mt-2 ">Get started with FADES</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="mt-8 space-y-6">
