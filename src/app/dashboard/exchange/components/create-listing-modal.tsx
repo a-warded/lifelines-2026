@@ -21,7 +21,7 @@ interface CreateListingModalProps {
   removeTradeItem: (index: number) => void;
   userCountry: string;
   userLocation: GeoLocation | null;
-  locationStatus: "idle" | "detecting" | "success" | "error";
+  locationStatus: "idle" | "loading" | "detecting" | "success" | "error";
   onDetectLocation: () => void;
   plantOptions: { value: string; label: string }[];
   t: TranslateFunction;
