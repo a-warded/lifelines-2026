@@ -247,6 +247,10 @@ body {
   animation: lifelinesScaleIn 1000ms cubic-bezier(.17,.67,.41,.99);
 }
 
+.fades-fancy-ahh-modal {
+  animation: lifelinesScaleIn 650ms cubic-bezier(.17,.67,.41,.99);
+}
+
 .fade-onboard-step {
   animation: lifelinesScaleIn 1000ms cubic-bezier(.17,.67,.41,.99);
 }
