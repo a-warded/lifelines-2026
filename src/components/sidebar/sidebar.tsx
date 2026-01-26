@@ -6,7 +6,6 @@ import {
     Menu,
     Recycle,
     RefreshCw,
-    Settings,
     User,
     X
 } from "lucide-react";
@@ -29,7 +28,6 @@ export function Sidebar() {
         { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
         { href: "/dashboard/compost", label: t("nav.compost", "Composting"), icon: Recycle },
         { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
-        { href: "/dashboard/settings", label: t("nav.settings"), icon: Settings },
     ];
 
     return (
@@ -90,13 +88,14 @@ export function Sidebar() {
                                     key={item.href}
                                     href={item.href}
                                     onClick={() => setIsOpen(false)}
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                                    className={`flex relative items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                                         isActive
-                                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                            ? "text-sidebar-foreground"
+                                            : "text-sidebar-foreground hover:text-primary"
                                     }`}
                                 >
-                                    <Icon className="h-5 w-5" />
+                                    <img src={"/images/sidebar_deco.webp"} className={`absolute h-full -z-10 left-[2px] transition-opacity duration-300  ${isActive ? "opacity-100" : "opacity-0"}`} />
+                                    <Icon className={`h-5 w-5 transition-mr duration-300 mr-${isActive ? "2" : "0"}`}  />
                                     {item.label}
                                 </Link>
                             );
