@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { generatePlan } from "@/lib/logic/plan-generator";
 import { FarmProfile, Plan } from "@/lib/models";
 import { connectMongo } from "@/lib/mongo";
+import { getPlantByName } from "@/lib/plants";
 import { NextRequest, NextResponse } from "next/server";
 
 // POST - Create profile and generate plan
@@ -141,13 +142,26 @@ export async function GET(request: NextRequest) {
             ? await FarmProfile.findById(plan.farmProfileId)
             : null;
 
+        // Recalculate water estimate to ensure consistency with crop manager
+        // Uses 1 plant per recommended crop at seedling stage (matching "Add All to My Farm" behavior)
+        let estimatedDailyWaterLiters = 0;
+        if (plan.recommendedCrops && plan.recommendedCrops.length > 0) {
+            for (const crop of plan.recommendedCrops) {
+                const plant = getPlantByName(crop.cropName);
+                if (plant) {
+                    estimatedDailyWaterLiters += plant.waterByStage.seedling * 1;
+                }
+            }
+            estimatedDailyWaterLiters = Math.round(estimatedDailyWaterLiters * 100) / 100;
+        }
+
         return NextResponse.json({
             plan: {
                 id: plan._id.toString(),
                 recommendedCrops: plan.recommendedCrops,
                 timeline: plan.timeline,
                 setupChecklist: plan.setupChecklist,
-                estimatedDailyWaterLiters: plan.estimatedDailyWaterLiters,
+                estimatedDailyWaterLiters,
                 fallbackNotes: plan.fallbackNotes,
                 createdAt: plan.createdAt,
             },

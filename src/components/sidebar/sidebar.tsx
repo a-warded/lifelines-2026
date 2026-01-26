@@ -1,22 +1,21 @@
 "use client";
 
 import {
-  Home,
-  LayoutDashboard,
-  LogOut,
-  Map,
-  Menu,
-  Recycle,
-  RefreshCw,
-  Settings,
-  User,
-  X
+    LayoutDashboard,
+    LogOut,
+    Menu,
+    Recycle,
+    RefreshCw,
+    User,
+    X
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { FadesLogo } from "../fades-logo";
+import SplitText from "../SplitText";
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -28,9 +27,7 @@ export function Sidebar() {
         { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
         { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
         { href: "/dashboard/compost", label: t("nav.compost", "Composting"), icon: Recycle },
-        { href: "/dashboard/map", label: t("nav.map", "Map"), icon: Map },
         { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
-        { href: "/dashboard/settings", label: t("nav.settings"), icon: Settings },
     ];
 
     return (
@@ -59,10 +56,23 @@ export function Sidebar() {
             >
                 <div className="flex h-full flex-col">
                     {/* Logo */}
-                    <div className="flex h-16 items-center border-b border-sidebar-border px-6">
+                    <div className="flex h-16 items-center px-6">
                         <Link href="/" className="flex items-center gap-2">
-                            <Home className="h-6 w-6 text-primary" />
-                            <span className="text-xl font-bold text-sidebar-foreground">Lifelines</span>
+                            <FadesLogo className="h-14 w-14" fill="var(--primary)" />
+                            
+                            <SplitText
+                                text="FADES"
+                                className="text-3xl fades-font mt-1 font-semibold text-center  text-primary"
+                                duration={1.25}
+                                ease="power3.out"
+                                splitType="chars"
+                                from={{ opacity: 0, y: 40 }}
+                                to={{ opacity: 1, y: 0 }}
+                                threshold={0.1}
+                                rootMargin="-100px"
+                                textAlign="center"
+                            />
+
                         </Link>
                     </div>
 
@@ -78,13 +88,14 @@ export function Sidebar() {
                                     key={item.href}
                                     href={item.href}
                                     onClick={() => setIsOpen(false)}
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                                    className={`flex relative items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                                         isActive
-                                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                            ? "text-sidebar-foreground"
+                                            : "text-sidebar-foreground hover:text-primary"
                                     }`}
                                 >
-                                    <Icon className="h-5 w-5" />
+                                    <img src={"/images/sidebar_deco.webp"} className={`absolute h-full -z-10 left-[2px] transition-opacity duration-300  ${isActive ? "opacity-100" : "opacity-0"}`} />
+                                    <Icon className={`h-5 w-5 transition-mr duration-300 mr-${isActive ? "2" : "0"}`}  />
                                     {item.label}
                                 </Link>
                             );

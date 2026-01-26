@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { cachePlan, getCachedPlan } from "@/lib/offline-storage";
 import { getPlantByName } from "@/lib/plants";
-import type {
-  FarmProfile,
-  PlanPreview,
-  CropEntry,
-  WaterCalculation,
-  PlanFormData,
-} from "../types";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_PLAN_FORM } from "../constants";
+import type {
+    CropEntry,
+    FarmProfile,
+    PlanFormData,
+    PlanPreview,
+    WaterCalculation,
+} from "../types";
 
 export function useDashboardData() {
   const router = useRouter();
@@ -138,12 +138,23 @@ export function useSuggestedCrops(
   setWaterCalculation: (w: WaterCalculation | null) => void
 ) {
   const [showModal, setShowModal] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
   const [adding, setAdding] = useState(false);
+
+  // Check localStorage for dismissed state on mount
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("suggestedCropsDismissed") === "true";
+    }
+    return false;
+  });
 
   const closeModal = useCallback(() => {
     setShowModal(false);
-    setDismissed(true); // Mark as dismissed so it won't reopen
+    setDismissed(true);
+    // Persist the dismissed state to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("suggestedCropsDismissed", "true");
+    }
   }, []);
 
   const addAllSuggestedCrops = useCallback(async () => {

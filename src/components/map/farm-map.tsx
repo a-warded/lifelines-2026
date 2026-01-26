@@ -2,7 +2,7 @@
 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 interface Farm {
     userId: string;
@@ -27,6 +27,36 @@ interface FarmMapProps {
     showCompostLegend?: boolean;
 }
 
+function isValidCoord(lat: number, lng: number): boolean {
+    return typeof lat === "number" && typeof lng === "number" && !isNaN(lat) && !isNaN(lng);
+}
+
+function createFarmIcon(emoji: string, isCurrentUser: boolean, isCompostSite: boolean = false) {
+    const colors = isCurrentUser 
+        ? "#3B82F6, #2563EB" 
+        : isCompostSite 
+            ? "#10B981, #059669"
+            : "#80ED99, #57CC99";
+    
+    return L.divIcon({
+        html: `<div style="
+            background: linear-gradient(135deg, ${colors});
+            width: ${isCurrentUser ? "36px" : "32px"};
+            height: ${isCurrentUser ? "36px" : "32px"};
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: ${isCurrentUser ? "3px" : "2px"} solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        "><span style="transform: rotate(45deg); font-size: ${isCurrentUser ? "16px" : "14px"};">${emoji}</span></div>`,
+        className: isCurrentUser ? "current-farm-marker" : isCompostSite ? "compost-marker" : "farm-marker",
+        iconSize: isCurrentUser ? [36, 36] : [32, 32],
+        iconAnchor: isCurrentUser ? [18, 36] : [16, 32],
+        popupAnchor: [0, isCurrentUser ? -36 : -32],
+    });
+}
+
 export function FarmMap({
     farms,
     currentUserId,
@@ -38,27 +68,19 @@ export function FarmMap({
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const markersRef = useRef<L.Marker[]>([]);
-    const isMountedRef = useRef(true);
 
-    // Memoize onFarmClick to prevent unnecessary re-renders
+    // Store onFarmClick in ref to avoid triggering re-renders
     const onFarmClickRef = useRef(onFarmClick);
     onFarmClickRef.current = onFarmClick;
 
+    // Initialize map only once
     useEffect(() => {
-        isMountedRef.current = true;
-        
-        if (!mapRef.current) return;
+        if (!mapRef.current || mapInstanceRef.current) return;
 
-        // Check if container already has a map (prevents double initialization)
-        if (mapInstanceRef.current) {
-            mapInstanceRef.current.remove();
-            mapInstanceRef.current = null;
-        }
-        
-        // Ensure the container is clean
+        // Clear any existing leaflet instance on the container
         const container = mapRef.current;
         if ((container as unknown as { _leaflet_id?: number })._leaflet_id) {
-            return;
+            delete (container as unknown as { _leaflet_id?: number })._leaflet_id;
         }
 
         // Determine initial view
@@ -70,58 +92,65 @@ export function FarmMap({
             initialLat = currentUserLocation.lat;
             initialLng = currentUserLocation.lng;
             initialZoom = 10;
-        } else if (farms.length > 0) {
-            const bounds = L.latLngBounds(farms.map((f) => [f.latitude, f.longitude]));
-            const center = bounds.getCenter();
-            initialLat = center.lat;
-            initialLng = center.lng;
-            initialZoom = 4;
+        } else {
+            const validFarms = farms.filter(f => isValidCoord(f.latitude, f.longitude));
+            if (validFarms.length > 0) {
+                const bounds = L.latLngBounds(validFarms.map(f => [f.latitude, f.longitude]));
+                const center = bounds.getCenter();
+                initialLat = center.lat;
+                initialLng = center.lng;
+                initialZoom = validFarms.length > 1 ? 4 : 10;
+            }
         }
 
-        const map = L.map(mapRef.current).setView([initialLat, initialLng], initialZoom);
-
-        // Add OpenStreetMap tiles
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            maxZoom: 19,
-        }).addTo(map);
-
-        // Helper function to create a farm icon with custom emoji
-        const createFarmIcon = (emoji: string, isCurrentUser: boolean, isCompostSite: boolean = false) => {
-            const colors = isCurrentUser 
-                ? "#3B82F6, #2563EB" 
-                : isCompostSite 
-                    ? "#10B981, #059669" // Emerald for compost
-                    : "#80ED99, #57CC99"; // Green for farms
-            
-            const shadowColor = isCurrentUser 
-                ? "59, 130, 246" 
-                : isCompostSite 
-                    ? "16, 185, 129" 
-                    : "0,0,0";
-            
-            return L.divIcon({
-                html: `<div style="
-                    background: linear-gradient(135deg, ${colors});
-                    width: ${isCurrentUser ? "36px" : "32px"};
-                    height: ${isCurrentUser ? "36px" : "32px"};
-                    border-radius: 50% 50% 50% 0;
-                    transform: rotate(-45deg);
-                    border: ${isCurrentUser ? "3px" : "2px"} solid white;
-                    box-shadow: 0 2px ${isCurrentUser ? "12px" : "8px"} rgba(${shadowColor}, ${isCurrentUser ? "0.5" : "0.3"});
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                "><span style="transform: rotate(45deg); font-size: ${isCurrentUser ? "16px" : "14px"};">${emoji}</span></div>`,
-                className: isCurrentUser ? "current-farm-marker" : isCompostSite ? "compost-marker" : "farm-marker",
-                iconSize: isCurrentUser ? [36, 36] : [32, 32],
-                iconAnchor: isCurrentUser ? [18, 36] : [16, 32],
-                popupAnchor: [0, isCurrentUser ? -36 : -32],
+        try {
+            const map = L.map(container, {
+                center: [initialLat, initialLng],
+                zoom: initialZoom,
             });
-        };
 
-        // Add markers for each farm
-        markersRef.current = farms.map((farm) => {
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19,
+            }).addTo(map);
+
+            mapInstanceRef.current = map;
+        } catch (error) {
+            console.error("Error initializing map:", error);
+        }
+
+        return () => {
+            if (mapInstanceRef.current) {
+                try {
+                    mapInstanceRef.current.remove();
+                } catch {
+                    // Ignore cleanup errors
+                }
+                mapInstanceRef.current = null;
+            }
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run once on mount
+
+    // Update markers when farms change
+    useEffect(() => {
+        const map = mapInstanceRef.current;
+        if (!map) return;
+
+        // Clear existing markers
+        markersRef.current.forEach(marker => {
+            try {
+                marker.remove();
+            } catch {
+                // Ignore
+            }
+        });
+        markersRef.current = [];
+
+        // Add new markers
+        const validFarms = farms.filter(f => isValidCoord(f.latitude, f.longitude));
+        
+        markersRef.current = validFarms.map((farm) => {
             const isCurrentUser = farm.userId === currentUserId;
             const isCompostSite = farm.spaceType?.includes("compost") || farm.farmEmoji === "♻️";
             const emoji = farm.farmEmoji || (isCompostSite ? "♻️" : "🌱");
@@ -179,36 +208,40 @@ export function FarmMap({
         });
 
         // Fit bounds if multiple farms
-        if (farms.length > 1 && isMountedRef.current) {
-            const bounds = L.latLngBounds(farms.map((f) => [f.latitude, f.longitude]));
-            map.fitBounds(bounds, { padding: [50, 50] });
+        if (validFarms.length > 1) {
+            try {
+                const bounds = L.latLngBounds(validFarms.map(f => [f.latitude, f.longitude]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+            } catch {
+                // Ignore bounds errors
+            }
+        } else if (validFarms.length === 1) {
+            map.setView([validFarms[0].latitude, validFarms[0].longitude], 10);
         }
 
-        mapInstanceRef.current = map;
-
         return () => {
-            isMountedRef.current = false;
+            // Cleanup markers on dependency change
             markersRef.current.forEach(marker => {
                 try {
                     marker.remove();
                 } catch {
-                    // Ignore errors during cleanup
+                    // Ignore
                 }
             });
             markersRef.current = [];
-            if (mapInstanceRef.current) {
-                try {
-                    mapInstanceRef.current.remove();
-                } catch {
-                    // Ignore errors during cleanup
-                }
-                mapInstanceRef.current = null;
-            }
         };
-    }, [farms, currentUserId, currentUserLocation]);
+    }, [farms, currentUserId]);
+
+    // Update view when user location changes
+    useEffect(() => {
+        const map = mapInstanceRef.current;
+        if (!map || !currentUserLocation) return;
+
+        map.setView([currentUserLocation.lat, currentUserLocation.lng], 10);
+    }, [currentUserLocation]);
 
     return (
-        <div className="relative overflow-hidden rounded-xl border shadow-sm" style={{ isolation: "isolate" }}>
+        <div className="relative overflow-hidden rounded-md border" style={{ isolation: "isolate" }}>
             <div ref={mapRef} style={{ height, width: "100%" }} className="z-0" />
             
             {/* Legend */}
@@ -234,11 +267,6 @@ export function FarmMap({
                         <span>Compost Sites</span>
                     </div>
                 )}
-            </div>
-
-            {/* Farm count */}
-            <div className="absolute right-4 top-4 z-10 rounded-lg bg-white/95 px-3 py-2 shadow-lg backdrop-blur dark:bg-zinc-800/95">
-                <span className="text-sm font-medium">{farms.length} farms</span>
             </div>
         </div>
     );

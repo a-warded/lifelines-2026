@@ -269,18 +269,17 @@ function generateChecklist(profile: IFarmProfile): string[] {
 }
 
 function estimateWaterUsage(crops: IRecommendedCrop[]): number {
-    // Assume 2 plants of each recommended crop as starter
-    // Use vegetative stage as baseline
+    // Assume 1 plant of each recommended crop as starter (matches "Add All to My Farm" behavior)
+    // Use seedling stage as baseline (matches the default stage when crops are added)
     let total = 0;
     for (const crop of crops) {
         const plant = Object.values(PLANTS).find((p) => p.name === crop.cropName);
         if (plant) {
-            // Average of seedling and vegetative stages
-            const avgWater = (plant.waterByStage.seedling + plant.waterByStage.vegetative) / 2;
-            total += avgWater * 2; // 2 plants
+            // Use seedling stage to match actual water calculator behavior
+            total += plant.waterByStage.seedling * 1; // 1 plant per crop
         }
     }
-    return Math.round(total * 10) / 10; // Round to 1 decimal
+    return Math.round(total * 100) / 100; // Round to 2 decimals for consistency
 }
 
 function generateFallbackNotes(profile: IFarmProfile): string {

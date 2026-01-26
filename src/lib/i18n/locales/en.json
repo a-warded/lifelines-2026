@@ -91,8 +91,8 @@
         }
     },
     "dashboard": {
-        "welcome": "Welcome back{{name, andName}}!",
-        "tagline": "Grow food, build resilience, share with your community.",
+        "welcome": "Welcome to FADES, {{name, andName}}!",
+        "tagline": "Your farm: {{name}}",
         "loadDemo": "Load Demo Data",
         "features": {
             "plan": {
@@ -257,7 +257,7 @@
         "types": {
             "seeds": "Seeds",
             "produce": "Produce",
-            "fertilizer": "🌱 Fertilizer/Compost",
+            "fertilizer": "Fertilizer/Compost",
             "tools": "Tools",
             "other": "Other"
         },

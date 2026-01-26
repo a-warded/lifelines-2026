@@ -109,7 +109,7 @@ export default function Home() {
 
                 <div className="fades-fancy-ahh flex flex-col items-center mb-8">
                     <FadesLogo fill="var(--primary)" className="px-12"/>
-                    <h1 className="text-8xl text-primary font-bold" >FADES</h1>
+                    <h1 className="text-8xl text-primary font-bold fades-font" >FADES</h1>
                 </div>
 
                 <SplitText

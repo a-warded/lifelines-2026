@@ -2,6 +2,11 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@font-face {
+  font-family: FADES;
+  src: url("/fonts/FADES.woff2") format("woff2");
+}
+
 @theme {
   --font-sans: "Sora", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -245,6 +250,14 @@ body {
 
 .fades-fancy-ahh-fast {
   animation: lifelinesScaleIn 1000ms cubic-bezier(.17,.67,.41,.99);
+}
+
+.fades-fancy-ahh-modal {
+  animation: lifelinesScaleIn 650ms cubic-bezier(.17,.67,.41,.99);
+}
+
+.fades-font {
+  font-family: FADES;
 }
 
 .fade-onboard-step {

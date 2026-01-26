@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { GrowthStage, getPlantOptions } from "@/lib/plants";
-import { Droplets, Leaf, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Leaf, PencilIcon, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 interface CropEntry {
@@ -127,53 +127,6 @@ export function CropManager({
 
     return (
         <div className="space-y-4">
-            {/* Water Summary Card */}
-            {waterCalculation && waterCalculation.totalDailyLiters > 0 && (
-                <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 dark:border-blue-800 dark:from-blue-950 dark:to-cyan-950">
-                    <CardContent className="py-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                                    <Droplets className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                                        Daily Water Need
-                                    </p>
-                                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                                        {waterCalculation.totalDailyLiters.toFixed(1)}L
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-xs text-blue-600 dark:text-blue-400">
-                                    {crops.length} crop{crops.length !== 1 && "s"}
-                                </p>
-                                <p className="text-xs text-blue-600 dark:text-blue-400">
-                                    {crops.reduce((sum, c) => sum + c.count, 0)} plants
-                                </p>
-                            </div>
-                        </div>
-
-                        {waterCalculation.warning && (
-                            <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-100 p-3 text-sm text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                                <span>{waterCalculation.warning}</span>
-                            </div>
-                        )}
-
-                        {!compact && waterCalculation.tips.length > 0 && (
-                            <div className="mt-3 space-y-1">
-                                {waterCalculation.tips.slice(0, 2).map((tip, i) => (
-                                    <p key={i} className="text-xs text-blue-600 dark:text-blue-400">
-                                        💡 {tip}
-                                    </p>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
 
             {/* Crops List */}
             <Card>
@@ -222,7 +175,7 @@ export function CropManager({
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-semibold text-foreground">{crop.plantName}</span>
                                                     <Badge variant="secondary" className="text-xs">
-                                                        ×{crop.count}
+                                                        x{crop.count}
                                                     </Badge>
                                                 </div>
                                                 <div className="mt-1">
@@ -233,7 +186,7 @@ export function CropManager({
                                                             value: s.value,
                                                             label: `${s.emoji} ${s.label}`,
                                                         }))}
-                                                        className="h-8 text-sm"
+                                                        className="h-10 text-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -251,7 +204,7 @@ export function CropManager({
                                                 size="sm"
                                                 onClick={() => handleEdit(index)}
                                             >
-                                                Edit
+                                                <PencilIcon className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="ghost"
