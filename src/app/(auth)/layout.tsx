@@ -29,14 +29,14 @@ function AuthLanguageSwitcher() {
 }
 
 export default function AuthLayout({
-  children,
+    children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-      <>
-          <AuthLanguageSwitcher />
-          {children}
-      </>
-  );
+    return (
+        <>
+            <AuthLanguageSwitcher />
+            {children}
+        </>
+    );
 }

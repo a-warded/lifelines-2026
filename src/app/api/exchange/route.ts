@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         const totalCount = await ExchangeListing.countDocuments(query);
         const skip = (page - 1) * limit;
 
-        let listings = await ExchangeListing.find(query)
+        const listings = await ExchangeListing.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)

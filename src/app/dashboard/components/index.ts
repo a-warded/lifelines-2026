@@ -1,7 +1,7 @@
 export {
-  QuickActionsList,
-  LatestPlanCard,
-  GetStartedCard,
-  RegeneratePlanModal,
-  SuggestedCropsModal,
+    QuickActionsList,
+    LatestPlanCard,
+    GetStartedCard,
+    RegeneratePlanModal,
+    SuggestedCropsModal,
 } from "./dashboard-cards";

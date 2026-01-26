@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
 
         // Default: return nearest sites if location provided
         if (!isNaN(lat) && !isNaN(lon)) {
-            let sites = await CompostSite.find({ isPublic: true })
+            const sites = await CompostSite.find({ isPublic: true })
                 .select("userId userName siteName siteEmoji siteType acceptsWaste sellsFertilizer latitude longitude locationLabel country isVerified")
                 .lean();
 

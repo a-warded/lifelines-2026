@@ -157,5 +157,5 @@ export function calculateSinglePlantWater(
 export { getPlantOptions };
 
 // Re-export growth stages type
-    export type { GrowthStage };
+export type { GrowthStage };
 

@@ -31,7 +31,7 @@ export interface Profile {
 }
 
 export const DIFFICULTY_COLORS = {
-  easy: "success",
-  medium: "warning",
-  hard: "danger",
+    easy: "success",
+    medium: "warning",
+    hard: "danger",
 } as const;
