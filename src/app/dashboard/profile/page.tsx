@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Edit2, Save } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 
 // Components
 import {
@@ -17,6 +18,8 @@ import { useFarmProfile } from "./hooks";
 
 export default function ProfilePage() {
   const { data: session } = useSession();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === "rtl";
   const farmProfile = useFarmProfile();
 
   if (farmProfile.loading) {
@@ -32,22 +35,22 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Farm Profile</h1>
-          <p className="text-muted-foreground">Manage your farm settings and location</p>
+          <h1 className="text-2xl font-bold">{t("profile.title")}</h1>
+          <p className="text-muted-foreground">{t("profile.subtitle")}</p>
         </div>
         {!farmProfile.editing ? (
           <Button onClick={farmProfile.startEditing} variant="outline">
-            <Edit2 className="mr-2 h-4 w-4" />
-            Edit Profile
+            <Edit2 className={`${isRTL ? "ms-2" : "me-2"} h-4 w-4`} />
+            {t("profile.editProfile")}
           </Button>
         ) : (
           <div className="flex gap-2">
             <Button variant="ghost" onClick={farmProfile.cancelEditing}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={farmProfile.saveProfile} loading={farmProfile.saving}>
-              <Save className="mr-2 h-4 w-4" />
-              Save Changes
+              <Save className={`${isRTL ? "ms-2" : "me-2"} h-4 w-4`} />
+              {t("profile.saveChanges")}
             </Button>
           </div>
         )}

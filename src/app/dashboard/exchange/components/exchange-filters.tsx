@@ -44,10 +44,10 @@ export function ExchangeFilters({
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-            Filters
+                        {t("exchange.filters.title", "Filters")}
                     </h2>
                     <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-            Refine listings to find what you need
+                        {t("exchange.filters.description", "Refine listings to find what you need")}
                     </p>
                 </div>
             </div>
@@ -55,12 +55,12 @@ export function ExchangeFilters({
             {/* Filter controls */}
             <div className="flex items-center gap-2 mb-6">
                 <span className="text-xs text-[var(--color-text-secondary)]">
-                    {hasActiveFilters ? "Filters applied" : "No filters applied"}
+                    {hasActiveFilters ? t("exchange.filters.applied", "Filters applied") : t("exchange.filters.noFilters", "No filters applied")}
                 </span>
                 <button
                     onClick={clearFilters}
                     className="p-1.5 rounded-lg bg-[var(--color-background)] hover:bg-[var(--color-border)] transition-colors"
-                    aria-label="Clear filters"
+                    aria-label={t("exchange.filters.clear", "Clear filters")}
                 >
                     <RotateCcw className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
                 </button>
@@ -68,13 +68,13 @@ export function ExchangeFilters({
                     onClick={onApply}
                     className="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-xs font-medium flex items-center gap-1.5"
                 >
-          Apply <Check className="w-3.5 h-3.5" />
+                    {t("exchange.filters.apply", "Apply")} <Check className="w-3.5 h-3.5" />
                 </button>
             </div>
 
             {/* Type Filter */}
             <FilterSection
-                title="LISTING TYPE"
+                title={t("exchange.filters.listingType", "LISTING TYPE")}
                 onClear={() => setFilter("type", "")}
             >
                 <RadioGroup
@@ -89,9 +89,9 @@ export function ExchangeFilters({
 
             {/* Status Filter */}
             <FilterSection
-                title="LISTING STATUS"
+                title={t("exchange.filters.listingStatus", "LISTING STATUS")}
                 onClear={() => setFilter("status", "")}
-                description="Find available, claimed, or completed listings"
+                description={t("exchange.filters.statusDescription", "Find available, claimed, or completed listings")}
             >
                 <RadioGroup
                     options={LISTING_STATUS_OPTIONS.map(opt => ({
@@ -105,9 +105,9 @@ export function ExchangeFilters({
 
             {/* Mode Filter */}
             <FilterSection
-                title="MODE"
+                title={t("exchange.filters.mode", "MODE")}
                 onClear={() => setFilter("mode", "")}
-                description="Filter by offering or seeking"
+                description={t("exchange.filters.modeDescription", "Filter by offering or seeking")}
             >
                 <RadioGroup
                     options={LISTING_MODE_OPTIONS.map(opt => ({
@@ -121,20 +121,20 @@ export function ExchangeFilters({
 
             {/* Delivery Method Filter */}
             <FilterSection
-                title="DELIVERY"
+                title={t("exchange.filters.delivery", "DELIVERY")}
                 onClear={() => setFilter("delivery", "")}
-                description="Filter by delivery method"
+                description={t("exchange.filters.deliveryDescription", "Filter by delivery method")}
             >
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                     <RadioOption
-                        label="All"
+                        label={t("common.all", "All")}
                         selected={filters.delivery === ""}
                         onClick={() => setFilter("delivery", "")}
                     />
                     {DELIVERY_METHODS.map((method) => (
                         <RadioOption
                             key={method.value}
-                            label={`${method.label}`}
+                            label={t(`exchange.create.deliveryMethods.${method.value}`, method.label)}
                             selected={filters.delivery === method.value}
                             onClick={() => setFilter("delivery", method.value)}
                         />
@@ -146,7 +146,7 @@ export function ExchangeFilters({
             <div>
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
-            LOCATION
+                        {t("exchange.filters.location", "LOCATION")}
                     </h3>
                 </div>
                 <div className="text-sm text-[var(--color-text-secondary)]">
@@ -172,7 +172,7 @@ export function ExchangeFilters({
                     {locationStatus === "detecting"
                         ? t("exchange.create.locationDetecting", "Detecting...")
                         : userLocation
-                            ? "Update Location"
+                            ? t("exchange.filters.updateLocation", "Update Location")
                             : t("exchange.create.useMyLocation", "Use My Location")}
                 </Button>
             </div>

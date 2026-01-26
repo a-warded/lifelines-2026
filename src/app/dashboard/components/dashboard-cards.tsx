@@ -87,13 +87,13 @@ export function LatestPlanCard({ plan, onAddCrops, onRegenerate }: LatestPlanCar
                             onClick={onRegenerate}
                             className="mt-3 text-xs text-green-600 underline underline-offset-2 transition-colors hover:text-green-800 dark:text-green-400 dark:hover:text-green-200"
                         >
-              Generate a new farming plan
+                            {t("dashboard.latestPlan.regenerate")}
                         </button>
                     </div>
                     <div className="flex gap-2">
                         <Button size="sm" variant="outline" onClick={onAddCrops}>
-                            <Plus className="mr-1 h-3 w-3" />
-              Add Crops
+                            <Plus className="h-3 w-3 me-1" />
+                            {t("dashboard.latestPlan.addCrops")}
                         </Button>
                         <Link href={`/dashboard/plan/${plan.id}`}>
                             <Button size="sm" variant="outline">
@@ -160,10 +160,10 @@ export function RegeneratePlanModal({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Update Farming Conditions">
+        <Modal isOpen={isOpen} onClose={onClose} title={t("dashboard.regenerate.title")}>
             <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-          Update your farming conditions to get new personalized crop recommendations.
+                    {t("dashboard.regenerate.description")}
                 </p>
 
                 <div className="space-y-4">
@@ -224,11 +224,11 @@ export function RegeneratePlanModal({
 
                 <div className="flex justify-end gap-3 pt-4">
                     <Button variant="outline" onClick={onClose} disabled={loading}>
-            Cancel
+                        {t("common.cancel")}
                     </Button>
                     <Button onClick={onSubmit} loading={loading}>
-                        <Sprout className="mr-2 h-4 w-4" />
-            Generate New Plan
+                        <Sprout className="me-2 h-4 w-4" />
+                        {t("dashboard.regenerate.submit")}
                     </Button>
                 </div>
             </div>
@@ -251,18 +251,20 @@ export function SuggestedCropsModal({
     onAddAll,
     loading,
 }: SuggestedCropsModalProps) {
+    const { t, i18n } = useTranslation();
+    const isRTL = i18n.dir() === "rtl";
+
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Suggested Crops for You">
+        <Modal isOpen={isOpen} onClose={onClose} title={t("dashboard.suggestedCrops.title")}>
             <div className="space-y-4">
                 <div className="flex items-start gap-3 rounded-lg bg-green-50 p-4 dark:bg-green-950">
                     <LeafIcon className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
                     <div>
                         <p className="text-sm font-medium text-green-800 dark:text-green-200">
-              We&apos;ve selected the best crops for you!
+                            {t("dashboard.suggestedCrops.subtitle")}
                         </p>
                         <p className="mt-1 text-sm text-green-700 dark:text-green-300">
-              Based on your location, conditions, and goals, here are our top
-              recommendations.
+                            {t("dashboard.suggestedCrops.description")}
                         </p>
                     </div>
                 </div>
@@ -289,7 +291,7 @@ export function SuggestedCropsModal({
                                         }
                                         className="mt-1"
                                     >
-                                        {crop.difficulty.charAt(0).toUpperCase() + crop.difficulty.slice(1)}
+                                        {t(`plants.difficulty.${crop.difficulty}`)}
                                     </Badge>
                                 </div>
                             </div>
@@ -297,7 +299,7 @@ export function SuggestedCropsModal({
 
                         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
                             <p className="text-sm text-blue-700 dark:text-blue-300">
-                💧 Estimated daily water:{" "}
+                                💧 {t("dashboard.suggestedCrops.estimatedWater")}:{" "}
                                 <strong>{plan.estimatedDailyWaterLiters}L</strong>
                             </p>
                         </div>
@@ -306,11 +308,11 @@ export function SuggestedCropsModal({
 
                 <div className="flex justify-end gap-3 pt-2">
                     <Button variant="outline" onClick={onClose}>
-            Maybe Later
+                        {t("dashboard.suggestedCrops.maybeLater")}
                     </Button>
                     <Button onClick={onAddAll} loading={loading}>
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
-            Add All to My Farm
+                        <CheckCircle2 className={`${isRTL ? "ms-2" : "me-2"} h-4 w-4`} />
+                        {t("dashboard.suggestedCrops.addAll")}
                     </Button>
                 </div>
             </div>

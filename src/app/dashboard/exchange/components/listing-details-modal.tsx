@@ -41,7 +41,7 @@ export function ListingDetailsModal({
   const deliveryMethod = DELIVERY_METHODS.find(m => m.value === listing.deliveryMethod);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Listing Details" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("exchange.listing.details")} size="lg">
       <div className="space-y-4">
         {/* Image */}
         {imageUrl && (
@@ -61,7 +61,7 @@ export function ListingDetailsModal({
           </h3>
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <Badge className={`text-xs ${STATUS_COLORS[listing.status]}`}>
-              {listing.status.toUpperCase()}
+              {t(`exchange.status.${listing.status}`, listing.status).toUpperCase()}
             </Badge>
             <Badge className={`text-xs ${TYPE_COLORS[listing.type] || TYPE_COLORS.other}`}>
               {t(`exchange.types.${listing.type}`).toUpperCase()}
@@ -72,38 +72,38 @@ export function ListingDetailsModal({
 
         {/* Description */}
         <div className="p-3 bg-[var(--color-surface)] rounded-lg">
-          <p className="text-sm font-medium mb-1">Description</p>
+          <p className="text-sm font-medium mb-1">{t("exchange.listing.description")}</p>
           <p className="text-sm text-[var(--color-text-secondary)] whitespace-pre-wrap">
-            {listing.description || "No description provided."}
+            {listing.description || t("exchange.listing.noDescription")}
           </p>
         </div>
 
         {/* Details grid */}
         <div className="grid grid-cols-2 gap-4">
           {listing.quantity && (
-            <DetailItem label="Quantity" value={listing.quantity} />
+            <DetailItem label={t("exchange.listing.quantity")} value={listing.quantity} />
           )}
           <DetailItem 
-            label="Mode" 
-            value={listing.mode === "offering" ? "Offering" : "Seeking"} 
+            label={t("exchange.listing.mode")} 
+            value={t(`exchange.mode.${listing.mode}`)} 
           />
           <DetailItem 
-            label="Posted by" 
-            value={listing.userName || "Anonymous"} 
+            label={t("exchange.listing.postedBy", { name: "" }).replace("{{name}}", "")} 
+            value={listing.userName || t("common.anonymous", "Anonymous")} 
           />
           <DetailItem 
-            label="Location" 
+            label={t("exchange.listing.location")} 
             value={listing.locationLabel || getCountryName(listing.country)} 
           />
           {distance !== null && (
-            <DetailItem label="Distance" value={`${distance}km away`} />
+            <DetailItem label={t("exchange.listing.distance", { distance: "" }).replace("{{distance}} km away", "")} value={t("exchange.listing.distance", { distance })} />
           )}
           <DetailItem
-            label="Delivery"
+            label={t("exchange.listing.delivery")}
             value={
               <span className="flex items-center gap-2">
                 <span>{deliveryMethod?.emoji || "📍"}</span>
-                {deliveryMethod?.label || "Pick-up at location"}
+                {t(`exchange.create.deliveryMethods.${listing.deliveryMethod}`, deliveryMethod?.label || "Pick-up at location")}
               </span>
             }
           />
@@ -113,7 +113,7 @@ export function ListingDetailsModal({
         {listing.dealType === "trade" && listing.tradeItems && listing.tradeItems.length > 0 && (
           <div>
             <p className="text-sm font-medium mb-2">
-              {listing.mode === "offering" ? "Wants in return:" : "Looking for:"}
+              {listing.mode === "offering" ? t("exchange.listing.wantsInReturn") + ":" : t("exchange.listing.lookingFor") + ":"}
             </p>
             <div className="flex flex-wrap gap-1">
               {listing.tradeItems.map((item, i) => (
@@ -131,18 +131,18 @@ export function ListingDetailsModal({
             {isSaved ? (
               <>
                 <BookmarkCheck className="w-4 h-4" />
-                Saved
+                {t("exchange.listing.saved")}
               </>
             ) : (
               <>
                 <Bookmark className="w-4 h-4" />
-                Save
+                {t("exchange.listing.save")}
               </>
             )}
           </Button>
           <Button variant="outline" onClick={onShare} className="flex items-center gap-2">
             <LinkIcon className="w-4 h-4" />
-            Share
+            {t("exchange.listing.share")}
           </Button>
           {!listing.isOwner && listing.status === "available" && (
             <Button onClick={onClaim} className="flex-1">

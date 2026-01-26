@@ -143,22 +143,22 @@ export function ListingCard({
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2 py-3 border-t border-[var(--color-border)]">
-          <StatItem label="Claims" value={listing.claimCount || 0} />
+          <StatItem label={t("exchange.listing.claims")} value={listing.claimCount || 0} />
           <StatItem 
-            label="Distance" 
+            label={t("exchange.listing.distance", { distance: "" }).split(" ")[0] || "Distance"} 
             value={formatDistance(distance)} 
           />
           <StatItem 
-            label="Delivery" 
+            label={t("exchange.listing.delivery")} 
             value={deliveryMethod?.emoji || "📍"} 
-            title={deliveryMethod?.label || "Pick-up"} 
+            title={t(`exchange.create.deliveryMethods.${listing.deliveryMethod}`, deliveryMethod?.label || "Pick-up")} 
           />
         </div>
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-2 mt-auto pt-3">
           <Button variant="outline" size="sm" className="w-full text-xs" onClick={onViewDetails}>
-            View Details
+            {t("exchange.listing.viewDetails")}
           </Button>
           {!listing.isOwner && listing.status === "available" ? (
             <Button size="sm" className="w-full text-xs" onClick={onClaim}>
@@ -168,7 +168,7 @@ export function ListingCard({
             </Button>
           ) : (
             <Button size="sm" variant="secondary" className="w-full text-xs" onClick={onViewDetails}>
-              View Status
+              {t("exchange.listing.viewStatus")}
             </Button>
           )}
         </div>

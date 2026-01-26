@@ -1,7 +1,7 @@
 import { I18nProvider } from "@/components/providers/i18n-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,6 +12,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
     variable: "--font-geist-mono",
     subsets: ["latin"],
+});
+
+const notoSansArabic = Noto_Sans_Arabic({
+    variable: "--font-noto-arabic",
+    subsets: ["arabic"],
+    weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -32,9 +38,9 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} ${notoSansArabic.variable} antialiased`}
             >
                 <SessionProvider>
                     <I18nProvider>{children}</I18nProvider>

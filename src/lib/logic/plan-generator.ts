@@ -198,71 +198,71 @@ function generateTimeline(
         profile.waterAvailability === "low" || profile.waterAvailability === "none";
 
     const todaySteps: string[] = [
-        "Survey your growing space and note sunlight patterns",
+        "plan.view.timeline.steps.surveySpace",
         isContainerBased
-            ? "Gather containers with drainage holes"
-            : "Mark out your growing area",
-        "Check your water source and storage options",
+            ? "plan.view.timeline.steps.gatherContainers"
+            : "plan.view.timeline.steps.markArea",
+        "plan.view.timeline.steps.checkWater",
     ];
 
     if (isLowResource) {
-        todaySteps.push("Set up water collection containers if possible");
+        todaySteps.push("plan.view.timeline.steps.setupWaterCollection");
     }
 
     const thisWeekSteps: string[] = [
         isContainerBased
-            ? "Fill containers with growing medium or soil mix"
-            : "Prepare soil - remove debris, loosen top layer",
-        `Obtain seeds or seedlings for: ${crops.map((c) => c.cropName).join(", ")}`,
-        "Create a simple watering schedule",
-        "Set up basic shade protection if needed",
+            ? "plan.view.timeline.steps.fillContainers"
+            : "plan.view.timeline.steps.prepareSoil",
+        `plan.view.timeline.steps.obtainSeeds::${crops.map((c) => c.cropName).join(", ")}`,
+        "plan.view.timeline.steps.createSchedule",
+        "plan.view.timeline.steps.setupShade",
     ];
 
     if (profile.soilCondition === "salty") {
         thisWeekSteps.push(
-            "Consider raised beds or containers to avoid salty ground soil"
+            "plan.view.timeline.steps.considerRaised"
         );
     }
 
     const week2Steps: string[] = [
-        "Plant your first seeds following spacing guidelines",
-        "Establish morning watering routine",
-        "Monitor for pests - check leaves daily",
-        "Add mulch to retain moisture",
-        "Connect with local growers through the Exchange feature",
+        "plan.view.timeline.steps.plantSeeds",
+        "plan.view.timeline.steps.morningWatering",
+        "plan.view.timeline.steps.monitorPests",
+        "plan.view.timeline.steps.addMulch",
+        "plan.view.timeline.steps.connectGrowers",
     ];
 
     if (profile.experienceLevel === "beginner") {
-        week2Steps.push("Keep a simple log of what you plant and when");
+        week2Steps.push("plan.view.timeline.steps.keepLog");
     }
 
     return [
-        { label: "Today", steps: todaySteps },
-        { label: "This Week", steps: thisWeekSteps },
-        { label: "Week 2+", steps: week2Steps },
+        { label: "plan.view.timeline.today", steps: todaySteps },
+        { label: "plan.view.timeline.thisWeek", steps: thisWeekSteps },
+        { label: "plan.view.timeline.week2", steps: week2Steps },
     ];
 }
 
 function generateChecklist(profile: IFarmProfile): string[] {
     const base = [
-        "Find or prepare growing containers/space",
-        "Ensure adequate drainage",
-        "Prepare soil or growing medium",
-        "Source seeds or seedlings",
-        "Set up watering system or schedule",
-        "Plan for sun/shade management",
+        "plan.view.checklist.items.findContainers",
+        "plan.view.checklist.items.ensureDrainage",
+        "plan.view.checklist.items.prepareSoil",
+        "plan.view.checklist.items.sourceSeeds",
+        "plan.view.checklist.items.setupWatering",
+        "plan.view.checklist.items.planSunShade",
     ];
 
     if (profile.soilCondition === "salty") {
-        base.push("Consider salt-flushing or container growing");
+        base.push("plan.view.checklist.items.saltFlushing");
     }
 
     if (profile.waterAvailability === "low") {
-        base.push("Set up water recycling/collection");
+        base.push("plan.view.checklist.items.waterRecycling");
     }
 
     if (profile.waterAvailability === "none") {
-        base.push("Establish water source or collection system");
+        base.push("plan.view.checklist.items.establishWater");
     }
 
     return base.slice(0, 8); // Max 8 items

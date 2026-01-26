@@ -79,7 +79,8 @@ function useCompostSites() {
 export default function DashboardPage() {
     const { data: session } = useSession();
     const searchParams = useSearchParams();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isRTL = i18n.dir() === "rtl";
     const [showMap, setShowMap] = useState(true);
     const [showCompostLocations, setShowCompostLocations] = useState(false);
     const [showStatsModal, setShowStatsModal] = useState(false);
@@ -241,7 +242,7 @@ export default function DashboardPage() {
               <div className="flex gap-2">
                   <div className="flex items-center gap-2">
                       <Recycle className="h-4 w-4 text-emerald-600" />
-                      <span className="text-sm font-medium">Compost Sites</span>
+                      <span className="text-sm font-medium">{t("map.compostSites")}</span>
                       <button
                           onClick={() => setShowCompostLocations(!showCompostLocations)}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -249,6 +250,7 @@ export default function DashboardPage() {
                           }`}
                           role="switch"
                           aria-checked={showCompostLocations}
+                          dir="ltr"
                       >
                           <span
                               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -259,7 +261,7 @@ export default function DashboardPage() {
                   </div>
                   {showDemo && (
                       <Button onClick={demo.loadDemo} loading={demo.loading} variant="outline">
-                          <Calculator className="mr-2 h-4 w-4" />
+                          <Calculator className={`${isRTL ? "ms-2" : "me-2"} h-4 w-4`} />
                           {t("dashboard.loadDemo")}
                       </Button>
                   )}
@@ -271,7 +273,7 @@ export default function DashboardPage() {
               <div className="overflow-hidden rounded-xl p-0 relative">
 
                   {/* Stats Button */}
-                  <div className="absolute top-4 right-4 z-10">
+                  <div className={`absolute top-4 ${isRTL ? "left-4" : "right-4"} z-10`}>
                       <button
                           onClick={() => {
                               if (compostSitesHook.sites.length === 0) {
@@ -282,7 +284,7 @@ export default function DashboardPage() {
                           className="flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 transition-colors hover:bg-white dark:bg-zinc-800/95 dark:hover:bg-zinc-700"
                       >
                           <BarChart3 className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium">Stats</span>
+                          <span className="text-sm font-medium">{t("map.stats")}</span>
                       </button>
                   </div>
 

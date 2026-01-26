@@ -2,6 +2,7 @@
 
 import { Bot, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface AssistantSidebarProps {
     children: React.ReactNode;
@@ -9,13 +10,17 @@ interface AssistantSidebarProps {
 
 export function AssistantSidebar({ children }: AssistantSidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const { i18n, t } = useTranslation();
+    const isRTL = i18n.dir() === "rtl";
 
     return (
         <>
             {/* Mobile toggle button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed right-4 top-4 z-50 rounded-lg bg-primary p-2 text-primary-foreground lg:hidden"
+                className={`fixed top-4 z-50 rounded-lg bg-primary p-2 text-primary-foreground lg:hidden ${
+                    isRTL ? "left-4" : "right-4"
+                }`}
                 aria-label={isOpen ? "Close assistant" : "Open assistant"}
             >
                 {isOpen ? <X size={24} /> : <Bot size={24} />}
@@ -31,9 +36,11 @@ export function AssistantSidebar({ children }: AssistantSidebarProps) {
 
             {/* Assistant sidebar panel */}
             <aside
-                className={`fixed right-0 top-0 z-40 h-screen w-full max-w-md transform bg-sidebar transition-transform duration-300 ease-in-out ${
-                    isOpen ? "translate-x-0" : "translate-x-full"
-                } lg:translate-x-0 lg:w-96 xl:w-[28rem]`}
+                className={`fixed top-0 z-40 h-screen w-full max-w-md transform bg-sidebar transition-transform duration-300 ease-in-out lg:w-96 xl:w-[28rem] ${
+                    isRTL
+                        ? `left-0 ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`
+                        : `right-0 ${isOpen ? "translate-x-0" : "translate-x-full"} lg:translate-x-0`
+                }`}
             >
                 <div className="flex h-full flex-col">
                     {/* Header */}
@@ -41,7 +48,7 @@ export function AssistantSidebar({ children }: AssistantSidebarProps) {
                         <div className="flex items-center gap-2">
                             <Bot className="h-6 w-6 text-primary" />
                             <span className="text-lg font-semibold text-sidebar-foreground">
-                                Aila Assistant
+                                {t("assistant.title")}
                             </span>
                         </div>
                         <button
