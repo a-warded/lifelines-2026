@@ -8,7 +8,7 @@ export interface IRecommendedCrop {
 }
 
 export interface ITimelineBlock {
-  label: "Today" | "This Week" | "Week 2+";
+  label: "Today" | "This Week" | "Week 2+" | "plan.view.timeline.today" | "plan.view.timeline.thisWeek" | "plan.view.timeline.week2";
   steps: string[];
 }
 
