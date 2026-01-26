@@ -50,6 +50,13 @@ export default function AilaRealtimeAssistant() {
                 />
             </div>
 
+            {audio.isMuted && (
+                <div className="mt-4 text-center text-white bg-foreground/40  px-4 py-2 rounded-lg">
+                    <p className="font-bold">AI Farming Assistant</p>
+                    <p className="text-sm">Press the mic button to start talking</p>
+                </div>
+            )}
+
             {/* Controls */}
             <div className="w-full flex justify-around pb-7 items-center mt-auto">
                 <ControlButton
