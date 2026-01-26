@@ -1,11 +1,8 @@
-NOT DONE DO NOT MAKE TS PUBLIC OR I WILL SLIME YOU 🤑🤑🤑🤑🤑🤑🤑🤑🤑🤑
--Samarth
-
 Made for the Carnegie Mellon Qatar LifeLines hackathon 2026.
 
 <div align="center">
   <a href="https://github.com/a-warded/lifelines-2026">
-    <img src="https://media.tenor.com/uANrT4pUp8AAAAAi/aqua.gif" alt="FADES Logo Placeholder" width="100%">
+    <img src="https://github.com/a-warded/lifelines-2026/blob/main/repo_splashscreen.webp?raw=true" alt="FADES Logo Placeholder" width="100%">
   </a>
 
   <h3 align="center">FADES</h3>
