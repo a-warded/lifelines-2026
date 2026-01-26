@@ -1,3 +1,7 @@
+## Open source NPM packages
+
+`package-lock.json` will contain a list of all used packages as well as their respective licenses
+
 ## OpenStreetMap
 
 This project makes use of the [OpenStreetMap](https://www.openstreetmap.org/copyright) API
