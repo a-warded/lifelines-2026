@@ -15,7 +15,7 @@ Made for the Carnegie Mellon Qatar LifeLines hackathon 2026.
     <br />
     <a href="https://lifelines26.a-warded.org">Deployed Instance</a>
     •
-    <a href="https://lifelines26.a-warded.org">Credits (placeholder 🤑)</a>
+    <a href="https://github.com/a-warded/lifelines-2026/blob/main/CREDITS.md">Credits</a>
   </p>
 </div>
 
@@ -26,6 +26,22 @@ When a crisis hits, be it a climate catastrophe, conflict, or systemic collapse,
 # The Solution
 
 FADES, or Food, Agriculture, and Distribution Ecosystem, is a software solution that brings together local communities to rebuild food systems collectively. The platform addresses the core issue of food insecurity by enabling food to be grown in areas that were previously unused, such as small pots, containers, courtyards, rooftops, and damaged fields. This way, food systems will not be bound by a single point of failure. FADES will aid not just farmers but also entire communities in growing, sustaining, and distributing crops and seeds to create a self-sustaining food system that enables a circular economy. 
+
+# Tech Stack
+
+<div align="center">
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg" height="30"/>
+  <img width="12" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" height="30"  />
+  <img width="12" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg" height="30"   />
+  <img width="12" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg" height="30" />
+  <img width="12" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg" height="30" />
+  <img width="12" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" height="30"  />
+</div>
 
 # Running or Deploying
 
