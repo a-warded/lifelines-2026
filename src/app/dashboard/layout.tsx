@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/sidebar/sidebar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import AilaRealtimeAssistant from "./assistant/page";
 
 export default function DashboardLayout({
@@ -14,6 +15,8 @@ export default function DashboardLayout({
 }) {
     const { status } = useSession();
     const router = useRouter();
+    const { i18n } = useTranslation();
+    const isRTL = i18n.dir() === "rtl";
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -36,7 +39,7 @@ export default function DashboardLayout({
     return (
         <div className="min-h-screen bg-background">
             <Sidebar />
-            <main className="md:ml-64 lg:mr-96 xl:mr-[28rem]">
+            <main className={`${isRTL ? "md:mr-64 lg:ml-96 xl:ml-[28rem]" : "md:ml-64 lg:mr-96 xl:mr-[28rem]"}`}>
                 <div className="p-4 md:p-8 relative">{children}</div>
             </main>
             <AssistantSidebar>

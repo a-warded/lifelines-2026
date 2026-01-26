@@ -4,6 +4,8 @@ import ColorBends from "@/components/ColorBends";
 import SplitText from "@/components/SplitText";
 import { FadesLogo } from "@/components/fades-logo";
 import { Button } from "@/components/ui";
+import { languages, LanguageCode } from "@/lib/i18n";
+import { Globe } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,9 +14,20 @@ import { useTranslation } from "react-i18next";
 
 export default function Home() {
     const { data: session, status } = useSession();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const router = useRouter();
     const [isCreatingDemo, setIsCreatingDemo] = useState(false);
+
+    const currentLang = i18n.language as LanguageCode;
+    const isRTL = i18n.dir() === "rtl";
+    
+    const toggleLanguage = () => {
+        const newLang = currentLang === "en" ? "ar" : "en";
+        i18n.changeLanguage(newLang);
+    };
+
+    const targetLang = currentLang === "en" ? "ar" : "en";
+    const targetLangName = languages[targetLang]?.nativeName || targetLang;
 
     const generateGuid = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -88,6 +101,15 @@ export default function Home() {
 
     return (
         <div className="relative w-full min-h-screen">
+            {/* Language Switcher */}
+            <button
+                onClick={toggleLanguage}
+                className="fixed top-4 end-4 z-50 flex items-center gap-2 rounded-lg bg-white/10 backdrop-blur-sm px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20"
+                title={t("language.title")}
+            >
+                <Globe className="h-4 w-4" />
+                <span>{targetLangName}</span>
+            </button>
 
             <ColorBends
                 colors={["#0fff83"]}
@@ -112,18 +134,25 @@ export default function Home() {
                     <h1 className="text-8xl text-primary font-bold fades-font" >FADES</h1>
                 </div>
 
-                <SplitText
-                    text="Food, Agriculture, and Distribution Ecosystem"
-                    className="text-2xl font-semibold text-center"
-                    duration={1.25}
-                    ease="power3.out"
-                    splitType="chars"
-                    from={{ opacity: 0, y: 40 }}
-                    to={{ opacity: 1, y: 0 }}
-                    threshold={0.1}
-                    rootMargin="-100px"
-                    textAlign="center"
-                />
+                {/* Use SplitText only for LTR, simple text for RTL to avoid character reversal */}
+                {isRTL ? (
+                    <p className="text-2xl font-semibold text-center fades-fancy-ahh">
+                        {t("landing.tagline")}
+                    </p>
+                ) : (
+                    <SplitText
+                        text={t("landing.tagline")}
+                        className="text-2xl font-semibold text-center"
+                        duration={1.25}
+                        ease="power3.out"
+                        splitType="chars"
+                        from={{ opacity: 0, y: 40 }}
+                        to={{ opacity: 1, y: 0 }}
+                        threshold={0.1}
+                        rootMargin="-100px"
+                        textAlign="center"
+                    />
+                )}
 
                 <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
                     {status === "loading" ? (
@@ -144,7 +173,7 @@ export default function Home() {
                                 {isCreatingDemo ? t("common.loading") || "Loading..." : t("auth.register.demo")}
                             </Button>
                             <div className="flex gap-2 opacity-80">
-                                <p>OR</p>
+                                <p>{t("landing.or")}</p>
                                 <Link
                                     href="/login"
                                     className="text-sm rounded-lg bg-primary px-2 font-medium text-primary-foreground transition-colors hover:opacity-90"

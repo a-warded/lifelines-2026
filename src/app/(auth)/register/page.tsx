@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -12,6 +13,7 @@ export default function RegisterPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const { t } = useTranslation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -61,8 +63,8 @@ export default function RegisterPage() {
         <div className="flex min-h-screen items-center justify-center bg-background px-4">
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold text-foreground">Create an account</h1>
-                    <p className="mt-2 ">Get started with FADES</p>
+                    <h1 className="text-3xl font-bold text-foreground">{t("auth.register.title")}</h1>
+                    <p className="mt-2 ">{t("auth.register.subtitle")}</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="mt-8 space-y-6">
@@ -73,7 +75,7 @@ export default function RegisterPage() {
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium ">
-                Name
+                                {t("auth.register.nameLabel")}
                             </label>
                             <input
                                 id="name"
@@ -82,13 +84,13 @@ export default function RegisterPage() {
                                 onChange={(e) => setName(e.target.value)}
                                 required
                                 className="mt-1 block w-full rounded-lg border border-border bg-input px-4 py-3 text-foreground placeholder: focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                                placeholder="John Doe"
+                                placeholder={t("auth.register.namePlaceholder")}
                             />
                         </div>
 
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium ">
-                Email
+                                {t("auth.register.emailLabel")}
                             </label>
                             <input
                                 id="email"
@@ -97,13 +99,13 @@ export default function RegisterPage() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                                 className="mt-1 block w-full rounded-lg border border-border bg-input px-4 py-3 text-foreground placeholder: focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                                placeholder="you@example.com"
+                                placeholder={t("auth.register.emailPlaceholder")}
                             />
                         </div>
 
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium ">
-                Password
+                                {t("auth.register.passwordLabel")}
                             </label>
                             <input
                                 id="password"
@@ -112,7 +114,7 @@ export default function RegisterPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 className="mt-1 block w-full rounded-lg border border-border bg-input px-4 py-3 text-foreground placeholder: focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                                placeholder="••••••••"
+                                placeholder={t("auth.register.passwordPlaceholder")}
                             />
                         </div>
                     </div>
@@ -122,13 +124,13 @@ export default function RegisterPage() {
                         disabled={loading}
                         className="w-full rounded-lg bg-primary px-4 py-3 font-medium text-primary-foreground transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        {loading ? "Creating account..." : "Create account"}
+                        {loading ? t("common.loading") : t("auth.register.submitButton")}
                     </button>
 
                     <p className="text-center text-sm ">
-            Already have an account?{" "}
+                        {t("auth.register.hasAccount")}{" "}
                         <Link href="/login" className="font-medium text-primary hover:text-primary-foreground">
-              Sign in
+                            {t("auth.register.loginLink")}
                         </Link>
                     </p>
                 </form>

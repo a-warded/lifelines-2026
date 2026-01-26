@@ -18,68 +18,70 @@ interface CompostResultsProps {
   t: TranslateFunction;
 }
 
-// Generate a single-line verdict (the advisor moment)
-function getVerdict(
+// Generate a single-line verdict (the advisor moment) - returns translation keys
+function getVerdictKeys(
   result: CompostResult,
   valueEstimate: ReturnType<typeof estimateFertilizerValue> | null
-): string {
+): string[] {
   const parts: string[] = [];
   
   // Worth composting?
   if (result.totalWasteKg < 10) {
-    parts.push("Small batch—consider waiting for more.");
+    parts.push("compost.results.smallBatch");
   } else {
-    parts.push("Worth composting.");
+    parts.push("compost.results.worthComposting");
   }
   
   // Balance advice
   if (result.carbonContent === "high" && result.nitrogenContent === "low") {
-    parts.push("Add greens.");
+    parts.push("compost.results.addGreens");
   } else if (result.nitrogenContent === "high" && result.carbonContent === "low") {
-    parts.push("Add browns.");
+    parts.push("compost.results.addBrowns");
   }
   
   // Sell advice
   if (valueEstimate && valueEstimate.highEstimate < 20) {
-    parts.push("Use it yourself.");
+    parts.push("compost.results.useYourself");
   } else if (valueEstimate && result.estimatedFertilizerKg >= 10 && result.cnRatioBalanced) {
-    parts.push("Sellable if needed.");
+    parts.push("compost.results.sellable");
   } else if (valueEstimate && result.estimatedFertilizerKg >= 5) {
-    parts.push("Don't sell unless mixed further.");
+    parts.push("compost.results.dontSellUnlessMixed");
   }
   
-  return parts.join(" ");
+  return parts;
 }
 
-// Generate context-aware headline based on inputs
-function getContextHeadline(entries: WasteFormEntry[], result: CompostResult): string {
+// Generate context-aware headline based on inputs - now returns translation params
+function getContextHeadlineParams(entries: WasteFormEntry[], result: CompostResult): { key: string; wasteType?: string } {
   const primaryWaste = entries
     .filter((e) => e.wasteType && e.amountKg > 0)
     .sort((a, b) => b.amountKg - a.amountKg)[0];
   
   if (primaryWaste && primaryWaste.amountKg >= 5) {
-    const label = WASTE_TYPE_LABELS[primaryWaste.wasteType as WasteType]?.label.toLowerCase() || "waste";
-    return `${result.totalWasteKg} kg of ${label} → usable compost`;
+    return { 
+      key: "compost.results.headline",
+      wasteType: primaryWaste.wasteType as string
+    };
   }
   
-  return `This batch will produce ${result.estimatedFertilizerKg} kg of usable compost`;
+  return { key: "compost.results.headlineGeneric" };
 }
 
-// Generate warnings for feasibility section
-function getFailureRisks(result: CompostResult): string[] {
+// Generate warnings for feasibility section - returns translation keys
+function getFailureRiskKeys(result: CompostResult): string[] {
   const risks: string[] = [];
   
   if (result.carbonContent === "high" && result.nitrogenContent === "low") {
-    risks.push("Too much carbon. Will decompose slowly unless you add nitrogen-rich material.");
+    risks.push("compost.results.tooMuchCarbon");
   }
   if (result.nitrogenContent === "high" && result.carbonContent === "low") {
-    risks.push("Too much nitrogen. Expect ammonia smell. Add dry leaves or straw.");
+    risks.push("compost.results.tooMuchNitrogen");
   }
   if (result.totalWasteKg < 15) {
-    risks.push("Small piles lose heat fast. May not reach temperatures that kill pathogens.");
+    risks.push("compost.results.smallPileHeat");
   }
   if (result.compostingDays > 90) {
-    risks.push("Long processing time. You'll need patience—or more greens to speed it up.");
+    risks.push("compost.results.longProcessing");
   }
   
   return risks;
@@ -96,10 +98,18 @@ export function CompostResults({
 
   if (!result || result.totalWasteKg <= 0) return null;
 
-  const verdict = getVerdict(result, valueEstimate);
-  const contextHeadline = getContextHeadline(entries, result);
-  const failureRisks = getFailureRisks(result);
+  const verdictKeys = getVerdictKeys(result, valueEstimate);
+  const headlineParams = getContextHeadlineParams(entries, result);
+  const failureRiskKeys = getFailureRiskKeys(result);
   const worthExchanging = result.estimatedFertilizerKg >= 5;
+  
+  // Get waste type label for headline
+  const primaryWaste = entries
+    .filter((e) => e.wasteType && e.amountKg > 0)
+    .sort((a, b) => b.amountKg - a.amountKg)[0];
+  const wasteTypeLabel = primaryWaste 
+    ? WASTE_TYPE_LABELS[primaryWaste.wasteType as WasteType]?.label.toLowerCase() || "waste"
+    : "waste";
   
   // Calculate confident price estimate (midpoint, rounded)
   const priceEstimate = valueEstimate 
@@ -119,7 +129,7 @@ export function CompostResults({
       <div className="space-y-3">
         {/* Context-aware headline */}
         <p className="text-sm text-muted-foreground">
-          {contextHeadline}
+          {t(headlineParams.key, { amount: result.totalWasteKg, wasteType: wasteTypeLabel })}
         </p>
         
         {/* Primary Result */}
@@ -133,8 +143,8 @@ export function CompostResults({
           
           {/* Verdict - the advisor moment */}
           <div className="mt-3 pt-3 border-t border-border/50">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Verdict: </span>
-            <span className="text-sm text-foreground">{verdict}</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("compost.results.verdict")}: </span>
+            <span className="text-sm text-foreground">{verdictKeys.map(key => t(key)).join(" ")}</span>
           </div>
         </div>
       </div>
@@ -145,36 +155,36 @@ export function CompostResults({
       ═══════════════════════════════════════════════════════════════ */}
       <div className="space-y-1 border-l-2 border-border/30 pl-4">
         <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-          Feasibility
+          {t("compost.results.feasibility")}
         </div>
         
         {/* Timeline - always visible, not expandable */}
         <div className="flex items-baseline justify-between py-2">
-          <span className="text-sm text-muted-foreground">Time to ready</span>
-          <span className="text-sm font-medium text-foreground">~{result.compostingDays} days</span>
+          <span className="text-sm text-muted-foreground">{t("compost.results.timeToReady")}</span>
+          <span className="text-sm font-medium text-foreground">{t("compost.results.days", { days: result.compostingDays })}</span>
         </div>
         
         {/* Value - confident estimate */}
         {priceEstimate && priceEstimate > 0 && (
           <div className="flex items-baseline justify-between py-2">
-            <span className="text-sm text-muted-foreground">Market value</span>
+            <span className="text-sm text-muted-foreground">{t("compost.results.marketValue")}</span>
             <span className="text-sm font-medium text-foreground">
-              {priceEstimate < 20 ? "Not worth selling" : `~$${priceEstimate}`}
+              {priceEstimate < 20 ? t("compost.results.notWorthSelling") : `~$${priceEstimate}`}
             </span>
           </div>
         )}
 
         {/* Failure risks - sharper framing */}
-        {failureRisks.length > 0 && (
+        {failureRiskKeys.length > 0 && (
           <ExpandableSection
-            title="Why this batch might fail"
+            title={t("compost.results.whyMightFail")}
             isOpen={expanded === "risks"}
             onToggle={() => toggleExpand("risks")}
           >
             <ul className="space-y-2 text-sm">
-              {failureRisks.map((risk, i) => (
+              {failureRiskKeys.map((riskKey, i) => (
                 <li key={i} className="text-muted-foreground">
-                  {risk}
+                  {t(riskKey)}
                 </li>
               ))}
             </ul>
@@ -184,7 +194,7 @@ export function CompostResults({
         {/* Breakdown - tucked away */}
         {result.breakdown.length > 1 && (
           <ExpandableSection
-            title="Material breakdown"
+            title={t("compost.results.materialBreakdown")}
             isOpen={expanded === "breakdown"}
             onToggle={() => toggleExpand("breakdown")}
           >
@@ -197,7 +207,7 @@ export function CompostResults({
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">{WASTE_TYPE_LABELS[item.wasteType].label}</span>
                     <span className="text-xs text-muted-foreground/70">
-                      {item.category === "green" ? "nitrogen" : "carbon"}
+                      {item.category === "green" ? t("compost.results.nitrogen") : t("compost.results.carbon")}
                     </span>
                   </div>
                   <div className="text-sm">
@@ -220,8 +230,8 @@ export function CompostResults({
         {worthExchanging && (
           <p className="text-xs text-muted-foreground">
             {result.estimatedFertilizerKg >= 10 
-              ? "This batch meets minimum exchange size."
-              : "You have enough volume to exchange, though larger batches get more interest."
+              ? t("compost.results.meetsMinimum")
+              : t("compost.results.enoughVolume")
             }
           </p>
         )}
@@ -296,7 +306,7 @@ function ActionButtons({
         </Link>
       ) : (
         <Button variant="outline" disabled className="opacity-50 cursor-not-allowed">
-          Too small to list
+          {t("compost.results.tooSmallToList", "Too small to list")}
         </Button>
       )}
       <Link href="/dashboard/map?layer=compost">

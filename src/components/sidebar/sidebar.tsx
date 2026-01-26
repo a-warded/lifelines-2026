@@ -16,12 +16,14 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FadesLogo } from "../fades-logo";
 import SplitText from "../SplitText";
+import { LanguageSwitcher } from "./language-switcher";
 
 export function Sidebar() {
     const pathname = usePathname();
     const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isRTL = i18n.dir() === "rtl";
 
     const navItems = [
         { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
@@ -35,7 +37,9 @@ export function Sidebar() {
             {/* Mobile menu button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed left-4 top-4 z-50 rounded-lg bg-sidebar-accent p-2 text-sidebar-accent-foreground md:hidden"
+                className={`fixed top-4 z-50 rounded-lg bg-sidebar-accent p-2 text-sidebar-accent-foreground md:hidden ${
+                    isRTL ? "right-4" : "left-4"
+                }`}
             >
                 {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -50,9 +54,11 @@ export function Sidebar() {
 
             {/* Sidebar */}
             <aside
-                className={`fixed left-0 top-0 z-40 h-screen w-64 transform bg-sidebar transition-transform duration-300 ease-in-out ${
-                    isOpen ? "translate-x-0" : "-translate-x-full"
-                } md:translate-x-0`}
+                className={`fixed top-0 z-40 h-screen w-64 transform bg-sidebar transition-transform duration-300 ease-in-out ${
+                    isRTL 
+                        ? `right-0 ${isOpen ? "translate-x-0" : "translate-x-full"} md:translate-x-0`
+                        : `left-0 ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`
+                }`}
             >
                 <div className="flex h-full flex-col">
                     {/* Logo */}
@@ -94,8 +100,11 @@ export function Sidebar() {
                                             : "text-sidebar-foreground hover:text-primary"
                                     }`}
                                 >
-                                    <img src={"/images/sidebar_deco.webp"} className={`absolute h-full -z-10 left-[2px] transition-opacity duration-300  ${isActive ? "opacity-100" : "opacity-0"}`} />
-                                    <Icon className={`h-5 w-5 transition-mr duration-300 mr-${isActive ? "2" : "0"}`}  />
+                                    <img 
+                                        src={"/images/sidebar_deco.webp"} 
+                                        className={`absolute h-full -z-10 transition-opacity duration-300 ${isActive ? "opacity-100" : "opacity-0"} ${isRTL ? "right-[2px] scale-x-[-1]" : "left-[2px]"}`} 
+                                    />
+                                    <Icon className={`h-5 w-5 transition-all duration-300 ${isActive ? (isRTL ? "ml-2" : "mr-2") : ""}`} />
                                     {item.label}
                                 </Link>
                             );
@@ -104,6 +113,11 @@ export function Sidebar() {
 
                     {/* User section */}
                     <div className="border-t border-sidebar-border p-4">
+                        {/* Language switcher - above user info */}
+                        <div className="mb-3">
+                            <LanguageSwitcher />
+                        </div>
+                        
                         {session?.user && (
                             <div className="mb-3 flex items-center gap-3">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">

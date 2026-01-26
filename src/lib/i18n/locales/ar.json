@@ -1,0 +1,826 @@
+{
+    "common": {
+        "appName": "فيدز",
+        "loading": "جاري التحميل...",
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "submit": "إرسال",
+        "close": "إغلاق",
+        "back": "رجوع",
+        "next": "التالي",
+        "confirm": "تأكيد",
+        "delete": "حذف",
+        "edit": "تعديل",
+        "create": "إنشاء",
+        "update": "تحديث",
+        "search": "بحث",
+        "filter": "تصفية",
+        "clear": "مسح",
+        "reset": "إعادة تعيين",
+        "error": "خطأ",
+        "success": "نجاح",
+        "warning": "تحذير",
+        "info": "معلومات",
+        "yes": "نعم",
+        "no": "لا",
+        "or": "أو",
+        "and": "و",
+        "none": "لا شيء",
+        "all": "الكل",
+        "noResults": "لم يتم العثور على نتائج",
+        "tryAgain": "حاول مرة أخرى",
+        "required": "مطلوب",
+        "optional": "اختياري",
+        "online": "متصل",
+        "offline": "غير متصل (بيانات مخزنة)",
+        "day": "يوم",
+        "refresh": "تحديث",
+        "saving": "جاري الحفظ...",
+        "anonymous": "مجهول"
+    },
+    "nav": {
+        "home": "الرئيسية",
+        "dashboard": "لوحة التحكم",
+        "plan": "خطة الزراعة",
+        "newPlan": "احصل على خطة زراعة",
+        "exchange": "التبادل",
+        "compost": "التسميد",
+        "map": "خريطة المجتمع",
+        "water": "حاسبة المياه",
+        "assistant": "المساعد الذكي",
+        "profile": "الملف الشخصي",
+        "settings": "الإعدادات",
+        "signIn": "تسجيل الدخول",
+        "signOut": "تسجيل الخروج",
+        "register": "إنشاء حساب"
+    },
+    "landing": {
+        "tagline": "نظام الغذاء والزراعة والتوزيع",
+        "or": "أو",
+        "cta": {
+            "getStarted": "ابدأ الآن",
+            "learnMore": "اعرف المزيد",
+            "dashboard": "الذهاب للوحة التحكم"
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "مرحباً بعودتك",
+            "subtitle": "سجل دخولك إلى حسابك",
+            "emailLabel": "البريد الإلكتروني",
+            "emailPlaceholder": "أدخل بريدك الإلكتروني",
+            "passwordLabel": "كلمة المرور",
+            "passwordPlaceholder": "أدخل كلمة المرور",
+            "submitButton": "تسجيل الدخول",
+            "noAccount": "ليس لديك حساب؟",
+            "registerLink": "سجل هنا",
+            "error": "البريد الإلكتروني أو كلمة المرور غير صحيحة"
+        },
+        "register": {
+            "demo": "إنشاء حساب تجريبي",
+            "title": "إنشاء حساب",
+            "subtitle": "انضم إلى المجتمع",
+            "nameLabel": "الاسم الكامل",
+            "namePlaceholder": "أدخل اسمك",
+            "emailLabel": "البريد الإلكتروني",
+            "emailPlaceholder": "أدخل بريدك الإلكتروني",
+            "passwordLabel": "كلمة المرور",
+            "passwordPlaceholder": "أنشئ كلمة مرور",
+            "confirmPasswordLabel": "تأكيد كلمة المرور",
+            "confirmPasswordPlaceholder": "أكد كلمة المرور",
+            "submitButton": "إنشاء الحساب",
+            "hasAccount": "لديك حساب بالفعل؟",
+            "loginLink": "سجل دخولك هنا",
+            "passwordMismatch": "كلمتا المرور غير متطابقتين",
+            "success": "تم إنشاء الحساب بنجاح"
+        }
+    },
+    "dashboard": {
+        "welcome": "مرحباً بك في فيدز، {{name, andName}}!",
+        "tagline": "مزرعتك: {{name}}",
+        "loadDemo": "تحميل بيانات تجريبية",
+        "features": {
+            "plan": {
+                "title": "احصل على خطة زراعة",
+                "description": "خطة مخصصة بناءً على ظروفك"
+            },
+            "exchange": {
+                "title": "تبادل البذور والفائض",
+                "description": "شارك وابحث عن الموارد في مجتمعك"
+            },
+            "compost": {
+                "title": "تحويل النفايات إلى سماد",
+                "description": "حوّل النفايات الزراعية إلى سماد عضوي"
+            },
+            "water": {
+                "title": "حاسبة المياه",
+                "description": "احسب احتياجات محاصيلك من المياه"
+            },
+            "assistant": {
+                "title": "المساعد",
+                "description": "احصل على مساعدة في أسئلة الزراعة"
+            }
+        },
+        "latestPlan": {
+            "title": "آخر خطة زراعة لديك",
+            "recommended": "المحاصيل الموصى بها",
+            "created": "تم الإنشاء",
+            "view": "عرض الخطة",
+            "regenerate": "إنشاء خطة زراعة جديدة",
+            "addCrops": "إضافة محاصيل"
+        },
+        "getStarted": {
+            "title": "هل أنت مستعد لبدء الزراعة؟",
+            "description": "أنشئ خطة زراعة مخصصة بناءً على مساحتك ومصادر المياه وأهدافك.",
+            "cta": "احصل على خطة الزراعة"
+        },
+        "regenerate": {
+            "title": "تحديث ظروف الزراعة",
+            "description": "قم بتحديث ظروف الزراعة للحصول على توصيات محاصيل جديدة مخصصة.",
+            "submit": "إنشاء خطة جديدة"
+        },
+        "suggestedCrops": {
+            "title": "محاصيل مقترحة لك",
+            "subtitle": "لقد اخترنا أفضل المحاصيل لك!",
+            "description": "بناءً على موقعك وظروفك وأهدافك، إليك أفضل توصياتنا.",
+            "estimatedWater": "المياه اليومية المقدرة",
+            "maybeLater": "ربما لاحقاً",
+            "addAll": "إضافة الكل إلى مزرعتي"
+        }
+    },
+    "plan": {
+        "form": {
+            "title": "احصل على خطة الزراعة",
+            "subtitle": "أجب على بعض الأسئلة للحصول على توصيات مخصصة",
+            "water": {
+                "label": "توفر المياه *",
+                "placeholder": "كم المياه المتاحة لديك؟",
+                "noAccessWarning": "عدم توفر المياه يجعل الزراعة صعبة جداً. سنقدم استراتيجيات بديلة.",
+                "options": {
+                    "none": "لا شيء - لا يوجد مصدر مياه موثوق",
+                    "low": "قليل - وصول محدود أو مشترك",
+                    "medium": "متوسط - إمداد منتظم لكن محدود",
+                    "high": "عالي - مصدر مياه موثوق"
+                }
+            },
+            "soil": {
+                "label": "حالة التربة *",
+                "placeholder": "كيف هي تربتك؟",
+                "options": {
+                    "normal": "عادية - تربة حديقة عادية",
+                    "salty": "مالحة - قرب الساحل أو مياه جوفية مالحة",
+                    "unknown": "غير معروفة - غير متأكد من جودة التربة"
+                }
+            },
+            "space": {
+                "label": "مساحة الزراعة *",
+                "placeholder": "أين ستزرع؟",
+                "options": {
+                    "rooftop": "سطح المنزل",
+                    "balcony": "شرفة",
+                    "containers": "حاويات / أصص",
+                    "backyard": "حديقة خلفية",
+                    "microplot": "قطعة صغيرة / حديقة مجتمعية"
+                }
+            },
+            "sunlight": {
+                "label": "ضوء الشمس *",
+                "placeholder": "كم من الشمس تصل لمساحتك؟",
+                "options": {
+                    "low": "قليل - 0-3 ساعات من الشمس المباشرة",
+                    "medium": "متوسط - 4-6 ساعات من الشمس المباشرة",
+                    "high": "عالي - 7+ ساعات من الشمس المباشرة"
+                }
+            },
+            "goal": {
+                "label": "الهدف الرئيسي *",
+                "placeholder": "ما الأهم بالنسبة لك؟",
+                "options": {
+                    "calories": "السعرات الحرارية - زراعة طعام مشبع وغني بالسعرات",
+                    "nutrition": "التغذية - زراعة خضروات غنية بالفيتامينات",
+                    "fast": "حصاد سريع - أسرع وقت للحصول على الطعام"
+                }
+            },
+            "experience": {
+                "label": "مستوى الخبرة (اختياري)",
+                "helper": "سنعدل التوصيات بناءً على خبرتك",
+                "options": {
+                    "skip": "تخطي هذا السؤال",
+                    "beginner": "مبتدئ - جديد في الزراعة",
+                    "intermediate": "متوسط - بعض الخبرة",
+                    "advanced": "متقدم - مزارع ذو خبرة"
+                }
+            },
+            "errors": {
+                "water": "يرجى تحديد توفر المياه",
+                "soil": "يرجى تحديد حالة التربة",
+                "space": "يرجى تحديد نوع مساحة الزراعة",
+                "sunlight": "يرجى تحديد مستوى ضوء الشمس",
+                "goal": "يرجى تحديد هدفك الرئيسي",
+                "submit": "فشل في إنشاء الخطة. يرجى المحاولة مرة أخرى."
+            },
+            "submit": "إنشاء خطة الزراعة",
+            "creating": "جاري إنشاء خطتك..."
+        },
+        "view": {
+            "title": "خطة الزراعة الخاصة بك",
+            "created": "تم الإنشاء",
+            "offline": "مخزن • وضع غير متصل",
+            "noPlan": "لم يتم العثور على خطة",
+            "createFirst": "أنشئ أول خطة زراعة للبدء.",
+            "challengingConditions": "ظروف صعبة",
+            "generatedOn": "تم الإنشاء في {{date}}",
+            "recommendedCrops": {
+                "title": "المحاصيل الموصى بها",
+                "difficulty": "الصعوبة",
+                "harvestTime": "{{days}} يوم للحصاد",
+                "reason": "لماذا",
+                "addedAll": "تمت الإضافة",
+                "addAllToFarm": "أضف الكل للمزرعة"
+            },
+            "timeline": {
+                "title": "جدولك الزمني",
+                "today": "اليوم",
+                "thisWeek": "هذا الأسبوع",
+                "week2": "الأسبوع الثاني+",
+                "steps": {
+                    "surveySpace": "استكشف مساحة الزراعة ولاحظ أنماط ضوء الشمس",
+                    "gatherContainers": "اجمع أوعية بها فتحات تصريف",
+                    "markArea": "حدد منطقة الزراعة",
+                    "checkWater": "تحقق من مصدر المياه وخيارات التخزين",
+                    "setupWaterCollection": "جهّز أوعية لجمع المياه إن أمكن",
+                    "fillContainers": "املأ الأوعية بوسط النمو أو خليط التربة",
+                    "prepareSoil": "جهّز التربة - أزل الحطام، فكك الطبقة العلوية",
+                    "obtainSeeds": "احصل على بذور أو شتلات لـ: {{crops}}",
+                    "createSchedule": "أنشئ جدول ري بسيط",
+                    "setupShade": "جهّز حماية أساسية من الظل إذا لزم الأمر",
+                    "considerRaised": "فكر في أحواض مرتفعة أو أوعية لتجنب التربة المالحة",
+                    "plantSeeds": "ازرع بذورك الأولى مع اتباع إرشادات التباعد",
+                    "morningWatering": "أسس روتين ري صباحي",
+                    "monitorPests": "راقب الآفات - افحص الأوراق يومياً",
+                    "addMulch": "أضف نشارة للحفاظ على الرطوبة",
+                    "connectGrowers": "تواصل مع المزارعين المحليين عبر ميزة التبادل",
+                    "keepLog": "احتفظ بسجل بسيط لما تزرعه ومتى"
+                }
+            },
+            "checklist": {
+                "title": "قائمة التجهيزات",
+                "items": {
+                    "findContainers": "ابحث عن أوعية أو مساحة للزراعة أو جهّزها",
+                    "ensureDrainage": "تأكد من التصريف الكافي",
+                    "prepareSoil": "جهّز التربة أو وسط النمو",
+                    "sourceSeeds": "احصل على البذور أو الشتلات",
+                    "setupWatering": "جهّز نظام أو جدول الري",
+                    "planSunShade": "خطط لإدارة الشمس/الظل",
+                    "saltFlushing": "فكر في غسل الملح أو الزراعة في أوعية",
+                    "waterRecycling": "جهّز نظام إعادة تدوير/جمع المياه",
+                    "establishWater": "أسس مصدر مياه أو نظام جمع"
+                }
+            },
+            "water": {
+                "title": "المياه اليومية المقدرة",
+                "amount": "{{liters}} لتر/يوم",
+                "description": "بناءً على نبتتين من كل محصول موصى به",
+                "openCalculator": "افتح الحاسبة"
+            },
+            "fallback": {
+                "title": "ملاحظات مهمة"
+            },
+            "actions": {
+                "newPlan": "إنشاء خطة جديدة",
+                "findSeeds": "ابحث عن بذور في التبادل",
+                "print": "طباعة الخطة"
+            }
+        },
+        "difficulty": {
+            "easy": "سهل",
+            "medium": "متوسط",
+            "hard": "صعب"
+        }
+    },
+    "exchange": {
+        "title": "تبادل المجتمع",
+        "subtitle": "شارك البذور، تبادل الفائض، ساعد الجيران",
+        "filters": {
+            "title": "تصفية",
+            "description": "صقل القوائم للعثور على ما تحتاجه",
+            "type": "النوع",
+            "status": "الحالة",
+            "mode": "الوضع",
+            "allTypes": "جميع الأنواع",
+            "allStatuses": "جميع الحالات",
+            "allModes": "جميع الأوضاع",
+            "listingType": "نوع الإعلان",
+            "listingStatus": "حالة الإعلان",
+            "statusDescription": "ابحث عن الإعلانات المتاحة أو المحجوزة أو المكتملة",
+            "modeDescription": "تصفية حسب العرض أو الطلب",
+            "delivery": "التوصيل",
+            "deliveryDescription": "تصفية حسب طريقة التوصيل",
+            "location": "الموقع",
+            "applied": "تم تطبيق الفلاتر",
+            "noFilters": "لا توجد فلاتر مطبقة",
+            "clear": "مسح الفلاتر",
+            "apply": "تطبيق",
+            "updateLocation": "تحديث الموقع"
+        },
+        "types": {
+            "seeds": "بذور",
+            "produce": "محاصيل",
+            "fertilizer": "سماد/كمبوست",
+            "tools": "أدوات",
+            "other": "أخرى"
+        },
+        "status": {
+            "available": "متاح",
+            "claimed": "محجوز",
+            "completed": "مكتمل"
+        },
+        "mode": {
+            "offering": "أعرض (للمشاركة)",
+            "seeking": "أبحث عن"
+        },
+        "dealType": {
+            "price": "للبيع",
+            "trade": "للتبادل",
+            "donation": "مجاني/تبرع"
+        },
+        "listing": {
+            "createButton": "إنشاء إعلان",
+            "noListings": "لا توجد إعلانات في منطقتك",
+            "noListingsDescription": "كن أول من يشارك شيئاً مع مجتمعك!",
+            "claimButton": "احجز",
+            "contactButton": "تواصل",
+            "offerTradeButton": "اعرض تبادل",
+            "distance": "{{distance}} كم",
+            "postedBy": "نشره {{name}}",
+            "wantsInReturn": "يريد مقابل",
+            "lookingFor": "يبحث عن",
+            "details": "تفاصيل الإعلان",
+            "description": "الوصف",
+            "noDescription": "لا يوجد وصف.",
+            "quantity": "الكمية",
+            "mode": "النوع",
+            "location": "الموقع",
+            "delivery": "التوصيل",
+            "claims": "الطلبات",
+            "viewDetails": "عرض التفاصيل",
+            "saved": "محفوظ",
+            "save": "حفظ",
+            "share": "مشاركة",
+            "viewStatus": "عرض الحالة"
+        },
+        "create": {
+            "title": "إنشاء إعلان جديد",
+            "modeLabel": "ماذا تريد أن تفعل؟",
+            "modeOffering": "لدي شيء للمشاركة/البيع/التبادل",
+            "modeSeeking": "أبحث عن شيء",
+            "titleLabel": "العنوان",
+            "titlePlaceholder": "ما الذي تعرضه/تبحث عنه؟",
+            "descriptionLabel": "الوصف",
+            "descriptionPlaceholder": "صف العنصر، الكمية، الحالة...",
+            "typeLabel": "الفئة",
+            "plantTypeLabel": "نوع النبات (إن وجد)",
+            "plantTypePlaceholder": "اختر نبات...",
+            "quantityLabel": "الكمية",
+            "quantityPlaceholder": "مثال: 50 بذرة، 2 كغ",
+            "dealTypeLabel": "نوع الصفقة",
+            "priceLabel": "السعر",
+            "pricePlaceholder": "أدخل المبلغ",
+            "currencyNote": "سيظهر السعر بعملتك المحلية",
+            "tradeItemsLabel": "ماذا تريد مقابل؟",
+            "tradeItemsPlaceholder": "أضف عناصر تقبلها للتبادل",
+            "addTradeItem": "إضافة عنصر",
+            "locationLabel": "الموقع",
+            "useMyLocation": "استخدم موقعي",
+            "locationDetecting": "جاري تحديد الموقع...",
+            "locationError": "تعذر تحديد الموقع",
+            "locationSuccess": "تم تحديد الموقع",
+            "deliveryLabel": "طريقة التوصيل",
+            "deliveryNote": "حدد كيف يمكنك التوصيل أو الاستلام خلال الطوارئ",
+            "deliveryMethods": {
+                "pickup": "استلام من الموقع",
+                "walking": "توصيل مشياً",
+                "bicycle": "توصيل بالدراجة",
+                "car": "توصيل بالسيارة",
+                "truck": "توصيل بالشاحنة",
+                "boat": "نقل بحري/مائي",
+                "drone": "توصيل بالدرون",
+                "helicopter": "هليكوبتر/طرد رعاية",
+                "airdrop": "إسقاط جوي طارئ"
+            },
+            "submitButton": "نشر الإعلان"
+        },
+        "claim": {
+            "title": "حجز هذا الإعلان",
+            "messageLabel": "رسالة للناشر",
+            "messagePlaceholder": "عرّف عن نفسك ورتب الاستلام/التبادل...",
+            "tradeOfferLabel": "عرضك للتبادل",
+            "tradeOfferPlaceholder": "ماذا تعرض مقابل؟",
+            "submitButton": "إرسال الطلب"
+        },
+        "location": {
+            "detecting": "جاري تحديد موقعك...",
+            "noPermission": "تم رفض إذن الموقع. عرض الإعلانات من بلدك.",
+            "usingCountry": "عرض الإعلانات من {{country}}"
+        }
+    },
+    "water": {
+        "title": "حاسبة المياه",
+        "subtitle": "احسب احتياجات المياه اليومية لنباتاتك",
+        "addPlant": "إضافة نبات",
+        "removePlant": "إزالة",
+        "plantLabel": "النبات",
+        "selectPlant": "اختر نبات...",
+        "stageLabel": "مرحلة النمو",
+        "countLabel": "عدد النباتات",
+        "stages": {
+            "seedling": "شتلة",
+            "vegetative": "نمو خضري",
+            "flowering": "إزهار",
+            "fruiting": "إثمار",
+            "mature": "ناضج"
+        },
+        "results": {
+            "title": "احتياجات المياه اليومية",
+            "total": "{{liters}} لتر/يوم",
+            "perPlant": "{{liters}} ل/نبتة",
+            "breakdown": "التفصيل حسب النبات",
+            "noPlants": "أضف نباتات لحساب احتياجات المياه",
+            "warning": "⚠️ طلب مياه عالي. فكر في تقنيات توفير المياه مثل التغطية والري بالتنقيط.",
+            "tip": "نصيحة: اسقِ في الصباح الباكر أو المساء المتأخر لتقليل التبخر."
+        },
+        "history": {
+            "title": "الحسابات الأخيرة",
+            "noHistory": "لا توجد حسابات محفوظة بعد",
+            "savedOn": "حُفظ {{date}}"
+        },
+        "actions": {
+            "save": "حفظ الحساب",
+            "clear": "مسح الكل"
+        }
+    },
+    "assistant": {
+        "title": "مساعد الزراعة",
+        "subtitle": "اطرح أسئلة حول زراعة الطعام وتوفير المياه والمزيد",
+        "placeholder": "اطرح سؤالاً...",
+        "enableVoice": "تفعيل الردود الصوتية",
+        "disableVoice": "إيقاف الصوت",
+        "listening": "أستمع... تحدث الآن",
+        "error": "عذراً، لم أستطع معالجة رسالتك. يرجى التحقق من اتصالك والمحاولة مرة أخرى.",
+        "empty": {
+            "title": "كيف يمكنني مساعدتك في الزراعة؟",
+            "description": "اسألني عن المحاصيل، الري، مكافحة الآفات، الزراعة في الحاويات، أو أي شيء متعلق بزراعة طعامك."
+        },
+        "presets": {
+            "title": "أسئلة سريعة",
+            "lowWater": "كيف أزرع بقليل من المياه؟",
+            "containers": "ماذا يمكنني زراعته في الحاويات؟",
+            "startToday": "ما الذي يمكنني بدء زراعته اليوم؟",
+            "pests": "كيف أتعامل مع الآفات طبيعياً؟",
+            "saltySoil": "تربتي مالحة، ماذا أزرع؟",
+            "fastHarvest": "ما أسرع النباتات نمواً؟",
+            "moreTips": "أعطني المزيد من النصائح"
+        },
+        "voice": {
+            "startListening": "بدء الإدخال الصوتي",
+            "stopListening": "إيقاف الاستماع",
+            "listening": "أستمع...",
+            "speakResponses": "نطق الردود",
+            "speechNotSupported": "الكلام غير مدعوم في هذا المتصفح"
+        },
+        "messages": {
+            "welcome": "مرحباً! أنا مساعدك الزراعي. اسألني أي شيء عن زراعة الطعام، التعامل مع الآفات، توفير المياه، أو البدء. يمكنك الكتابة أو استخدام صوتك!",
+            "thinking": "دعني أفكر...",
+            "error": "عذراً، لم أستطع معالجة ذلك. يرجى المحاولة مرة أخرى."
+        }
+    },
+    "plants": {
+        "categories": {
+            "vegetable": "خضروات",
+            "fruit": "فواكه",
+            "legume": "بقوليات",
+            "root": "جذريات",
+            "herb": "أعشاب",
+            "leafy-green": "خضروات ورقية",
+            "grain": "حبوب",
+            "tuber": "درنيات"
+        },
+        "waterNeed": {
+            "very-low": "قليل جداً",
+            "low": "قليل",
+            "medium": "متوسط",
+            "high": "عالي",
+            "very-high": "عالي جداً"
+        },
+        "sunNeed": {
+            "shade": "ظل",
+            "partial-shade": "ظل جزئي",
+            "partial-sun": "شمس جزئية",
+            "full-sun": "شمس كاملة"
+        },
+        "difficulty": {
+            "easy": "سهل",
+            "medium": "متوسط",
+            "hard": "صعب"
+        }
+    },
+    "crops": {
+        "title": "محاصيلك",
+        "addCrop": "إضافة محصول",
+        "editCrop": "تعديل المحصول",
+        "noCrops": "لم تتم إضافة محاصيل بعد",
+        "addFirstCrop": "أضف محصولك الأول",
+        "plant": "النبات",
+        "selectPlant": "اختر نباتاً...",
+        "count": "العدد",
+        "growthStage": "مرحلة النمو",
+        "plantedDate": "تاريخ الزراعة (اختياري)",
+        "stages": {
+            "seedling": "شتلة",
+            "vegetative": "خضري",
+            "flowering": "مزهر",
+            "fruiting": "مثمر",
+            "mature": "ناضج"
+        }
+    },
+    "profile": {
+        "title": "ملف المزرعة",
+        "subtitle": "إدارة إعدادات مزرعتك وموقعها",
+        "editProfile": "تعديل الملف",
+        "saveChanges": "حفظ التغييرات",
+        "nameLabel": "الاسم",
+        "emailLabel": "البريد الإلكتروني",
+        "locationLabel": "الموقع",
+        "joinedLabel": "عضو منذ",
+        "statsTitle": "إحصائياتك",
+        "plansCreated": "الخطط المنشأة",
+        "listingsPosted": "الإعلانات المنشورة",
+        "tradesCompleted": "التبادلات المكتملة"
+    },
+    "settings": {
+        "title": "الإعدادات",
+        "language": {
+            "title": "اللغة",
+            "description": "اختر لغتك المفضلة"
+        },
+        "notifications": {
+            "title": "الإشعارات",
+            "description": "إدارة تفضيلات الإشعارات"
+        },
+        "dataUsage": {
+            "title": "استخدام البيانات",
+            "description": "تحسين للاتصالات ذات البيانات المحدودة",
+            "lowDataMode": "وضع البيانات المنخفضة"
+        },
+        "offline": {
+            "title": "البيانات دون اتصال",
+            "description": "إدارة البيانات المخزنة",
+            "clearCache": "مسح الذاكرة المؤقتة",
+            "cacheSize": "حجم الذاكرة المؤقتة: {{size}}"
+        }
+    },
+    "errors": {
+        "notFound": "الصفحة غير موجودة",
+        "unauthorized": "يرجى تسجيل الدخول للوصول إلى هذه الصفحة",
+        "serverError": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+        "networkError": "خطأ في الشبكة. تحقق من اتصالك.",
+        "validationError": "يرجى التحقق من مدخلاتك والمحاولة مرة أخرى."
+    },
+    "map": {
+        "title": "خريطة المجتمع",
+        "description": "اكتشف المزارع ومواقع التسميد وتواصل مع مجتمعك",
+        "filters": "تصفية",
+        "compostSites": "مواقع التسميد",
+        "stats": "إحصائيات",
+        "totalFarms": "المزارع",
+        "activeFarms": "المزارع النشطة",
+        "totalCompostSites": "مواقع التسميد",
+        "totalCrops": "أنواع المحاصيل",
+        "cropTypes": "أنواع المحاصيل",
+        "totalPlants": "إجمالي النباتات",
+        "searchPlaceholder": "ابحث عن المزارع بالاسم أو الموقع أو المحاصيل...",
+        "layers": {
+            "all": "الكل",
+            "farmsOnly": "المزارع فقط",
+            "compostOnly": "مواقع التسميد فقط"
+        },
+        "loading": "جاري تحميل الخريطة...",
+        "farm": "مزرعة",
+        "by": "بواسطة",
+        "location": "الموقع",
+        "spaceType": "نوع المساحة",
+        "dailyWater": "المياه اليومية",
+        "growing": "يزرع",
+        "siteType": "نوع الموقع",
+        "services": "الخدمات",
+        "acceptsWaste": "يقبل النفايات",
+        "hasFertilizer": "لديه سماد",
+        "descriptionLabel": "الوصف"
+    },
+    "units": {
+        "liters": "لتر",
+        "litersShort": "ل",
+        "kilometers": "كم",
+        "days": "أيام",
+        "cm": "سم",
+        "kg": "كغ"
+    },
+    "compost": {
+        "badge": "اقتصاد دائري",
+        "title": "حوّل النفايات إلى قيمة",
+        "subtitle": "حوّل نفاياتك الزراعية إلى سماد عضوي غني بالمغذيات. وفّر المال، قلل النفايات، وازرع محاصيل أكثر صحة.",
+        "calculator": {
+            "title": "ما النفايات لديك؟",
+            "subtitle": "أضف نفاياتك الزراعية الفائضة وسنحسب إمكانات السماد"
+        },
+        "wasteType": "نوع النفايات",
+        "selectWaste": "اختر نوع النفايات...",
+        "amount": "الكمية (كغ)",
+        "addMore": "إضافة المزيد من النفايات",
+        "results": {
+            "yourYield": "إنتاج السماد",
+            "ofFertilizer": "من السماد العضوي",
+            "wasteInput": "مدخلات النفايات",
+            "conversion": "التحويل",
+            "timeline": "وقت المعالجة",
+            "timelineNote": "مع التقليب والرطوبة المناسبة",
+            "estimatedValue": "القيمة التقديرية",
+            "valueNote": "إذا بيع كسماد عضوي",
+            "nutrientBalance": "توازن المغذيات",
+            "breakdown": "التفصيل حسب المادة",
+            "tips": "نصائح احترافية",
+            "recommendedMethod": "الطريقة الموصى بها",
+            "requirements": "ما ستحتاجه",
+            "headline": "{{amount}} كغ من {{wasteType}} ← سماد قابل للاستخدام",
+            "headlineGeneric": "ستنتج هذه الدفعة {{amount}} كغ من السماد القابل للاستخدام",
+            "verdict": "الحكم",
+            "feasibility": "الجدوى",
+            "timeToReady": "الوقت حتى الجاهزية",
+            "days": "~{{days}} يوم",
+            "marketValue": "القيمة السوقية",
+            "notWorthSelling": "لا يستحق البيع",
+            "whyMightFail": "لماذا قد تفشل هذه الدفعة",
+            "materialBreakdown": "تفصيل المواد",
+            "nitrogen": "نيتروجين",
+            "carbon": "كربون",
+            "smallBatch": "دفعة صغيرة—فكر في الانتظار للمزيد.",
+            "worthComposting": "تستحق التسميد.",
+            "addGreens": "أضف مواد خضراء.",
+            "addBrowns": "أضف مواد بنية.",
+            "useYourself": "استخدمه بنفسك.",
+            "sellable": "قابل للبيع إذا لزم الأمر.",
+            "dontSellUnlessMixed": "لا تبعه إلا إذا خُلط أكثر.",
+            "tooMuchCarbon": "كربون كثير جداً. سيتحلل ببطء ما لم تضف مواد غنية بالنيتروجين.",
+            "tooMuchNitrogen": "نيتروجين كثير جداً. توقع رائحة الأمونيا. أضف أوراقاً جافة أو قش.",
+            "smallPileHeat": "الأكوام الصغيرة تفقد الحرارة بسرعة. قد لا تصل لدرجات حرارة تقتل مسببات الأمراض.",
+            "longProcessing": "وقت معالجة طويل. ستحتاج للصبر—أو المزيد من المواد الخضراء للتسريع.",
+            "tooSmallToList": "صغيرة جداً للإدراج",
+            "meetsMinimum": "هذه الدفعة تستوفي الحد الأدنى لحجم التبادل.",
+            "enoughVolume": "لديك حجم كافٍ للتبادل، رغم أن الدفعات الأكبر تجذب اهتماماً أكثر."
+        },
+        "listFertilizer": "أدرج السماد للتبادل",
+        "viewMap": "عرض خريطة مواقع التسميد",
+        "nearbySites": "مواقع التسميد القريبة",
+        "noNearbySites": "لا توجد مواقع تسميد قريبة بعد",
+        "addSite": "أضف موقعك",
+        "viewAllSites": "عرض الكل على الخريطة",
+        "quickTips": {
+            "title": "هل تعلم؟",
+            "tip1": "التسميد يقلل انبعاثات الميثان من المكبات بنسبة تصل إلى 50%",
+            "tip2": "السماد العضوي يمكن أن يكلف 2-3 أضعاف الكمبوست المنزلي",
+            "tip3": "الكمبوست يحسن احتباس المياه في التربة بنسبة تصل إلى 20%"
+        },
+        "exchange": {
+            "title": "تبادل السماد",
+            "description": "لديك كمبوست زائد؟ شاركه مع مجتمعك أو تبادله مقابل بذور ومحاصيل.",
+            "viewListings": "عرض إعلانات السماد"
+        },
+        "addSiteModal": {
+            "title": "إضافة موقع تسميد",
+            "siteName": "اسم الموقع",
+            "siteNamePlaceholder": "مثال: كمبوست الحديقة المجتمعية",
+            "siteType": "نوع الموقع",
+            "description": "الوصف",
+            "descriptionPlaceholder": "ما نوع النفايات التي تقبلها؟ أي تعليمات خاصة؟",
+            "acceptsWaste": "قبول نفايات من الآخرين",
+            "sellsFertilizer": "لديّ سماد متاح",
+            "capacity": "السعة (كغ)",
+            "capacityPlaceholder": "مثال: 500",
+            "contact": "معلومات الاتصال",
+            "contactPlaceholder": "هاتف أو بريد إلكتروني (اختياري)",
+            "location": "الموقع",
+            "locationHint": "انقر على الخريطة لتحديد موقع موقع التسميد",
+            "submit": "إضافة الموقع"
+        },
+        "reference": {
+            "title": "إذا كنت مهتماً بالتفاصيل",
+            "idealRatio": "نسبة C:N المثالية",
+            "targetMoisture": "الرطوبة المستهدفة",
+            "minimumBatch": "الحد الأدنى للدفعة",
+            "turnFrequency": "تكرار التقليب",
+            "turnFrequencyValue": "كل 1-2 أسبوع"
+        }
+    },
+    "onboarding": {
+        "steps": {
+            "welcome": "مرحباً",
+            "location": "الموقع",
+            "space": "مساحتك",
+            "conditions": "الظروف",
+            "goals": "الأهداف",
+            "complete": "اكتمل"
+        },
+        "welcome": {
+            "title": "مرحباً بك في فيدز",
+            "subtitle": "دعنا نُعد ملف مزرعتك. سيساعدنا هذا في تقديم توصيات مخصصة لك.",
+            "farmName": "سمِّ مزرعتك",
+            "farmNamePlaceholder": "حديقتي",
+            "chooseEmoji": "اختر رمزاً تعبيرياً",
+            "continue": "متابعة"
+        },
+        "location": {
+            "title": "أين تقع مزرعتك؟",
+            "subtitle": "حدد موقعك للحصول على بيانات الطقس والتوصيات المحلية",
+            "useMyLocation": "استخدم موقعي",
+            "detecting": "جاري تحديد الموقع...",
+            "tapToSet": "انقر على الخريطة لتحديد موقعك",
+            "yourLocation": "موقعك",
+            "continue": "متابعة"
+        },
+        "space": {
+            "title": "مساحة الزراعة",
+            "subtitle": "أخبرنا عن المكان الذي ستزرع فيه",
+            "spaceTypeLabel": "ما نوع المساحة لديك؟",
+            "options": {
+                "rooftop": { "label": "سطح المنزل", "desc": "مساحة سطح مفتوحة" },
+                "balcony": { "label": "شرفة", "desc": "شرفة شقة" },
+                "containers": { "label": "حاويات", "desc": "أصص ومزارع" },
+                "backyard": { "label": "حديقة خلفية", "desc": "حديقة أرضية" },
+                "microplot": { "label": "قطعة صغيرة", "desc": "قطعة أرض صغيرة" }
+            },
+            "continue": "متابعة"
+        },
+        "conditions": {
+            "title": "ظروف الزراعة",
+            "subtitle": "ساعدنا في فهم بيئتك",
+            "water": {
+                "label": "توفر المياه",
+                "options": {
+                    "none": { "label": "لا شيء", "desc": "وصول محدود جداً" },
+                    "low": { "label": "قليل", "desc": "ري عرضي" },
+                    "medium": { "label": "متوسط", "desc": "ري منتظم" },
+                    "high": { "label": "عالي", "desc": "إمداد وفير" }
+                }
+            },
+            "soil": {
+                "label": "حالة التربة",
+                "options": {
+                    "normal": { "label": "عادية", "desc": "تربة جيدة النوعية" },
+                    "salty": { "label": "مالحة", "desc": "ملوحة عالية" },
+                    "unknown": { "label": "غير معروفة", "desc": "غير متأكد" }
+                }
+            },
+            "sun": {
+                "label": "ضوء الشمس اليومي",
+                "options": {
+                    "low": { "label": "قليل", "desc": "أقل من 4 ساعات" },
+                    "medium": { "label": "متوسط", "desc": "4-6 ساعات" },
+                    "high": { "label": "عالي", "desc": "6+ ساعات" }
+                }
+            },
+            "continue": "متابعة"
+        },
+        "goals": {
+            "title": "أهدافك",
+            "subtitle": "ما الذي تريد تحقيقه؟",
+            "goalLabel": "هدف الزراعة الرئيسي",
+            "options": {
+                "calories": { "label": "أقصى سعرات حرارية", "desc": "زراعة محاصيل مشبعة وغنية بالسعرات" },
+                "nutrition": { "label": "تغذية متوازنة", "desc": "تنوع من الفيتامينات والمعادن" },
+                "fast": { "label": "حصاد سريع", "desc": "محاصيل سريعة النمو أولاً" }
+            },
+            "experienceLabel": "مستوى خبرتك",
+            "experience": {
+                "beginner": { "label": "مبتدئ", "desc": "بداية جديدة" },
+                "intermediate": { "label": "متوسط", "desc": "بعض الخبرة" },
+                "advanced": { "label": "متقدم", "desc": "مزارع ذو خبرة" }
+            },
+            "continue": "إكمال الإعداد"
+        },
+        "complete": {
+            "title": "أنت جاهز!",
+            "subtitle": "جاري إنشاء خطة الزراعة المخصصة لك...",
+            "goToDashboard": "الذهاب للوحة التحكم",
+            "creating": "جاري إعداد مزرعتك..."
+        },
+        "navigation": {
+            "back": "رجوع",
+            "skip": "تخطي"
+        }
+    },
+    "language": {
+        "title": "اللغة",
+        "english": "English",
+        "arabic": "العربية"
+    }
+}

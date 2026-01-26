@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MapPin, Recycle, RefreshCw, Search, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { MapLayer, MapStats } from "../types";
 
 interface MapHeaderProps {
@@ -12,17 +13,20 @@ interface MapHeaderProps {
 }
 
 export function MapHeader({ onRefresh, loading }: MapHeaderProps) {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === "rtl";
+
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-2xl font-bold">Community Map</h1>
+        <h1 className="text-2xl font-bold">{t("map.title")}</h1>
         <p className="text-muted-foreground">
-          Discover farms, composting sites, and connect with your community
+          {t("map.description")}
         </p>
       </div>
       <Button onClick={onRefresh} variant="outline" disabled={loading}>
-        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-        Refresh
+        <RefreshCw className={`${isRTL ? "ml-2" : "mr-2"} h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+        {t("common.refresh")}
       </Button>
     </div>
   );
@@ -34,6 +38,8 @@ interface LayerToggleProps {
 }
 
 export function LayerToggle({ activeLayer, onLayerChange }: LayerToggleProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-wrap gap-2">
       <Button
@@ -41,21 +47,21 @@ export function LayerToggle({ activeLayer, onLayerChange }: LayerToggleProps) {
         size="sm"
         onClick={() => onLayerChange("all")}
       >
-        🗺️ All
+        🗺️ {t("map.layers.all")}
       </Button>
       <Button
         variant={activeLayer === "farms" ? "primary" : "outline"}
         size="sm"
         onClick={() => onLayerChange("farms")}
       >
-        🌱 Farms Only
+        🌱 {t("map.layers.farmsOnly")}
       </Button>
       <Button
         variant={activeLayer === "compost" ? "primary" : "outline"}
         size="sm"
         onClick={() => onLayerChange("compost")}
       >
-        ♻️ Compost Sites Only
+        ♻️ {t("map.layers.compostOnly")}
       </Button>
     </div>
   );
@@ -66,6 +72,8 @@ interface MapStatsCardsProps {
 }
 
 export function MapStatsCards({ stats }: MapStatsCardsProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="grid gap-4 sm:grid-cols-4">
       <Card>
@@ -75,7 +83,7 @@ export function MapStatsCards({ stats }: MapStatsCardsProps) {
           </div>
           <div>
             <p className="text-2xl font-bold">{stats.totalFarms}</p>
-            <p className="text-xs text-muted-foreground">Active Farms</p>
+            <p className="text-xs text-muted-foreground">{t("map.activeFarms")}</p>
           </div>
         </CardContent>
       </Card>
@@ -86,7 +94,7 @@ export function MapStatsCards({ stats }: MapStatsCardsProps) {
           </div>
           <div>
             <p className="text-2xl font-bold">{stats.totalCompostSites}</p>
-            <p className="text-xs text-muted-foreground">Compost Sites</p>
+            <p className="text-xs text-muted-foreground">{t("map.compostSites")}</p>
           </div>
         </CardContent>
       </Card>
@@ -97,7 +105,7 @@ export function MapStatsCards({ stats }: MapStatsCardsProps) {
           </div>
           <div>
             <p className="text-2xl font-bold">{stats.totalCrops}</p>
-            <p className="text-xs text-muted-foreground">Crop Types</p>
+            <p className="text-xs text-muted-foreground">{t("map.cropTypes")}</p>
           </div>
         </CardContent>
       </Card>
@@ -108,7 +116,7 @@ export function MapStatsCards({ stats }: MapStatsCardsProps) {
           </div>
           <div>
             <p className="text-2xl font-bold">{stats.totalPlants.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">Total Plants</p>
+            <p className="text-xs text-muted-foreground">{t("map.totalPlants")}</p>
           </div>
         </CardContent>
       </Card>
@@ -122,14 +130,17 @@ interface MapSearchProps {
 }
 
 export function MapSearch({ value, onChange }: MapSearchProps) {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === "rtl";
+
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Search className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground`} />
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search farms by name, location, or crops..."
-        className="pl-10"
+        placeholder={t("map.searchPlaceholder")}
+        className={isRTL ? "pr-10" : "pl-10"}
       />
     </div>
   );

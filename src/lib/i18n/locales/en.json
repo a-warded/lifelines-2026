@@ -33,7 +33,10 @@
         "optional": "Optional",
         "online": "Online",
         "offline": "Offline (cached data)",
-        "day": "day"
+        "day": "day",
+        "refresh": "Refresh",
+        "saving": "Saving...",
+        "anonymous": "Anonymous"
     },
     "nav": {
         "home": "Home",
@@ -52,6 +55,8 @@
         "register": "Register"
     },
     "landing": {
+        "tagline": "Food, Agriculture, and Distribution Ecosystem",
+        "or": "OR",
         "cta": {
             "getStarted": "Get Started",
             "learnMore": "Learn More",
@@ -120,12 +125,27 @@
             "title": "Your Latest Farming Plan",
             "recommended": "Recommended crops",
             "created": "Created",
-            "view": "View Plan"
+            "view": "View Plan",
+            "regenerate": "Generate a new farming plan",
+            "addCrops": "Add Crops"
         },
         "getStarted": {
             "title": "Ready to Start Growing?",
             "description": "Create your personalized farming plan based on your space, water access, and goals.",
             "cta": "Get Your Farming Plan"
+        },
+        "regenerate": {
+            "title": "Update Farming Conditions",
+            "description": "Update your farming conditions to get new personalized crop recommendations.",
+            "submit": "Generate New Plan"
+        },
+        "suggestedCrops": {
+            "title": "Suggested Crops for You",
+            "subtitle": "We've selected the best crops for you!",
+            "description": "Based on your location, conditions, and goals, here are our top recommendations.",
+            "estimatedWater": "Estimated daily water",
+            "maybeLater": "Maybe Later",
+            "addAll": "Add All to My Farm"
         }
     },
     "plan": {
@@ -214,13 +234,48 @@
                 "title": "Recommended Crops",
                 "difficulty": "Difficulty",
                 "harvestTime": "{{days}} days to harvest",
-                "reason": "Why"
+                "reason": "Why",
+                "addedAll": "Added All",
+                "addAllToFarm": "Add All to Farm"
             },
             "timeline": {
-                "title": "Your Timeline"
+                "title": "Your Timeline",
+                "today": "Today",
+                "thisWeek": "This Week",
+                "week2": "Week 2+",
+                "steps": {
+                    "surveySpace": "Survey your growing space and note sunlight patterns",
+                    "gatherContainers": "Gather containers with drainage holes",
+                    "markArea": "Mark out your growing area",
+                    "checkWater": "Check your water source and storage options",
+                    "setupWaterCollection": "Set up water collection containers if possible",
+                    "fillContainers": "Fill containers with growing medium or soil mix",
+                    "prepareSoil": "Prepare soil - remove debris, loosen top layer",
+                    "obtainSeeds": "Obtain seeds or seedlings for: {{crops}}",
+                    "createSchedule": "Create a simple watering schedule",
+                    "setupShade": "Set up basic shade protection if needed",
+                    "considerRaised": "Consider raised beds or containers to avoid salty ground soil",
+                    "plantSeeds": "Plant your first seeds following spacing guidelines",
+                    "morningWatering": "Establish morning watering routine",
+                    "monitorPests": "Monitor for pests - check leaves daily",
+                    "addMulch": "Add mulch to retain moisture",
+                    "connectGrowers": "Connect with local growers through the Exchange feature",
+                    "keepLog": "Keep a simple log of what you plant and when"
+                }
             },
             "checklist": {
-                "title": "Setup Checklist"
+                "title": "Setup Checklist",
+                "items": {
+                    "findContainers": "Find or prepare growing containers/space",
+                    "ensureDrainage": "Ensure adequate drainage",
+                    "prepareSoil": "Prepare soil or growing medium",
+                    "sourceSeeds": "Source seeds or seedlings",
+                    "setupWatering": "Set up watering system or schedule",
+                    "planSunShade": "Plan for sun/shade management",
+                    "saltFlushing": "Consider salt-flushing or container growing",
+                    "waterRecycling": "Set up water recycling/collection",
+                    "establishWater": "Establish water source or collection system"
+                }
             },
             "water": {
                 "title": "Estimated Daily Water",
@@ -247,12 +302,26 @@
         "title": "Community Exchange",
         "subtitle": "Share seeds, trade surplus, help neighbors",
         "filters": {
+            "title": "Filters",
+            "description": "Refine listings to find what you need",
             "type": "Type",
             "status": "Status",
             "mode": "Mode",
             "allTypes": "All Types",
             "allStatuses": "All Statuses",
-            "allModes": "All Modes"
+            "allModes": "All Modes",
+            "listingType": "LISTING TYPE",
+            "listingStatus": "LISTING STATUS",
+            "statusDescription": "Find available, claimed, or completed listings",
+            "modeDescription": "Filter by offering or seeking",
+            "delivery": "DELIVERY",
+            "deliveryDescription": "Filter by delivery method",
+            "location": "LOCATION",
+            "applied": "Filters applied",
+            "noFilters": "No filters applied",
+            "clear": "Clear filters",
+            "apply": "Apply",
+            "updateLocation": "Update Location"
         },
         "types": {
             "seeds": "Seeds",
@@ -285,7 +354,20 @@
             "distance": "{{distance}} km away",
             "postedBy": "Posted by {{name}}",
             "wantsInReturn": "Wants in return",
-            "lookingFor": "Looking for"
+            "lookingFor": "Looking for",
+            "details": "Listing Details",
+            "description": "Description",
+            "noDescription": "No description provided.",
+            "quantity": "Quantity",
+            "mode": "Mode",
+            "location": "Location",
+            "delivery": "Delivery",
+            "claims": "Claims",
+            "viewDetails": "View Details",
+            "saved": "Saved",
+            "save": "Save",
+            "share": "Share",
+            "viewStatus": "View Status"
         },
         "create": {
             "title": "Create New Listing",
@@ -442,8 +524,30 @@
             "hard": "Hard"
         }
     },
+    "crops": {
+        "title": "Your Crops",
+        "addCrop": "Add Crop",
+        "editCrop": "Edit Crop",
+        "noCrops": "No crops added yet",
+        "addFirstCrop": "Add your first crop",
+        "plant": "Plant",
+        "selectPlant": "Select a plant...",
+        "count": "Count",
+        "growthStage": "Growth Stage",
+        "plantedDate": "Planted Date (optional)",
+        "stages": {
+            "seedling": "Seedling",
+            "vegetative": "Vegetative",
+            "flowering": "Flowering",
+            "fruiting": "Fruiting",
+            "mature": "Mature"
+        }
+    },
     "profile": {
-        "title": "Your Profile",
+        "title": "Farm Profile",
+        "subtitle": "Manage your farm settings and location",
+        "editProfile": "Edit Profile",
+        "saveChanges": "Save Changes",
         "nameLabel": "Name",
         "emailLabel": "Email",
         "locationLabel": "Location",
@@ -482,6 +586,37 @@
         "networkError": "Network error. Check your connection.",
         "validationError": "Please check your input and try again."
     },
+    "map": {
+        "title": "Community Map",
+        "description": "Discover farms, composting sites, and connect with your community",
+        "filters": "Filters",
+        "compostSites": "Compost Sites",
+        "stats": "Stats",
+        "totalFarms": "Farms",
+        "activeFarms": "Active Farms",
+        "totalCompostSites": "Compost Sites",
+        "totalCrops": "Crop Types",
+        "cropTypes": "Crop Types",
+        "totalPlants": "Total Plants",
+        "searchPlaceholder": "Search farms by name, location, or crops...",
+        "layers": {
+            "all": "All",
+            "farmsOnly": "Farms Only",
+            "compostOnly": "Compost Sites Only"
+        },
+        "loading": "Loading map...",
+        "farm": "Farm",
+        "by": "by",
+        "location": "Location",
+        "spaceType": "Space Type",
+        "dailyWater": "Daily Water",
+        "growing": "Growing",
+        "siteType": "Site Type",
+        "services": "Services",
+        "acceptsWaste": "Accepts Waste",
+        "hasFertilizer": "Has Fertilizer",
+        "descriptionLabel": "Description"
+    },
     "units": {
         "liters": "liters",
         "litersShort": "L",
@@ -515,7 +650,33 @@
             "breakdown": "Breakdown by Material",
             "tips": "Pro Tips",
             "recommendedMethod": "Recommended Method",
-            "requirements": "What you'll need"
+            "requirements": "What you'll need",
+            "headline": "{{amount}} kg of {{wasteType}} → usable compost",
+            "headlineGeneric": "This batch will produce {{amount}} kg of usable compost",
+            "verdict": "Verdict",
+            "feasibility": "Feasibility",
+            "timeToReady": "Time to ready",
+            "days": "~{{days}} days",
+            "marketValue": "Market value",
+            "notWorthSelling": "Not worth selling",
+            "whyMightFail": "Why this batch might fail",
+            "materialBreakdown": "Material breakdown",
+            "nitrogen": "nitrogen",
+            "carbon": "carbon",
+            "smallBatch": "Small batch—consider waiting for more.",
+            "worthComposting": "Worth composting.",
+            "addGreens": "Add greens.",
+            "addBrowns": "Add browns.",
+            "useYourself": "Use it yourself.",
+            "sellable": "Sellable if needed.",
+            "dontSellUnlessMixed": "Don't sell unless mixed further.",
+            "tooMuchCarbon": "Too much carbon. Will decompose slowly unless you add nitrogen-rich material.",
+            "tooMuchNitrogen": "Too much nitrogen. Expect ammonia smell. Add dry leaves or straw.",
+            "smallPileHeat": "Small piles lose heat fast. May not reach temperatures that kill pathogens.",
+            "longProcessing": "Long processing time. You'll need patience—or more greens to speed it up.",
+            "tooSmallToList": "Too small to list",
+            "meetsMinimum": "This batch meets minimum exchange size.",
+            "enoughVolume": "You have enough volume to exchange, though larger batches get more interest."
         },
         "listFertilizer": "List Fertilizer for Exchange",
         "viewMap": "View Compost Sites Map",
@@ -548,7 +709,118 @@
             "contact": "Contact Info",
             "contactPlaceholder": "Phone or email (optional)",
             "location": "Location",
+            "locationHint": "Click on the map to set the composting site location",
             "submit": "Add Site"
+        },
+        "reference": {
+            "title": "If you care about the details",
+            "idealRatio": "Ideal C:N ratio",
+            "targetMoisture": "Target moisture",
+            "minimumBatch": "Minimum batch",
+            "turnFrequency": "Turn frequency",
+            "turnFrequencyValue": "Every 1-2 weeks"
         }
+    },
+    "onboarding": {
+        "steps": {
+            "welcome": "Welcome",
+            "location": "Location",
+            "space": "Your Space",
+            "conditions": "Conditions",
+            "goals": "Goals",
+            "complete": "Complete"
+        },
+        "welcome": {
+            "title": "Welcome to FADES",
+            "subtitle": "Let's set up your farm profile. This will help us give you personalized recommendations.",
+            "farmName": "Give your farm a name",
+            "farmNamePlaceholder": "eg: Aura Farm",
+            "chooseEmoji": "Choose a farm icon",
+            "continue": "Continue"
+        },
+        "location": {
+            "title": "Your Location",
+            "subtitle": "Helps us provide accurate weather and growing recommendations",
+            "useMyLocation": "Auto-detect",
+            "detecting": "Detecting...",
+            "tapToSet": "Click or tap on the map to set your location",
+            "yourLocation": "Your location",
+            "continue": "Continue"
+        },
+        "space": {
+            "title": "Your Growing Space",
+            "subtitle": "Tell us about where you'll grow",
+            "spaceTypeLabel": "What type of space do you have?",
+            "options": {
+                "rooftop": { "label": "Rooftop", "desc": "Open roof space" },
+                "balcony": { "label": "Balcony", "desc": "Apartment balcony" },
+                "containers": { "label": "Containers", "desc": "Pots & planters" },
+                "backyard": { "label": "Backyard", "desc": "Ground garden" },
+                "microplot": { "label": "Microplot", "desc": "Small land plot" }
+            },
+            "continue": "Continue"
+        },
+        "conditions": {
+            "title": "Growing Conditions",
+            "subtitle": "Help us understand your environment",
+            "water": {
+                "label": "Water Availability",
+                "options": {
+                    "none": { "label": "None", "desc": "Very limited access" },
+                    "low": { "label": "Low", "desc": "Occasional watering" },
+                    "medium": { "label": "Medium", "desc": "Regular watering" },
+                    "high": { "label": "High", "desc": "Abundant supply" }
+                }
+            },
+            "soil": {
+                "label": "Soil Condition",
+                "options": {
+                    "normal": { "label": "Normal", "desc": "Good quality soil" },
+                    "salty": { "label": "Salty", "desc": "High salinity" },
+                    "unknown": { "label": "Unknown", "desc": "Not sure" }
+                }
+            },
+            "sun": {
+                "label": "Daily Sunlight",
+                "options": {
+                    "low": { "label": "Low", "desc": "Less than 4 hours" },
+                    "medium": { "label": "Medium", "desc": "4-6 hours" },
+                    "high": { "label": "High", "desc": "6+ hours" }
+                }
+            },
+            "continue": "Continue"
+        },
+        "goals": {
+            "title": "Your Goals",
+            "subtitle": "What do you want to achieve?",
+            "goalLabel": "Primary Farming Goal",
+            "options": {
+                "calories": { "label": "Maximum Calories", "desc": "Grow filling, calorie-dense crops" },
+                "nutrition": { "label": "Balanced Nutrition", "desc": "Variety of vitamins & minerals" },
+                "fast": { "label": "Quick Harvest", "desc": "Fast-growing crops first" }
+            },
+            "experienceLabel": "Your Experience Level",
+            "experience": {
+                "beginner": { "label": "Beginner", "desc": "Just starting out" },
+                "intermediate": { "label": "Intermediate", "desc": "Some experience" },
+                "advanced": { "label": "Advanced", "desc": "Experienced grower" }
+            },
+            "continue": "Complete Setup"
+        },
+        "complete": {
+            "title": "You're All Set!",
+            "subtitle": "Your personalized farming plan is being generated...",
+            "goToDashboard": "Go to Dashboard",
+            "creating": "Setting up your farm..."
+        },
+        "navigation": {
+            "back": "Back",
+            "skip": "Skip"
+        }
+    },
+    "language": {
+        "title": "Language",
+        "english": "English",
+        "arabic": "العربية"
     }
 }

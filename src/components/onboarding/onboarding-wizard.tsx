@@ -18,6 +18,7 @@ import {
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ColorBends from "../ColorBends";
 import { FadesLogo } from "../fades-logo";
 import SplitText from "../SplitText";
@@ -65,47 +66,56 @@ const FARM_EMOJI_OPTIONS = [
     "🏡", "🏠", "🌳", "🌴", "🪴", "🌵", "🍀", "☘️",
 ];
 
-const SPACE_OPTIONS = [
-    { value: "rooftop", emoji: "🏢", label: "Rooftop", desc: "Open roof space" },
-    { value: "balcony", emoji: "🏠", label: "Balcony", desc: "Apartment balcony" },
-    { value: "containers", emoji: "🪴", label: "Containers", desc: "Pots & planters" },
-    { value: "backyard", emoji: "🌳", label: "Backyard", desc: "Ground garden" },
-    { value: "microplot", emoji: "🌾", label: "Microplot", desc: "Small land plot" },
-];
+// Options will be translated inside the component
+const SPACE_OPTION_VALUES = ["rooftop", "balcony", "containers", "backyard", "microplot"] as const;
+const SPACE_OPTION_EMOJIS: Record<typeof SPACE_OPTION_VALUES[number], string> = {
+    rooftop: "🏢",
+    balcony: "🏠",
+    containers: "🪴",
+    backyard: "🌳",
+    microplot: "🌾",
+};
 
-const WATER_OPTIONS = [
-    { value: "none", emoji: "🚫", label: "None", desc: "Very limited access" },
-    { value: "low", emoji: "💧", label: "Low", desc: "Occasional watering" },
-    { value: "medium", emoji: "💦", label: "Medium", desc: "Regular watering" },
-    { value: "high", emoji: "🌊", label: "High", desc: "Abundant supply" },
-];
+const WATER_OPTION_VALUES = ["none", "low", "medium", "high"] as const;
+const WATER_OPTION_EMOJIS: Record<typeof WATER_OPTION_VALUES[number], string> = {
+    none: "🚫",
+    low: "💧",
+    medium: "💦",
+    high: "🌊",
+};
 
-const SOIL_OPTIONS = [
-    { value: "normal", emoji: "✅", label: "Normal", desc: "Good quality soil" },
-    { value: "salty", emoji: "🧂", label: "Salty", desc: "High salinity" },
-    { value: "unknown", emoji: "❓", label: "Unknown", desc: "Not sure" },
-];
+const SOIL_OPTION_VALUES = ["normal", "salty", "unknown"] as const;
+const SOIL_OPTION_EMOJIS: Record<typeof SOIL_OPTION_VALUES[number], string> = {
+    normal: "✅",
+    salty: "🧂",
+    unknown: "❓",
+};
 
-const SUN_OPTIONS = [
-    { value: "low", emoji: "🌥️", label: "Low", desc: "Less than 4 hours" },
-    { value: "medium", emoji: "⛅", label: "Medium", desc: "4-6 hours" },
-    { value: "high", emoji: "☀️", label: "High", desc: "6+ hours" },
-];
+const SUN_OPTION_VALUES = ["low", "medium", "high"] as const;
+const SUN_OPTION_EMOJIS: Record<typeof SUN_OPTION_VALUES[number], string> = {
+    low: "🌥️",
+    medium: "⛅",
+    high: "☀️",
+};
 
-const GOAL_OPTIONS = [
-    { value: "calories", emoji: "🔥", label: "Maximum Calories", desc: "Grow filling, calorie-dense crops" },
-    { value: "nutrition", emoji: "🥗", label: "Balanced Nutrition", desc: "Variety of vitamins & minerals" },
-    { value: "fast", emoji: "⚡", label: "Quick Harvest", desc: "Fast-growing crops first" },
-];
+const GOAL_OPTION_VALUES = ["calories", "nutrition", "fast"] as const;
+const GOAL_OPTION_EMOJIS: Record<typeof GOAL_OPTION_VALUES[number], string> = {
+    calories: "🔥",
+    nutrition: "🥗",
+    fast: "⚡",
+};
 
-const EXPERIENCE_OPTIONS = [
-    { value: "beginner", emoji: "🌱", label: "Beginner", desc: "Just starting out" },
-    { value: "intermediate", emoji: "🌿", label: "Intermediate", desc: "Some experience" },
-    { value: "advanced", emoji: "🌳", label: "Advanced", desc: "Experienced grower" },
-];
+const EXPERIENCE_OPTION_VALUES = ["beginner", "intermediate", "advanced"] as const;
+const EXPERIENCE_OPTION_EMOJIS: Record<typeof EXPERIENCE_OPTION_VALUES[number], string> = {
+    beginner: "🌱",
+    intermediate: "🌿",
+    advanced: "🌳",
+};
 
 export function OnboardingWizard() {
     const router = useRouter();
+    const { t, i18n } = useTranslation();
+    const isRTL = i18n.dir() === "rtl";
     const [currentStep, setCurrentStep] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -122,6 +132,59 @@ export function OnboardingWizard() {
         longitude: null,
         locationLabel: "",
     });
+
+    // Translated step labels
+    const STEPS_TRANSLATED = [
+        { id: "welcome", title: t("onboarding.steps.welcome"), icon: HomeIcon },
+        { id: "location", title: t("onboarding.steps.location"), icon: MapPin },
+        { id: "space", title: t("onboarding.steps.space"), icon: Leaf },
+        { id: "conditions", title: t("onboarding.steps.conditions"), icon: Droplets },
+        { id: "goals", title: t("onboarding.steps.goals"), icon: Target },
+        { id: "complete", title: t("onboarding.steps.complete"), icon: Check },
+    ];
+
+    // Translated options
+    const SPACE_OPTIONS = SPACE_OPTION_VALUES.map((value) => ({
+        value,
+        emoji: SPACE_OPTION_EMOJIS[value],
+        label: t(`onboarding.space.options.${value}.label`),
+        desc: t(`onboarding.space.options.${value}.desc`),
+    }));
+
+    const WATER_OPTIONS = WATER_OPTION_VALUES.map((value) => ({
+        value,
+        emoji: WATER_OPTION_EMOJIS[value],
+        label: t(`onboarding.conditions.water.options.${value}.label`),
+        desc: t(`onboarding.conditions.water.options.${value}.desc`),
+    }));
+
+    const SOIL_OPTIONS = SOIL_OPTION_VALUES.map((value) => ({
+        value,
+        emoji: SOIL_OPTION_EMOJIS[value],
+        label: t(`onboarding.conditions.soil.options.${value}.label`),
+        desc: t(`onboarding.conditions.soil.options.${value}.desc`),
+    }));
+
+    const SUN_OPTIONS = SUN_OPTION_VALUES.map((value) => ({
+        value,
+        emoji: SUN_OPTION_EMOJIS[value],
+        label: t(`onboarding.conditions.sun.options.${value}.label`),
+        desc: t(`onboarding.conditions.sun.options.${value}.desc`),
+    }));
+
+    const GOAL_OPTIONS = GOAL_OPTION_VALUES.map((value) => ({
+        value,
+        emoji: GOAL_OPTION_EMOJIS[value],
+        label: t(`onboarding.goals.options.${value}.label`),
+        desc: t(`onboarding.goals.options.${value}.desc`),
+    }));
+
+    const EXPERIENCE_OPTIONS = EXPERIENCE_OPTION_VALUES.map((value) => ({
+        value,
+        emoji: EXPERIENCE_OPTION_EMOJIS[value],
+        label: t(`onboarding.goals.experience.${value}.label`),
+        desc: t(`onboarding.goals.experience.${value}.desc`),
+    }));
 
     const updateData = (updates: Partial<OnboardingData>) => {
         setData((prev) => ({ ...prev, ...updates }));
@@ -295,7 +358,7 @@ export function OnboardingWizard() {
                 {/* Progress Steps */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between">
-                        {STEPS.map((step, index) => {
+                        {STEPS_TRANSLATED.map((step, index) => {
                             const StepIcon = step.icon;
                             const isComplete = index < currentStep;
                             const isCurrent = index === currentStep;
@@ -324,7 +387,7 @@ export function OnboardingWizard() {
                                             {step.title}
                                         </span>
                                     </div>
-                                    {index < STEPS.length - 1 && (
+                                    {index < STEPS_TRANSLATED.length - 1 && (
                                         <div
                                             className={`mx-2 h-0.5 flex-1 transition-colors ${
                                                 isComplete ? "bg-[#80ED99]" : "bg-zinc-200 dark:bg-zinc-700"
@@ -346,21 +409,27 @@ export function OnboardingWizard() {
                                 <FadesLogo fill="var(--primary)" className="h-full w-full" />
                             </div>
 
-                            <SplitText
-                                text="Welcome to FADES"
-                                className="text-2xl font-semibold text-center"
-                                duration={0.5}
-                                ease="power3.out"
-                                splitType="chars"
-                                from={{ opacity: 0, y: 40 }}
-                                to={{ opacity: 1, y: 0 }}
-                                threshold={0.1}
-                                rootMargin="-100px"
-                                textAlign="center"
-                            />
+                            {isRTL ? (
+                                <h2 className="text-2xl font-semibold text-center fades-fancy-ahh">
+                                    {t("onboarding.welcome.title")}
+                                </h2>
+                            ) : (
+                                <SplitText
+                                    text={t("onboarding.welcome.title")}
+                                    className="text-2xl font-semibold text-center"
+                                    duration={0.5}
+                                    ease="power3.out"
+                                    splitType="chars"
+                                    from={{ opacity: 0, y: 40 }}
+                                    to={{ opacity: 1, y: 0 }}
+                                    threshold={0.1}
+                                    rootMargin="-100px"
+                                    textAlign="center"
+                                />
+                            )}
 
                             <p className="mt-4 text-lg text-muted-foreground max-w-md mx-auto">
-                                Set up your profile so we can help you grow the most efficient crops for your situation.
+                                {t("onboarding.welcome.subtitle")}
                             </p>
                         </div>
                     )}
@@ -369,9 +438,9 @@ export function OnboardingWizard() {
                     {currentStep === 1 && (
                         <div className="py-6 fade-onboard-step">
                             <div className="mb-6 text-center">
-                                <h2 className="text-2xl font-bold text-foreground">Your Location</h2>
+                                <h2 className="text-2xl font-bold text-foreground">{t("onboarding.location.title")}</h2>
                                 <p className="mt-1 text-muted-foreground">
-                                    Farm together with your local community to build a resilient food supply, immune to disruptions.
+                                    {t("onboarding.location.subtitle")}
                                 </p>
                             </div>
 
@@ -408,7 +477,7 @@ export function OnboardingWizard() {
                                         className="gap-2"
                                     >
                                         <MapPin className="h-4 w-4" />
-                                        {isDetectingLocation ? "Detecting..." : "Auto-detect"}
+                                        {isDetectingLocation ? t("onboarding.location.detecting") : t("onboarding.location.useMyLocation")}
                                     </Button>
                                 </div>
                             </div>
@@ -419,16 +488,16 @@ export function OnboardingWizard() {
                     {currentStep === 2 && (
                         <div className="p-6 fade-onboard-step">
                             <div className="mb-6 text-center">
-                                <h2 className="text-2xl font-bold text-foreground">Your Growing Space</h2>
+                                <h2 className="text-2xl font-bold text-foreground">{t("onboarding.space.title")}</h2>
                                 <p className="mt-1 text-muted-foreground">
-                                    Tell us about where you&apos;ll grow
+                                    {t("onboarding.space.subtitle")}
                                 </p>
                             </div>
 
                             <div className="space-y-6">
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-foreground">
-                                        Give your farm a name
+                                        {t("onboarding.welcome.farmName")}
                                     </label>
                                     <div className="flex gap-3">
                                         <button
@@ -446,7 +515,7 @@ export function OnboardingWizard() {
                                         <Input
                                             value={data.farmName}
                                             onChange={(e) => updateData({ farmName: e.target.value })}
-                                            placeholder="eg: Aura Farm"
+                                            placeholder={t("onboarding.welcome.farmNamePlaceholder")}
                                             className="flex-1 text-base"
                                         />
                                     </div>
@@ -455,7 +524,7 @@ export function OnboardingWizard() {
                                 {/* Emoji Grid */}
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-foreground">
-                                        Choose a farm icon
+                                        {t("onboarding.welcome.chooseEmoji")}
                                     </label>
                                     <div className="grid grid-cols-8 gap-2">
                                         {FARM_EMOJI_OPTIONS.map((emoji) => (
@@ -479,7 +548,7 @@ export function OnboardingWizard() {
 
                                 <div>
                                     <label className="mb-3 block text-sm font-medium text-foreground">
-                                        What type of space do you have?
+                                        {t("onboarding.space.spaceTypeLabel")}
                                     </label>
                                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                         {SPACE_OPTIONS.map((opt) => (
@@ -502,9 +571,9 @@ export function OnboardingWizard() {
                     {currentStep === 3 && (
                         <div className="p-6 fade-onboard-step">
                             <div className="mb-6 text-center">
-                                <h2 className="text-2xl font-bold text-foreground">Growing Conditions</h2>
+                                <h2 className="text-2xl font-bold text-foreground">{t("onboarding.conditions.title")}</h2>
                                 <p className="mt-1 text-muted-foreground">
-                                    Help us understand your environment
+                                    {t("onboarding.conditions.subtitle")}
                                 </p>
                             </div>
 
@@ -512,7 +581,7 @@ export function OnboardingWizard() {
                                 <div>
                                     <label className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                                         <Droplets className="h-4 w-4 text-blue-400" />
-                                        Water Availability
+                                        {t("onboarding.conditions.water.label")}
                                     </label>
                                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                                         {WATER_OPTIONS.map((opt) => (
@@ -531,7 +600,7 @@ export function OnboardingWizard() {
                                 <div>
                                     <label className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                                         <Leaf className="h-4 w-4 text-amber-600" />
-                                        Soil Condition
+                                        {t("onboarding.conditions.soil.label")}
                                     </label>
                                     <div className="grid grid-cols-3 gap-3">
                                         {SOIL_OPTIONS.map((opt) => (
@@ -550,7 +619,7 @@ export function OnboardingWizard() {
                                 <div>
                                     <label className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                                         <Sun className="h-4 w-4 text-yellow-500" />
-                                        Daily Sunlight
+                                        {t("onboarding.conditions.sun.label")}
                                     </label>
                                     <div className="grid grid-cols-3 gap-3">
                                         {SUN_OPTIONS.map((opt) => (
@@ -573,16 +642,16 @@ export function OnboardingWizard() {
                     {currentStep === 4 && (
                         <div className="p-6 fade-onboard-step">
                             <div className="mb-6 text-center">
-                                <h2 className="text-2xl font-bold text-foreground">Your Goals</h2>
+                                <h2 className="text-2xl font-bold text-foreground">{t("onboarding.goals.title")}</h2>
                                 <p className="mt-1 text-muted-foreground">
-                                    What do you want to achieve?
+                                    {t("onboarding.goals.subtitle")}
                                 </p>
                             </div>
 
                             <div className="space-y-6">
                                 <div>
                                     <label className="mb-3 block text-sm font-medium text-foreground">
-                                        Primary growing goal
+                                        {t("onboarding.goals.goalLabel")}
                                     </label>
                                     <div className="grid gap-3">
                                         {GOAL_OPTIONS.map((opt) => (
@@ -601,7 +670,7 @@ export function OnboardingWizard() {
 
                                 <div>
                                     <label className="mb-3 block text-sm font-medium text-foreground">
-                                        Your experience level
+                                        {t("onboarding.goals.experienceLabel")}
                                     </label>
                                     <div className="grid grid-cols-3 gap-3">
                                         {EXPERIENCE_OPTIONS.map((opt) => (
@@ -627,30 +696,30 @@ export function OnboardingWizard() {
                                 <Check className="h-10 w-10 text-[#80ED99]" />
                             </div>
                             <h2 className="text-3xl font-bold text-foreground">
-                                You&apos;re All Set
+                                {t("onboarding.complete.title")}
                             </h2>
                             <p className="mt-4 text-lg text-muted-foreground max-w-md mx-auto">
-                                Let&apos;s start rebuilding a resilient food system, one farm at a time.
+                                {t("onboarding.complete.subtitle")}
                             </p>
                             
                             <div className="mt-8 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-6 text-left">
-                                <h3 className="font-semibold text-foreground mb-4">Your Profile Summary</h3>
+                                <h3 className="font-semibold text-foreground mb-4">{t("profile.title")}</h3>
                                 <div className="grid gap-3 text-sm">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Farm Name</span>
+                                        <span className="text-muted-foreground">{t("onboarding.welcome.farmName")}</span>
                                         <span className="font-medium">{data.farmName}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Location</span>
+                                        <span className="text-muted-foreground">{t("onboarding.location.yourLocation")}</span>
                                         <span className="font-medium">{getCountryName(data.locationLabel)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Space Type</span>
-                                        <span className="font-medium capitalize">{data.spaceType}</span>
+                                        <span className="text-muted-foreground">{t("onboarding.space.spaceTypeLabel")}</span>
+                                        <span className="font-medium">{SPACE_OPTIONS.find(o => o.value === data.spaceType)?.label}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Primary Goal</span>
-                                        <span className="font-medium capitalize">{data.primaryGoal}</span>
+                                        <span className="text-muted-foreground">{t("onboarding.goals.goalLabel")}</span>
+                                        <span className="font-medium">{GOAL_OPTIONS.find(o => o.value === data.primaryGoal)?.label}</span>
                                     </div>
                                 </div>
                             </div>
@@ -665,8 +734,8 @@ export function OnboardingWizard() {
                             disabled={currentStep === 0}
                             className="gap-2"
                         >
-                            <ArrowLeft className="h-4 w-4" />
-                            Back
+                            {isRTL ? <ArrowRight className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
+                            {t("onboarding.navigation.back")}
                         </Button>
                         <Button
                             onClick={nextStep}
@@ -676,16 +745,16 @@ export function OnboardingWizard() {
                             {isSubmitting ? (
                                 <>
                                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />
-                                    Saving...
+                                    {t("onboarding.complete.creating")}
                                 </>
                             ) : currentStep === STEPS.length - 1 ? (
                                 <>
-                                    Get Started
+                                    {t("onboarding.complete.goToDashboard")}
                                 </>
                             ) : (
                                 <>
-                                    Continue
-                                    <ArrowRight className="h-4 w-4" />
+                                    {t("onboarding.welcome.continue")}
+                                    {isRTL ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
                                 </>
                             )}
                         </Button>

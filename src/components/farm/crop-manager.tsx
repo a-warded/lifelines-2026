@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/select";
 import { GrowthStage, getPlantOptions } from "@/lib/plants";
 import { Leaf, PencilIcon, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface CropEntry {
     plantId: string;
@@ -43,14 +44,6 @@ interface CropManagerProps {
     compact?: boolean;
 }
 
-const GROWTH_STAGES: { value: GrowthStage; label: string; emoji: string }[] = [
-    { value: "seedling", label: "Seedling", emoji: "🌱" },
-    { value: "vegetative", label: "Vegetative", emoji: "🌿" },
-    { value: "flowering", label: "Flowering", emoji: "🌸" },
-    { value: "fruiting", label: "Fruiting", emoji: "🍅" },
-    { value: "mature", label: "Mature", emoji: "🌾" },
-];
-
 export function CropManager({
     crops,
     waterCalculation,
@@ -58,6 +51,8 @@ export function CropManager({
     saving,
     compact = false,
 }: CropManagerProps) {
+    const { t, i18n } = useTranslation();
+    const isRTL = i18n.dir() === "rtl";
     const plantOptions = useMemo(() => getPlantOptions(), []);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -66,6 +61,14 @@ export function CropManager({
         count: 1,
         stage: "seedling",
     });
+
+    const GROWTH_STAGES_TRANSLATED = [
+        { value: "seedling" as GrowthStage, label: t("crops.stages.seedling", "Seedling"), emoji: "🌱" },
+        { value: "vegetative" as GrowthStage, label: t("crops.stages.vegetative", "Vegetative"), emoji: "🌿" },
+        { value: "flowering" as GrowthStage, label: t("crops.stages.flowering", "Flowering"), emoji: "🌸" },
+        { value: "fruiting" as GrowthStage, label: t("crops.stages.fruiting", "Fruiting"), emoji: "🍅" },
+        { value: "mature" as GrowthStage, label: t("crops.stages.mature", "Mature"), emoji: "🌾" },
+    ];
 
     const resetForm = () => {
         setForm({ plantId: "", count: 1, stage: "seedling" });
@@ -125,6 +128,10 @@ export function CropManager({
         return waterCalculation?.entries.find((e) => e.plantId === plantId);
     };
 
+    const getStageInfo = (stage: GrowthStage) => {
+        return GROWTH_STAGES_TRANSLATED.find((s) => s.value === stage) || GROWTH_STAGES_TRANSLATED[0];
+    };
+
     return (
         <div className="space-y-4">
 
@@ -133,33 +140,33 @@ export function CropManager({
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="flex items-center gap-2 text-lg">
                         <Leaf className="h-5 w-5 text-green-600" />
-                        Your Crops
+                        {t("crops.title", "Your Crops")}
                     </CardTitle>
                     <Button size="sm" onClick={() => setShowAddModal(true)}>
-                        <Plus className="mr-1 h-4 w-4" />
-                        Add Crop
+                        <Plus className={`${isRTL ? "ms-1" : "me-1"} h-4 w-4`} />
+                        {t("crops.addCrop", "Add Crop")}
                     </Button>
                 </CardHeader>
                 <CardContent>
                     {crops.length === 0 ? (
                         <div className="py-8 text-center">
                             <Leaf className="mx-auto h-12 w-12 text-muted-foreground/30" />
-                            <p className="mt-2 text-muted-foreground">No crops added yet</p>
+                            <p className="mt-2 text-muted-foreground">{t("crops.noCrops", "No crops added yet")}</p>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 className="mt-4"
                                 onClick={() => setShowAddModal(true)}
                             >
-                                <Plus className="mr-1 h-4 w-4" />
-                                Add your first crop
+                                <Plus className={`${isRTL ? "ms-1" : "me-1"} h-4 w-4`} />
+                                {t("crops.addFirstCrop", "Add your first crop")}
                             </Button>
                         </div>
                     ) : (
                         <div className="space-y-3">
                             {crops.map((crop, index) => {
                                 const waterInfo = getWaterForCrop(crop.plantId);
-                                const stageInfo = GROWTH_STAGES.find((s) => s.value === crop.stage);
+                                const stageInfo = getStageInfo(crop.stage);
 
                                 return (
                                     <div
@@ -182,7 +189,7 @@ export function CropManager({
                                                     <Select
                                                         value={crop.stage}
                                                         onChange={(e) => handleStageChange(index, e.target.value as GrowthStage)}
-                                                        options={GROWTH_STAGES.map((s) => ({
+                                                        options={GROWTH_STAGES_TRANSLATED.map((s) => ({
                                                             value: s.value,
                                                             label: `${s.emoji} ${s.label}`,
                                                         }))}
@@ -193,7 +200,7 @@ export function CropManager({
 
                                             {waterInfo && (
                                                 <span className="shrink-0 text-sm font-medium text-blue-600 dark:text-blue-400">
-                                                    💧 {waterInfo.totalLiters.toFixed(1)}L/day
+                                                    💧 {waterInfo.totalLiters.toFixed(1)}L/{t("common.day", "day")}
                                                 </span>
                                             )}
                                         </div>
@@ -230,16 +237,16 @@ export function CropManager({
                     setShowAddModal(false);
                     resetForm();
                 }}
-                title={editingIndex !== null ? "Edit Crop" : "Add Crop"}
+                title={editingIndex !== null ? t("crops.editCrop", "Edit Crop") : t("crops.addCrop", "Add Crop")}
             >
                 <div className="space-y-4">
                     <div>
-                        <label className="mb-1 block text-sm font-medium">Plant</label>
+                        <label className="mb-1 block text-sm font-medium">{t("crops.plant", "Plant")}</label>
                         <Select
                             value={form.plantId || ""}
                             onChange={(e) => setForm({ ...form, plantId: e.target.value })}
                             options={[
-                                { value: "", label: "Select a plant..." },
+                                { value: "", label: t("crops.selectPlant", "Select a plant...") },
                                 ...plantOptions,
                             ]}
                         />
@@ -247,7 +254,7 @@ export function CropManager({
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="mb-1 block text-sm font-medium">Count</label>
+                            <label className="mb-1 block text-sm font-medium">{t("crops.count", "Count")}</label>
                             <Input
                                 type="number"
                                 min={1}
@@ -256,11 +263,11 @@ export function CropManager({
                             />
                         </div>
                         <div>
-                            <label className="mb-1 block text-sm font-medium">Growth Stage</label>
+                            <label className="mb-1 block text-sm font-medium">{t("crops.growthStage", "Growth Stage")}</label>
                             <Select
                                 value={form.stage || "seedling"}
                                 onChange={(e) => setForm({ ...form, stage: e.target.value as GrowthStage })}
-                                options={GROWTH_STAGES.map((s) => ({
+                                options={GROWTH_STAGES_TRANSLATED.map((s) => ({
                                     value: s.value,
                                     label: `${s.emoji} ${s.label}`,
                                 }))}
@@ -269,7 +276,7 @@ export function CropManager({
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-sm font-medium">Planted Date (optional)</label>
+                        <label className="mb-1 block text-sm font-medium">{t("crops.plantedDate", "Planted Date (optional)")}</label>
                         <Input
                             type="date"
                             value={form.plantedDate || ""}
@@ -285,13 +292,13 @@ export function CropManager({
                                 resetForm();
                             }}
                         >
-                            Cancel
+                            {t("common.cancel", "Cancel")}
                         </Button>
                         <Button
                             onClick={handleAdd}
                             disabled={!form.plantId || !form.count || saving}
                         >
-                            {saving ? "Saving..." : editingIndex !== null ? "Update" : "Add Crop"}
+                            {saving ? t("common.saving", "Saving...") : editingIndex !== null ? t("common.update", "Update") : t("crops.addCrop", "Add Crop")}
                         </Button>
                     </div>
                 </div>

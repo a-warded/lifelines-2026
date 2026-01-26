@@ -17,6 +17,35 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+/* RTL Support - Arabic font stack */
+html[dir="rtl"] {
+  --font-sans: var(--font-noto-arabic), "Noto Sans Arabic", "Tajawal", "Cairo", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+html[dir="rtl"] body {
+  font-family: var(--font-sans);
+}
+
+/* RTL-specific adjustments */
+html[dir="rtl"] {
+  /* Flip icons that have directional meaning */
+  .flip-rtl {
+    transform: scaleX(-1);
+  }
+  
+  /* Adjust text alignment for RTL */
+  text-align: right;
+}
+
+/* RTL flex and spacing adjustments */
+html[dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]),
+html[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]),
+html[dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]),
+html[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
 html,
 body {
   @apply bg-white dark:bg-zinc-900;

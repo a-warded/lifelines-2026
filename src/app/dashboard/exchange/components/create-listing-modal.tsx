@@ -313,7 +313,7 @@ function DeliveryMethodSelector({
                                 : "border-border hover:border-primary/50"
                         }`}
                     >
-                        <span className="text-xs text-center">{method.label}</span>
+                        <span className="text-xs text-center">{t(`exchange.create.deliveryMethods.${method.value}`, method.label)}</span>
                     </button>
                 ))}
             </div>

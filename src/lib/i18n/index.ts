@@ -2,16 +2,20 @@ import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
+import ar from "./locales/ar.json";
 import en from "./locales/en.json";
 
-// Add more language imports here as needed
-// import es from "./locales/es.json";
-// import fr from "./locales/fr.json";
+// Language configuration with RTL support
+export const languages = {
+    en: { name: "English", nativeName: "English", dir: "ltr" as const },
+    ar: { name: "Arabic", nativeName: "العربية", dir: "rtl" as const },
+};
+
+export type LanguageCode = keyof typeof languages;
 
 const resources = {
     en: { translation: en },
-    // es: { translation: es },
-    // fr: { translation: fr },
+    ar: { translation: ar },
 };
 
 i18n
@@ -20,7 +24,7 @@ i18n
     .init({
         resources,
         fallbackLng: "en",
-        supportedLngs: ["en"], // Add more as needed: ["en", "es", "fr"]
+        supportedLngs: ["en", "ar"],
         
         interpolation: {
             escapeValue: false, // React already handles XSS

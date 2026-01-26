@@ -7,6 +7,8 @@ import { calculateDistance, formatPrice } from "@/lib/geo";
 import { Bookmark, BookmarkCheck, Link as LinkIcon } from "lucide-react";
 import { DELIVERY_METHODS, STATUS_COLORS, TYPE_COLORS } from "../constants";
 import type { Listing, TranslateFunction } from "../types";
+import { title } from "process";
+import { label } from "three/tsl";
 
 interface ListingCardProps {
   listing: Listing;
@@ -137,38 +139,36 @@ export function ListingCard({
                     </span>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-2 py-3 border-t border-[var(--color-border)]">
-                    <StatItem label="Claims" value={listing.claimCount || 0} />
-                    <StatItem 
-                        label="Distance" 
-                        value={formatDistance(distance)} 
-                    />
-                    <StatItem 
-                        label="Delivery" 
-                        value={deliveryMethod?.emoji || "📍"} 
-                        title={deliveryMethod?.label || "Pick-up"} 
-                    />
-                </div>
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-2 py-3 border-t border-[var(--color-border)]">
+          <StatItem label={t("exchange.listing.claims")} value={listing.claimCount || 0} />
+          <StatItem 
+            label={t("exchange.listing.distance", { distance: "" }).split(" ")[0] || "Distance"} 
+            value={formatDistance(distance)} 
+          />
+          <StatItem 
+            label={t("exchange.listing.delivery")} 
+            value={deliveryMethod?.emoji || "📍"} 
+            title={t(`exchange.create.deliveryMethods.${listing.deliveryMethod}`, deliveryMethod?.label || "Pick-up")} 
+          />
+        </div>
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-2 mt-auto pt-3">
-                    <Button variant="outline" size="sm" className="w-full text-xs" onClick={onViewDetails}>
-            View Details
-                    </Button>
-                    {!listing.isOwner && listing.status === "available" ? (
-                        <Button size="sm" className="w-full text-xs" onClick={onClaim}>
-                            {listing.dealType === "trade" 
-                                ? t("exchange.listing.offerTradeButton") 
-                                : t("exchange.listing.claimButton")}
-                        </Button>
-                    ) : (
-                        <Button size="sm" variant="secondary" className="w-full text-xs" onClick={onViewDetails}>
-              View Status
-                        </Button>
-                    )}
-                </div>
-            </div>
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-2 mt-auto pt-3">
+          <Button variant="outline" size="sm" className="w-full text-xs" onClick={onViewDetails}>
+            {t("exchange.listing.viewDetails")}
+          </Button>
+          {!listing.isOwner && listing.status === "available" ? (
+            <Button size="sm" className="w-full text-xs" onClick={onClaim}>
+              {listing.dealType === "trade" 
+                ? t("exchange.listing.offerTradeButton") 
+                : t("exchange.listing.claimButton")}
+            </Button>
+          ) : (
+            <Button size="sm" variant="secondary" className="w-full text-xs" onClick={onViewDetails}>
+              {t("exchange.listing.viewStatus")}
+            </Button>
+          )}
         </div>
     );
 }

@@ -150,7 +150,7 @@ export function AddSiteModal({
             {t("compost.addSiteModal.location", "Location")} *
           </label>
           <p className="text-xs text-muted-foreground">
-            Click on the map to set the composting site location
+            {t("compost.addSiteModal.locationHint", "Click on the map to set the composting site location")}
           </p>
 
           <div className="rounded-lg overflow-hidden border border-border">
@@ -181,12 +181,12 @@ export function AddSiteModal({
           <Button
             onClick={onSubmit}
             disabled={!form.siteName || !userLocation || isSubmitting}
-          >
+          >9
             {isSubmitting ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
             ) : (
               <>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="me-2 h-4 w-4" />
                 {t("compost.addSiteModal.submit", "Add Site")}
               </>
             )}

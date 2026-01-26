@@ -41,7 +41,7 @@ export function SidebarCards({ t }: SidebarCardsProps) {
           className="w-full flex items-center justify-between p-4 text-left"
         >
           <span className="font-semibold text-foreground text-sm">
-            If you care about the details
+            {t("compost.reference.title", "If you care about the details")}
           </span>
           {showReference ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -53,20 +53,20 @@ export function SidebarCards({ t }: SidebarCardsProps) {
         {showReference && (
           <div className="px-4 pb-4 space-y-2.5 text-sm border-t border-border/50 pt-3">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Ideal C:N ratio</span>
+              <span className="text-muted-foreground">{t("compost.reference.idealRatio", "Ideal C:N ratio")}</span>
               <span className="font-medium text-foreground">25:1 – 30:1</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Target moisture</span>
+              <span className="text-muted-foreground">{t("compost.reference.targetMoisture", "Target moisture")}</span>
               <span className="font-medium text-foreground">50–60%</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Minimum batch</span>
+              <span className="text-muted-foreground">{t("compost.reference.minimumBatch", "Minimum batch")}</span>
               <span className="font-medium text-foreground">15+ kg</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Turn frequency</span>
-              <span className="font-medium text-foreground">Every 1-2 weeks</span>
+              <span className="text-muted-foreground">{t("compost.reference.turnFrequency", "Turn frequency")}</span>
+              <span className="font-medium text-foreground">{t("compost.reference.turnFrequencyValue", "Every 1-2 weeks")}</span>
             </div>
           </div>
         )}

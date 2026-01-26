@@ -4,7 +4,7 @@ import { languages, LanguageCode } from "@/lib/i18n";
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-function AuthLanguageSwitcher() {
+export function LanguageSwitcher() {
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language as LanguageCode;
 
@@ -19,24 +19,11 @@ function AuthLanguageSwitcher() {
     return (
         <button
             onClick={toggleLanguage}
-            className="fixed top-4 end-4 z-50 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/80"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             title={t("language.title")}
         >
-            <Globe className="h-4 w-4" />
+            <Globe className="h-5 w-5" />
             <span>{targetLangName}</span>
         </button>
     );
-}
-
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-      <>
-          <AuthLanguageSwitcher />
-          {children}
-      </>
-  );
 }
