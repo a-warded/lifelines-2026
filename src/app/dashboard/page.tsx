@@ -1,8 +1,8 @@
 "use client";
 
 import { CropManager } from "@/components/farm/crop-manager";
-import { Button, Modal, OfflineBadge } from "@/components/ui";
-import { BarChart3, Calculator, MapPin, Recycle, Users } from "lucide-react";
+import { Button, Card, CardContent, Modal, OfflineBadge } from "@/components/ui";
+import { AlertTriangle, BarChart3, Calculator, Droplets, MapPin, Recycle, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
@@ -314,6 +314,44 @@ export default function DashboardPage() {
 
               {/* Right Column - Quick Actions & Plan */}
               <div className="space-y-6">
+
+                  {/* Water Summary Card */}
+                  {waterCalculation && waterCalculation.totalDailyLiters > 0 && (
+                      <Card className="">
+                          <CardContent className="py-2">
+                              <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                                          <Droplets className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                      </div>
+                                      <div>
+                                          <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                        Daily Water Need
+                                          </p>
+                                          <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                              {waterCalculation.totalDailyLiters.toFixed(2)}L
+                                          </p>
+                                      </div>
+                                  </div>
+                                  <div className="text-right">
+                                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                                          {farmProfile?.crops.length} crop{farmProfile?.crops.length !== 1 && "s"}
+                                      </p>
+                                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                                          {farmProfile?.crops.reduce((sum, c) => sum + c.count, 0)} plants
+                                      </p>
+                                  </div>
+                              </div>
+
+                              {waterCalculation.warning && (
+                                  <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-100 p-3 text-sm text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                                      <span>{waterCalculation.warning}</span>
+                                  </div>
+                              )}
+                          </CardContent>
+                      </Card>
+                  )}
 
                   {latestPlan ? (
                       <LatestPlanCard

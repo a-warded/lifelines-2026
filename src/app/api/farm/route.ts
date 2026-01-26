@@ -51,8 +51,20 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ profile: null, needsOnboarding: true });
         }
 
+        // Calculate water requirements if the profile has crops
+        let waterCalculation = null;
+        if (profile.crops && profile.crops.length > 0) {
+            const waterEntries: WaterEntry[] = profile.crops.map((c: { plantId: string; stage: string; count: number }) => ({
+                plantId: c.plantId,
+                stage: c.stage as "seedling" | "vegetative" | "flowering" | "fruiting" | "mature",
+                count: c.count,
+            }));
+            waterCalculation = calculateWater(waterEntries);
+        }
+
         return NextResponse.json({ 
             profile,
+            waterCalculation,
             needsOnboarding: !profile.onboardingCompleted 
         });
     } catch (error) {

@@ -2,12 +2,12 @@
 
 import { Badge, Button, Card, CardContent, Modal, Select } from "@/components/ui";
 import {
-  ArrowRight,
-  CheckCircle2,
-  Leaf,
-  LeafIcon,
-  Plus,
-  Sprout
+    ArrowRight,
+    CheckCircle2,
+    Leaf,
+    LeafIcon,
+    Plus,
+    Sprout
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
@@ -56,7 +56,7 @@ export function LatestPlanCard({ plan, onAddCrops, onRegenerate }: LatestPlanCar
     const { t } = useTranslation();
 
     return (
-        <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+        <Card className="border-border">
             <CardContent>
                 <div className="flex items-start justify-between">
                     <div>
