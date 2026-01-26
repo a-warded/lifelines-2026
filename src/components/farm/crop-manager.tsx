@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { GrowthStage, getPlantOptions } from "@/lib/plants";
-import { Leaf, Plus, Trash2 } from "lucide-react";
+import { Leaf, PencilIcon, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 interface CropEntry {
@@ -175,7 +175,7 @@ export function CropManager({
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-semibold text-foreground">{crop.plantName}</span>
                                                     <Badge variant="secondary" className="text-xs">
-                                                        ×{crop.count}
+                                                        x{crop.count}
                                                     </Badge>
                                                 </div>
                                                 <div className="mt-1">
@@ -186,7 +186,7 @@ export function CropManager({
                                                             value: s.value,
                                                             label: `${s.emoji} ${s.label}`,
                                                         }))}
-                                                        className="h-8 text-sm"
+                                                        className="h-10 text-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -204,7 +204,7 @@ export function CropManager({
                                                 size="sm"
                                                 onClick={() => handleEdit(index)}
                                             >
-                                                Edit
+                                                <PencilIcon className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="ghost"

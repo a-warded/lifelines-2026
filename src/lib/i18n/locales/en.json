@@ -257,7 +257,7 @@
         "types": {
             "seeds": "Seeds",
             "produce": "Produce",
-            "fertilizer": "🌱 Fertilizer/Compost",
+            "fertilizer": "Fertilizer/Compost",
             "tools": "Tools",
             "other": "Other"
         },
