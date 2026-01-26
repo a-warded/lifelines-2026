@@ -1,8 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ExternalLink, Recycle } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import type { TranslateFunction } from "../types";
 
@@ -11,62 +11,66 @@ interface SidebarCardsProps {
 }
 
 export function SidebarCards({ t }: SidebarCardsProps) {
+  const [showReference, setShowReference] = useState(false);
+  
   return (
     <>
-      {/* Quick Info Card */}
-      <Card className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
-        <CardContent className="p-4">
-          <h3 className="mb-2 flex items-center gap-2 font-semibold">
-            <span>💡</span>
-            {t("compost.quickTips.title", "Did You Know?")}
-          </h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span>🌍</span>
-              {t(
-                "compost.quickTips.tip1",
-                "Composting reduces methane emissions from landfills by up to 50%"
-              )}
-            </li>
-            <li className="flex items-start gap-2">
-              <span>💰</span>
-              {t(
-                "compost.quickTips.tip2",
-                "Organic fertilizer can cost 2-3x more than homemade compost"
-              )}
-            </li>
-            <li className="flex items-start gap-2">
-              <span>🌱</span>
-              {t(
-                "compost.quickTips.tip3",
-                "Compost improves soil water retention by up to 20%"
-              )}
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
+      {/* Exchange Link - Practical, not cute */}
+      <div className="rounded-lg border border-border/50 p-4">
+        <h3 className="font-semibold text-foreground text-sm">
+          {t("compost.exchange.title", "Got extra compost?")}
+        </h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {t(
+            "compost.exchange.description",
+            "Trade it for seeds or produce. Most exchanges happen within 5km."
+          )}
+        </p>
+        <Link href="/dashboard/exchange?type=fertilizer" className="mt-3 block">
+          <Button variant="ghost" size="sm" className="w-full justify-between text-muted-foreground hover:text-foreground">
+            {t("compost.exchange.viewListings", "See what's available")}
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </Link>
+      </div>
 
-      {/* Exchange Link */}
-      <Card>
-        <CardContent className="p-4">
-          <h3 className="mb-2 flex items-center gap-2 font-semibold">
-            <Recycle className="h-4 w-4" />
-            {t("compost.exchange.title", "Exchange Fertilizer")}
-          </h3>
-          <p className="mb-3 text-sm text-muted-foreground">
-            {t(
-              "compost.exchange.description",
-              "Have extra compost? Share it with your community or trade for seeds and produce."
-            )}
-          </p>
-          <Link href="/dashboard/exchange?type=fertilizer">
-            <Button variant="outline" className="w-full">
-              {t("compost.exchange.viewListings", "View Fertilizer Listings")}
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+      {/* Quick reference - collapsible, human title */}
+      <div className="rounded-lg border border-border/50">
+        <button
+          onClick={() => setShowReference(!showReference)}
+          className="w-full flex items-center justify-between p-4 text-left"
+        >
+          <span className="font-semibold text-foreground text-sm">
+            If you care about the details
+          </span>
+          {showReference ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+        
+        {showReference && (
+          <div className="px-4 pb-4 space-y-2.5 text-sm border-t border-border/50 pt-3">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Ideal C:N ratio</span>
+              <span className="font-medium text-foreground">25:1 – 30:1</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Target moisture</span>
+              <span className="font-medium text-foreground">50–60%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Minimum batch</span>
+              <span className="font-medium text-foreground">15+ kg</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Turn frequency</span>
+              <span className="font-medium text-foreground">Every 1-2 weeks</span>
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 }

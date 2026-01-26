@@ -25,19 +25,15 @@ export function WasteCalculator({
   onUpdateEntry,
   t,
 }: WasteCalculatorProps) {
+  const totalWeight = entries.reduce((sum, e) => sum + (e.amountKg || 0), 0);
+  const hasSmallBatch = totalWeight > 0 && totalWeight < 10;
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <span className="text-2xl">🌱</span>
-          {t("compost.calculator.title", "What waste do you have?")}
+    <Card className="border-border/50">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-semibold text-foreground">
+          {t("compost.calculator.title", "What do you have?")}
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {t(
-            "compost.calculator.subtitle",
-            "Add your excess agricultural waste and we'll calculate your fertilizer potential"
-          )}
-        </p>
       </CardHeader>
       <CardContent className="space-y-4">
         {entries.map((entry) => (
@@ -52,10 +48,22 @@ export function WasteCalculator({
           />
         ))}
 
-        <Button variant="outline" onClick={onAddEntry} className="w-full border-dashed">
+        <Button variant="ghost" onClick={onAddEntry} className="w-full text-muted-foreground hover:text-foreground">
           <Plus className="mr-2 h-4 w-4" />
-          {t("compost.addMore", "Add More Waste")}
+          {t("compost.addMore", "Add another type")}
         </Button>
+
+        {/* Friction for small batches */}
+        {hasSmallBatch && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50/50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950/20">
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              {totalWeight < 5 
+                ? "This is quite small. Composting works better with larger batches (15kg+)."
+                : "Most users wait until they have ≥15 kg. Continue anyway?"
+              }
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -79,28 +87,23 @@ function WasteEntryRow({
   t,
 }: WasteEntryRowProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-end">
-      <div className="flex-1 space-y-2">
-        <label className="text-sm font-medium">
-          {t("compost.wasteType", "Waste Type")}
+    <div className="flex flex-col gap-3 rounded-lg border border-border/50 bg-background p-4 sm:flex-row sm:items-end">
+      <div className="flex-1 space-y-1.5">
+        <label className="text-sm font-medium text-foreground">
+          {t("compost.wasteType", "Type")}
         </label>
         <Select
           value={entry.wasteType}
           onChange={(e) => onUpdate("wasteType", e.target.value)}
           options={[
-            { value: "", label: t("compost.selectWaste", "Select waste type...") },
+            { value: "", label: t("compost.selectWaste", "Select type...") },
             ...wasteTypeOptions,
           ]}
         />
-        {entry.wasteType && (
-          <p className="text-xs text-muted-foreground">
-            {WASTE_TYPE_LABELS[entry.wasteType as WasteType]?.description}
-          </p>
-        )}
       </div>
-      <div className="w-full space-y-2 sm:w-32">
-        <label className="text-sm font-medium">
-          {t("compost.amount", "Amount (kg)")}
+      <div className="w-full space-y-1.5 sm:w-28">
+        <label className="text-sm font-medium text-foreground">
+          {t("compost.amount", "kg")}
         </label>
         <Input
           type="number"

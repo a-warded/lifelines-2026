@@ -52,15 +52,15 @@ export default function CompostPage() {
 
   return (
     <div className="container mx-auto max-w-6xl space-y-6 p-4 md:p-6">
-      {/* Hero Section */}
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          {t("compost.title", "Compost Calculator")} 🌱
+      {/* Hero Section - Direct and opinionated */}
+      <header className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {t("compost.title", "Compost Calculator")}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {t(
             "compost.subtitle",
-            "Turn your agricultural waste into valuable organic fertilizer. Calculate your potential yield and find nearby composting resources."
+            "Most farms throw away usable fertilizer. Find out how much you're losing."
           )}
         </p>
       </header>

@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Leaf, Sparkles, TrendingUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { WASTE_TYPE_LABELS, type WasteType } from "@/lib/logic/compost-calculator";
 import type { CompostResult, WasteFormEntry, TranslateFunction } from "../types";
@@ -17,6 +18,73 @@ interface CompostResultsProps {
   t: TranslateFunction;
 }
 
+// Generate a single-line verdict (the advisor moment)
+function getVerdict(
+  result: CompostResult,
+  valueEstimate: ReturnType<typeof estimateFertilizerValue> | null
+): string {
+  const parts: string[] = [];
+  
+  // Worth composting?
+  if (result.totalWasteKg < 10) {
+    parts.push("Small batch—consider waiting for more.");
+  } else {
+    parts.push("Worth composting.");
+  }
+  
+  // Balance advice
+  if (result.carbonContent === "high" && result.nitrogenContent === "low") {
+    parts.push("Add greens.");
+  } else if (result.nitrogenContent === "high" && result.carbonContent === "low") {
+    parts.push("Add browns.");
+  }
+  
+  // Sell advice
+  if (valueEstimate && valueEstimate.highEstimate < 20) {
+    parts.push("Use it yourself.");
+  } else if (valueEstimate && result.estimatedFertilizerKg >= 10 && result.cnRatioBalanced) {
+    parts.push("Sellable if needed.");
+  } else if (valueEstimate && result.estimatedFertilizerKg >= 5) {
+    parts.push("Don't sell unless mixed further.");
+  }
+  
+  return parts.join(" ");
+}
+
+// Generate context-aware headline based on inputs
+function getContextHeadline(entries: WasteFormEntry[], result: CompostResult): string {
+  const primaryWaste = entries
+    .filter((e) => e.wasteType && e.amountKg > 0)
+    .sort((a, b) => b.amountKg - a.amountKg)[0];
+  
+  if (primaryWaste && primaryWaste.amountKg >= 5) {
+    const label = WASTE_TYPE_LABELS[primaryWaste.wasteType as WasteType]?.label.toLowerCase() || "waste";
+    return `${result.totalWasteKg} kg of ${label} → usable compost`;
+  }
+  
+  return `This batch will produce ${result.estimatedFertilizerKg} kg of usable compost`;
+}
+
+// Generate warnings for feasibility section
+function getFailureRisks(result: CompostResult): string[] {
+  const risks: string[] = [];
+  
+  if (result.carbonContent === "high" && result.nitrogenContent === "low") {
+    risks.push("Too much carbon. Will decompose slowly unless you add nitrogen-rich material.");
+  }
+  if (result.nitrogenContent === "high" && result.carbonContent === "low") {
+    risks.push("Too much nitrogen. Expect ammonia smell. Add dry leaves or straw.");
+  }
+  if (result.totalWasteKg < 15) {
+    risks.push("Small piles lose heat fast. May not reach temperatures that kill pathogens.");
+  }
+  if (result.compostingDays > 90) {
+    risks.push("Long processing time. You'll need patience—or more greens to speed it up.");
+  }
+  
+  return risks;
+}
+
 export function CompostResults({
   result,
   method,
@@ -24,225 +92,182 @@ export function CompostResults({
   entries,
   t,
 }: CompostResultsProps) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
   if (!result || result.totalWasteKg <= 0) return null;
 
-  return (
-    <Card className="mt-6 overflow-hidden">
-      {/* Header with yield info */}
-      <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 text-white">
-        <div className="mb-1 text-sm font-medium opacity-90">
-          {t("compost.results.yourYield", "Your Fertilizer Yield")}
-        </div>
-        <div className="flex items-baseline gap-2">
-          <span className="text-4xl font-bold">{result.estimatedFertilizerKg}</span>
-          <span className="text-xl">kg</span>
-          <span className="ml-2 text-lg opacity-80">
-            {t("compost.results.ofFertilizer", "of organic fertilizer")}
-          </span>
-        </div>
-        <div className="mt-2 flex items-center gap-4 text-sm opacity-90">
-          <span>📦 {result.totalWasteKg} kg {t("compost.results.wasteInput", "waste input")}</span>
-          <span>📊 {result.conversionRate}% {t("compost.results.conversion", "conversion")}</span>
-        </div>
-      </div>
+  const verdict = getVerdict(result, valueEstimate);
+  const contextHeadline = getContextHeadline(entries, result);
+  const failureRisks = getFailureRisks(result);
+  const worthExchanging = result.estimatedFertilizerKg >= 5;
+  
+  // Calculate confident price estimate (midpoint, rounded)
+  const priceEstimate = valueEstimate 
+    ? Math.round((valueEstimate.lowEstimate + valueEstimate.highEstimate) / 2 / 5) * 5
+    : null;
 
-      <CardContent className="p-6">
-        <div className="grid gap-6 sm:grid-cols-2">
-          {/* Timeline */}
-          <div className="space-y-2">
-            <h4 className="flex items-center gap-2 font-semibold">
-              <span>⏱️</span>
-              {t("compost.results.timeline", "Processing Time")}
-            </h4>
-            <p className="text-2xl font-bold text-primary">
-              ~{result.compostingDays} {t("common.day", "days")}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t("compost.results.timelineNote", "With proper turning and moisture")}
-            </p>
-          </div>
-
-          {/* Value Estimate */}
-          {valueEstimate && (
-            <div className="space-y-2">
-              <h4 className="flex items-center gap-2 font-semibold">
-                <TrendingUp className="h-4 w-4" />
-                {t("compost.results.estimatedValue", "Estimated Value")}
-              </h4>
-              <p className="text-2xl font-bold text-emerald-600">
-                ${valueEstimate.lowEstimate} - ${valueEstimate.highEstimate}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {t("compost.results.valueNote", "If sold as organic compost")}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Nutrient Balance */}
-        <NutrientBalance result={result} t={t} />
-
-        {/* Breakdown */}
-        <MaterialBreakdown result={result} t={t} />
-
-        {/* Tips */}
-        <CompostTips tips={result.tips} t={t} />
-
-        {/* Composting Method */}
-        {method && <CompostingMethod method={method} t={t} />}
-
-        {/* CTA Buttons */}
-        <ActionButtons result={result} entries={entries} t={t} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function NutrientBalance({ 
-  result, 
-  t 
-}: { 
-  result: CompostResult; 
-  t: TranslateFunction;
-}) {
-  return (
-    <div className="mt-6 rounded-lg bg-muted/50 p-4">
-      <h4 className="mb-3 font-semibold">
-        {t("compost.results.nutrientBalance", "Nutrient Balance")}
-      </h4>
-      <div className="flex flex-wrap gap-3">
-        <Badge variant={result.cnRatioBalanced ? "default" : "secondary"}>
-          {result.cnRatioBalanced ? "✓" : "!"} C:N Ratio
-        </Badge>
-        <Badge variant={result.nitrogenContent === "high" ? "default" : "secondary"}>
-          🌿 Nitrogen: {result.nitrogenContent}
-        </Badge>
-        <Badge variant={result.carbonContent === "high" ? "default" : "secondary"}>
-          🍂 Carbon: {result.carbonContent}
-        </Badge>
-      </div>
-    </div>
-  );
-}
-
-function MaterialBreakdown({ 
-  result, 
-  t 
-}: { 
-  result: CompostResult; 
-  t: TranslateFunction;
-}) {
-  if (result.breakdown.length === 0) return null;
+  const toggleExpand = (section: string) => {
+    setExpanded(expanded === section ? null : section);
+  };
 
   return (
-    <div className="mt-6">
-      <h4 className="mb-3 font-semibold">
-        {t("compost.results.breakdown", "Breakdown by Material")}
-      </h4>
-      <div className="space-y-2">
-        {result.breakdown.map((item, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between rounded-lg border p-3"
-          >
-            <div className="flex items-center gap-2">
-              <span>{WASTE_TYPE_LABELS[item.wasteType].emoji}</span>
-              <span>{WASTE_TYPE_LABELS[item.wasteType].label}</span>
-              <Badge variant="outline" className="text-xs">
-                {item.category === "green" ? "🌿 Green" : "🍂 Brown"}
-              </Badge>
-            </div>
-            <div className="text-right text-sm">
-              <span className="text-muted-foreground">{item.amountKg} kg →</span>
-              <span className="ml-1 font-semibold text-emerald-600">
-                {item.fertilizerKg} kg
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function CompostTips({ 
-  tips, 
-  t 
-}: { 
-  tips: string[]; 
-  t: TranslateFunction;
-}) {
-  if (tips.length === 0) return null;
-
-  return (
-    <div className="mt-6 space-y-2">
-      <h4 className="flex items-center gap-2 font-semibold">
-        <Sparkles className="h-4 w-4 text-yellow-500" />
-        {t("compost.results.tips", "Pro Tips")}
-      </h4>
-      <ul className="space-y-1">
-        {tips.map((tip, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-            <span className="mt-1 text-emerald-500">•</span>
-            {tip}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function CompostingMethod({ 
-  method, 
-  t 
-}: { 
-  method: NonNullable<ReturnType<typeof getCompostingMethod>>; 
-  t: TranslateFunction;
-}) {
-  return (
-    <div className="mt-6 rounded-lg border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
-      <h4 className="mb-2 flex items-center gap-2 font-semibold text-emerald-700 dark:text-emerald-400">
-        <Leaf className="h-4 w-4" />
-        {t("compost.results.recommendedMethod", "Recommended Method")}: {method.method}
-      </h4>
-      <p className="mb-3 text-sm text-muted-foreground">{method.description}</p>
-      <div className="flex items-center gap-2 text-sm">
-        <Badge
-          variant={
-            method.difficulty === "easy"
-              ? "default"
-              : method.difficulty === "medium"
-                ? "secondary"
-                : "outline"
-          }
-        >
-          {method.difficulty === "easy"
-            ? "🟢"
-            : method.difficulty === "medium"
-              ? "🟡"
-              : "🔴"}{" "}
-          {method.difficulty}
-        </Badge>
-      </div>
-      <div className="mt-3 space-y-1">
-        <p className="text-sm font-medium">
-          {t("compost.results.requirements", "What you'll need")}:
+    <div className="mt-6 space-y-6">
+      {/* ═══════════════════════════════════════════════════════════════
+          PHASE 1: RESULT
+          The ONE loud moment + verdict
+      ═══════════════════════════════════════════════════════════════ */}
+      <div className="space-y-3">
+        {/* Context-aware headline */}
+        <p className="text-sm text-muted-foreground">
+          {contextHeadline}
         </p>
-        <ul className="list-inside list-disc text-sm text-muted-foreground">
-          {method.requirements.map((req, i) => (
-            <li key={i}>{req}</li>
-          ))}
-        </ul>
+        
+        {/* Primary Result */}
+        <div className="rounded-xl border-2 border-foreground/10 bg-background p-6">
+          <div className="flex items-baseline gap-2">
+            <span className="text-6xl font-bold tracking-tight text-foreground">
+              {result.estimatedFertilizerKg}
+            </span>
+            <span className="text-2xl font-medium text-muted-foreground">kg</span>
+          </div>
+          
+          {/* Verdict - the advisor moment */}
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Verdict: </span>
+            <span className="text-sm text-foreground">{verdict}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          PHASE 2: FEASIBILITY
+          Time + what could go wrong
+      ═══════════════════════════════════════════════════════════════ */}
+      <div className="space-y-1 border-l-2 border-border/30 pl-4">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+          Feasibility
+        </div>
+        
+        {/* Timeline - always visible, not expandable */}
+        <div className="flex items-baseline justify-between py-2">
+          <span className="text-sm text-muted-foreground">Time to ready</span>
+          <span className="text-sm font-medium text-foreground">~{result.compostingDays} days</span>
+        </div>
+        
+        {/* Value - confident estimate */}
+        {priceEstimate && priceEstimate > 0 && (
+          <div className="flex items-baseline justify-between py-2">
+            <span className="text-sm text-muted-foreground">Market value</span>
+            <span className="text-sm font-medium text-foreground">
+              {priceEstimate < 20 ? "Not worth selling" : `~$${priceEstimate}`}
+            </span>
+          </div>
+        )}
+
+        {/* Failure risks - sharper framing */}
+        {failureRisks.length > 0 && (
+          <ExpandableSection
+            title="Why this batch might fail"
+            isOpen={expanded === "risks"}
+            onToggle={() => toggleExpand("risks")}
+          >
+            <ul className="space-y-2 text-sm">
+              {failureRisks.map((risk, i) => (
+                <li key={i} className="text-muted-foreground">
+                  {risk}
+                </li>
+              ))}
+            </ul>
+          </ExpandableSection>
+        )}
+
+        {/* Breakdown - tucked away */}
+        {result.breakdown.length > 1 && (
+          <ExpandableSection
+            title="Material breakdown"
+            isOpen={expanded === "breakdown"}
+            onToggle={() => toggleExpand("breakdown")}
+          >
+            <div className="space-y-2">
+              {result.breakdown.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between text-sm py-1.5 border-b border-border/50 last:border-0"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">{WASTE_TYPE_LABELS[item.wasteType].label}</span>
+                    <span className="text-xs text-muted-foreground/70">
+                      {item.category === "green" ? "nitrogen" : "carbon"}
+                    </span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">{item.amountKg}kg →</span>
+                    <span className="ml-1 font-medium text-foreground">{item.fertilizerKg}kg</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ExpandableSection>
+        )}
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          PHASE 3: ACTION
+          Exchange CTA with qualifying context
+      ═══════════════════════════════════════════════════════════════ */}
+      <div className="space-y-3">
+        {/* Qualifying context - earn the click */}
+        {worthExchanging && (
+          <p className="text-xs text-muted-foreground">
+            {result.estimatedFertilizerKg >= 10 
+              ? "This batch meets minimum exchange size."
+              : "You have enough volume to exchange, though larger batches get more interest."
+            }
+          </p>
+        )}
+        
+        <div className="flex flex-wrap gap-3">
+          <ActionButtons result={result} entries={entries} t={t} />
+        </div>
       </div>
     </div>
   );
 }
 
-function ActionButtons({ 
-  result, 
+function ExpandableSection({
+  title,
+  isOpen,
+  onToggle,
+  children,
+}: {
+  title: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-b border-border/50 last:border-0">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between py-3 text-sm text-left hover:text-foreground transition-colors text-muted-foreground"
+      >
+        <span>{title}</span>
+        {isOpen ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
+      </button>
+      {isOpen && <div className="pb-4">{children}</div>}
+    </div>
+  );
+}
+
+function ActionButtons({
+  result,
   entries,
   t,
-}: { 
+}: {
   result: CompostResult;
   entries: WasteFormEntry[];
   t: TranslateFunction;
@@ -253,23 +278,32 @@ function ActionButtons({
     .join(", ");
 
   const description = encodeURIComponent(
-    `Home-made organic compost fertilizer. C:N ratio ${result.cnRatioBalanced ? "balanced" : "needs adjustment"}. Composting time: ${result.compostingDays} days. Made from ${wasteLabels}.`
+    `Home-made organic compost. C:N ratio ${result.cnRatioBalanced ? "balanced" : "needs adjustment"}. Composting time: ${result.compostingDays} days. Made from ${wasteLabels}.`
   );
 
+  // Only show exchange if it's worth it
+  const worthExchanging = result.estimatedFertilizerKg >= 5;
+
   return (
-    <div className="mt-6 flex flex-wrap gap-3">
-      <Link
-        href={`/dashboard/exchange?type=fertilizer&mode=offering&title=${encodeURIComponent(`Organic Compost - ${result.estimatedFertilizerKg}kg`)}&quantity=${encodeURIComponent(`${result.estimatedFertilizerKg} kg`)}&description=${description}&dealType=donation&delivery=pickup`}
-      >
-        <Button>
-          {t("compost.listFertilizer", "List Fertilizer for Exchange")}
+    <>
+      {worthExchanging ? (
+        <Link
+          href={`/dashboard/exchange?type=fertilizer&mode=offering&title=${encodeURIComponent(`Organic Compost - ${result.estimatedFertilizerKg}kg`)}&quantity=${encodeURIComponent(`${result.estimatedFertilizerKg} kg`)}&description=${description}&dealType=donation&delivery=pickup`}
+        >
+          <Button variant="primary" className="bg-foreground text-background hover:bg-foreground/90">
+            {t("compost.listFertilizer", "List for Exchange")}
+          </Button>
+        </Link>
+      ) : (
+        <Button variant="outline" disabled className="opacity-50 cursor-not-allowed">
+          Too small to list
         </Button>
-      </Link>
+      )}
       <Link href="/dashboard/map?layer=compost">
-        <Button variant="outline">
-          {t("compost.viewMap", "View Compost Sites Map")}
+        <Button variant="ghost" className="text-muted-foreground">
+          {t("compost.viewMap", "Find Nearby Sites")}
         </Button>
       </Link>
-    </div>
+    </>
   );
 }

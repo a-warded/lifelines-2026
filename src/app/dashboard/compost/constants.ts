@@ -19,8 +19,8 @@ export const DEFAULT_SITE_FORM: AddSiteForm = {
 };
 
 export const SITE_TYPE_OPTIONS = [
-  { value: "private", label: "🏠 Private (Your property)" },
-  { value: "community", label: "👥 Community (Shared space)" },
-  { value: "commercial", label: "🏢 Commercial (Business)" },
-  { value: "municipal", label: "🏛️ Municipal (City-run)" },
+  { value: "private", label: "Private (Your property)" },
+  { value: "community", label: "Community (Shared space)" },
+  { value: "commercial", label: "Commercial (Business)" },
+  { value: "municipal", label: "Municipal (City-run)" },
 ] as const;

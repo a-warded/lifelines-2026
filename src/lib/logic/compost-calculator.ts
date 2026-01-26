@@ -60,52 +60,52 @@ const WASTE_DATA: Record<WasteType, {
 
 export const WASTE_TYPE_LABELS: Record<WasteType, { label: string; emoji: string; description: string }> = {
     crop_residue: { 
-        label: "Crop Residue", 
+        label: "Crop residue", 
         emoji: "🌾", 
-        description: "Stalks, stems, and leaves from harvested crops" 
+        description: "Stalks, stems, leaves from harvest" 
     },
     fruit_waste: { 
-        label: "Fruit Waste", 
+        label: "Fruit waste", 
         emoji: "🍎", 
-        description: "Spoiled, excess, or unsold fruits" 
+        description: "Spoiled or excess fruits" 
     },
     vegetable_waste: { 
-        label: "Vegetable Waste", 
+        label: "Vegetable waste", 
         emoji: "🥕", 
-        description: "Spoiled, excess, or unsold vegetables" 
+        description: "Spoiled or excess vegetables" 
     },
     grass_clippings: { 
-        label: "Grass Clippings", 
+        label: "Grass clippings", 
         emoji: "🌿", 
         description: "Fresh grass from mowing" 
     },
     leaves: { 
-        label: "Dry Leaves", 
+        label: "Dry leaves", 
         emoji: "🍂", 
         description: "Fallen or dried leaves" 
     },
     manure: { 
-        label: "Animal Manure", 
+        label: "Animal manure", 
         emoji: "🐄", 
-        description: "Livestock waste (cow, chicken, horse)" 
+        description: "Livestock waste" 
     },
     food_scraps: { 
-        label: "Kitchen Scraps", 
+        label: "Kitchen scraps", 
         emoji: "🥗", 
-        description: "Vegetable peels, eggshells, coffee grounds" 
+        description: "Peels, eggshells, etc." 
     },
     sawdust: { 
-        label: "Sawdust/Wood Chips", 
+        label: "Sawdust", 
         emoji: "🪵", 
         description: "Untreated wood shavings" 
     },
     straw: { 
-        label: "Straw/Hay", 
+        label: "Straw/hay", 
         emoji: "🌿", 
         description: "Dried straw or hay" 
     },
     coffee_grounds: { 
-        label: "Coffee Grounds", 
+        label: "Coffee grounds", 
         emoji: "☕", 
         description: "Used coffee grounds" 
     },

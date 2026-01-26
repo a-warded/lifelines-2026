@@ -30,7 +30,7 @@ export function useCompostCalculator() {
     () =>
       Object.entries(WASTE_TYPE_LABELS).map(([value, data]) => ({
         value,
-        label: `${data.emoji} ${data.label}`,
+        label: data.label,
       })),
     []
   );
