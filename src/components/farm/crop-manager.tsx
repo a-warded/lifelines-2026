@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { GrowthStage, getPlantOptions } from "@/lib/plants";
-import { Droplets, Leaf, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Droplets, Leaf, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 interface CropEntry {
@@ -129,7 +129,7 @@ export function CropManager({
         <div className="space-y-4">
             {/* Water Summary Card */}
             {waterCalculation && waterCalculation.totalDailyLiters > 0 && (
-                <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 dark:border-blue-800 dark:from-blue-950 dark:to-cyan-950">
+                <Card className="">
                     <CardContent className="py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
