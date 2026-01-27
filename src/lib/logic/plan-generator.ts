@@ -83,6 +83,12 @@ function scorePlant(plant: PlantData, profile: IFarmProfile): CropScore {
     let score = 50; // base score
     const reasons: string[] = [];
 
+    // Determine if conditions are challenging - used for bonus scoring
+    const isHarshConditions = 
+        profile.waterAvailability === "none" || 
+        (profile.waterAvailability === "low" && profile.sunlight === "low") ||
+        (profile.soilCondition === "salty" && profile.waterAvailability !== "high");
+
     // Water availability scoring
     const userWater = WATER_AVAILABILITY_MAP[profile.waterAvailability] ?? 2;
     const plantWater = WATER_NEED_MAP[plant.waterNeed];
@@ -98,6 +104,15 @@ function scorePlant(plant: PlantData, profile: IFarmProfile): CropScore {
         reasons.push("Water requirements may be challenging");
     }
 
+    // Bonus for drought-tolerant plants in low/no water conditions
+    if ((profile.waterAvailability === "none" || profile.waterAvailability === "low") && 
+        (plant.waterNeed === "low" || plant.waterNeed === "very-low")) {
+        score += 25;
+        if (!reasons.some(r => r.includes("water"))) {
+            reasons.push("Drought-tolerant and low water needs");
+        }
+    }
+
     // Sunlight scoring
     const userSun = SUNLIGHT_MAP[profile.sunlight] ?? 2;
     const plantSun = SUN_NEED_MAP[plant.sunNeed];
@@ -110,6 +125,15 @@ function scorePlant(plant: PlantData, profile: IFarmProfile): CropScore {
         score -= 5;
     } else {
         score -= 20;
+    }
+
+    // Bonus for shade-tolerant plants in low sunlight conditions
+    if (profile.sunlight === "low" && 
+        (plant.sunNeed === "shade" || plant.sunNeed === "partial-shade")) {
+        score += 20;
+        if (!reasons.some(r => r.includes("sunlight") || r.includes("shade"))) {
+            reasons.push("Thrives in low light conditions");
+        }
     }
 
     // Soil condition scoring
@@ -161,6 +185,14 @@ function scorePlant(plant: PlantData, profile: IFarmProfile): CropScore {
         }
     }
 
+    // In harsh conditions, give bonus to easy/resilient plants so there's always good options
+    if (isHarshConditions && plant.difficulty === "easy") {
+        score += 10;
+        if (!reasons.some(r => r.includes("Beginner") || r.includes("easy") || r.includes("Hardy"))) {
+            reasons.push("Hardy and resilient plant");
+        }
+    }
+
     return { plant, score, reasons };
 }
 
@@ -174,13 +206,40 @@ function getTopCrops(profile: IFarmProfile): IRecommendedCrop[] {
     // Take top 3-4 depending on scores
     const topCount = scores[3]?.score > 40 ? 4 : 3;
 
-    return scores.slice(0, topCount).map((s) => {
+    // Get top crops - if best scores are very low, still return them but add context
+    const topScores = scores.slice(0, topCount);
+    
+    // If all top scores are very low (challenging conditions), ensure we still provide recommendations
+    // by adding "best available" context to the reasons
+    const isChallengingConditions = topScores[0]?.score < 30;
+
+    return topScores.map((s) => {
         const avgHarvestDays = Math.round(
             (s.plant.harvestDays.min + s.plant.harvestDays.max) / 2
         );
+        
+        let reasons = s.reasons.slice(0, 2);
+        
+        // For challenging conditions, add helpful context if reasons are sparse
+        if (isChallengingConditions && reasons.length === 0) {
+            // Add fallback reasons based on plant properties
+            if (s.plant.difficulty === "easy") {
+                reasons.push("Hardy and easy to grow");
+            }
+            if (s.plant.saltTolerance === "high" || s.plant.saltTolerance === "medium") {
+                reasons.push("Tolerates difficult soil conditions");
+            }
+            if (s.plant.waterNeed === "low" || s.plant.waterNeed === "very-low") {
+                reasons.push("Low water requirements");
+            }
+            if (reasons.length === 0) {
+                reasons.push("Best available option for your conditions");
+            }
+        }
+        
         return {
             cropName: s.plant.name,
-            reason: s.reasons.slice(0, 2).join(". ") + ".",
+            reason: reasons.join(". ") + ".",
             difficulty: s.plant.difficulty as Difficulty,
             timeToHarvestDays: avgHarvestDays,
         };
@@ -285,7 +344,18 @@ function estimateWaterUsage(crops: IRecommendedCrop[]): number {
 function generateFallbackNotes(profile: IFarmProfile): string {
     const notes: string[] = [];
 
-    if (profile.waterAvailability === "none") {
+    // Count how many challenging conditions exist
+    const challengingConditions: string[] = [];
+    if (profile.waterAvailability === "none") challengingConditions.push("no water access");
+    if (profile.waterAvailability === "low") challengingConditions.push("limited water");
+    if (profile.sunlight === "low") challengingConditions.push("low sunlight");
+    if (profile.soilCondition === "salty") challengingConditions.push("salty soil");
+
+    if (challengingConditions.length >= 3) {
+        notes.push(
+            `⚠️ Your conditions (${challengingConditions.join(", ")}) are very challenging for growing. The recommended crops are the most resilient options available. Consider: container gardening with imported soil, rainwater collection, and starting with just one or two crops to test what works in your specific situation.`
+        );
+    } else if (profile.waterAvailability === "none") {
         notes.push(
             "⚠️ Without water access, growing is extremely limited. Consider: (1) Setting up rainwater collection, (2) Partnering with neighbors who have water, (3) Using the Exchange to trade for produce while you establish water access."
         );
@@ -300,6 +370,12 @@ function generateFallbackNotes(profile: IFarmProfile): string {
     if (profile.soilCondition === "salty" && profile.spaceType === "backyard") {
         notes.push(
             "Salty backyard soil: Consider raised beds with imported soil, or container gardening as alternatives."
+        );
+    }
+
+    if (profile.sunlight === "low" && profile.soilCondition !== "salty") {
+        notes.push(
+            "Low sunlight limits your options. Leafy greens and some herbs can tolerate shade better than fruiting plants."
         );
     }
 

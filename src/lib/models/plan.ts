@@ -42,7 +42,6 @@ const TimelineBlockSchema = new Schema<ITimelineBlock>(
     {
         label: {
             type: String,
-            enum: ["Today", "This Week", "Week 2+"],
             required: true,
         },
         steps: [{ type: String }],
