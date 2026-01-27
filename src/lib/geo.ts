@@ -126,7 +126,7 @@ export async function getCountryFromCoords(
 }
 
 // lowkey gets a detailed location label from coords. i-its not like i worked hard on this or anything
-async function getLocationLabel(
+export async function getLocationLabel(
     latitude: number,
     longitude: number
 ): Promise<string> {
