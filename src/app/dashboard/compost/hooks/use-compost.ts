@@ -1,25 +1,25 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
 import { getUserLocation } from "@/lib/geo";
 import {
     calculateCompost,
-    getCompostingMethod,
     estimateFertilizerValue,
+    getCompostingMethod,
+    WASTE_TYPE_LABELS,
     type WasteEntry,
     type WasteType,
-    WASTE_TYPE_LABELS,
 } from "@/lib/logic/compost-calculator";
-import type { 
-    WasteFormEntry, 
-    CompostSite, 
-    AddSiteForm, 
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { DEFAULT_SITE_FORM, DEFAULT_WASTE_ENTRY } from "../constants";
+import type {
+    AddSiteForm,
     CompostLocation,
     CompostResult,
+    CompostSite,
+    WasteFormEntry,
 } from "../types";
-import { DEFAULT_WASTE_ENTRY, DEFAULT_SITE_FORM } from "../constants";
 
-// Hook for managing waste entries and calculation
+// hook for managing waste entries and calculation. trash to treasure conversion
 export function useCompostCalculator() {
     const [entries, setEntries] = useState<WasteFormEntry[]>([DEFAULT_WASTE_ENTRY]);
     const [result, setResult] = useState<CompostResult | null>(null);
@@ -101,7 +101,7 @@ export function useCompostCalculator() {
     };
 }
 
-// Hook for managing nearby compost sites
+// hook for managing nearby compost sites. finding the composters near you
 export function useCompostSites() {
     const [sites, setSites] = useState<CompostSite[]>([]);
     const [loading, setLoading] = useState(false);
@@ -144,7 +144,7 @@ export function useCompostSites() {
     };
 }
 
-// Hook for adding a new compost site
+// hook for adding a new compost site. sharing is caring or whatever
 interface UseAddSiteOptions {
   userLocation: CompostLocation | null;
   locationLabel: string;

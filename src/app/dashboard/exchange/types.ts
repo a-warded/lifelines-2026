@@ -1,4 +1,4 @@
-// Exchange feature type definitions
+// exchange feature type definitions. trading types fr
 import type { TFunction } from "i18next";
 
 export type TranslateFunction = TFunction<"translation", undefined>;

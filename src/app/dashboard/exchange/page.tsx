@@ -1,29 +1,28 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useTranslation } from "react-i18next";
-import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getPlantOptions } from "@/lib/plants";
+import { Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { 
-    useExchangeListings, 
-    useCreateListing, 
-    useClaimListing,
-    useUserLocation,
-    useSavedListings,
-} from "./hooks";
 import {
-    ListingCard,
-    ExchangeFilters,
-    CreateListingModal,
     ClaimListingModal,
+    CreateListingModal,
+    ExchangeFilters,
+    ListingCard,
     ListingDetailsModal,
 } from "./components";
-import type { Listing, CreateListingForm, ListingType, ListingMode, DealType, DeliveryMethod } from "./types";
 import { DEFAULT_CREATE_FORM } from "./constants";
+import {
+    useClaimListing,
+    useExchangeListings,
+    useSavedListings,
+    useUserLocation
+} from "./hooks";
+import type { CreateListingForm, DealType, DeliveryMethod, Listing, ListingMode, ListingType } from "./types";
 
 export default function ExchangePage() {
     const { t } = useTranslation();
@@ -31,7 +30,7 @@ export default function ExchangePage() {
     const searchParams = useSearchParams();
     const plantOptions = useMemo(() => getPlantOptions(), []);
 
-    // Location
+    // location - where you at
     const {
         userLocation,
         userCountry,
@@ -41,7 +40,7 @@ export default function ExchangePage() {
         isReady: isLocationReady,
     } = useUserLocation();
 
-    // Listings
+    // listings - the stuff being traded
     const {
         loading,
         filters,
@@ -53,10 +52,10 @@ export default function ExchangePage() {
         setPage,
     } = useExchangeListings({ userCountry, userLocation, isLocationReady });
 
-    // Saved listings
+    // saved listings - your bookmarks
     const { isSaved, toggleSave } = useSavedListings();
 
-    // Mobile filters visibility
+    // mobile filters visibility - responsive ux
     const [showMobileFilters, setShowMobileFilters] = useState(false);
 
     // Modal state

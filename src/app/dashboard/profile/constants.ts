@@ -1,4 +1,4 @@
-// Profile feature constants
+// profile feature constants. the identity constants
 
 export const SPACE_TYPE_OPTIONS = [
     { value: "rooftop", label: "🏢 Rooftop" },

@@ -24,7 +24,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     return null;
                 }
 
-                // Dynamic import to avoid edge runtime issues
+                // dynamic import to avoid edge runtime issues. lowkey hacky but whatever
                 const bcrypt = await import("bcryptjs");
                 const client = await clientPromise;
                 const db = client.db();

@@ -4,7 +4,7 @@ import ColorBends from "@/components/ColorBends";
 import SplitText from "@/components/SplitText";
 import { FadesLogo } from "@/components/fades-logo";
 import { Button } from "@/components/ui";
-import { languages, LanguageCode } from "@/lib/i18n";
+import { LanguageCode, languages } from "@/lib/i18n";
 import { Globe } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -40,14 +40,14 @@ export default function Home() {
     const handleCreateDemoAccount = async () => {
         setIsCreatingDemo(true);
         try {
-            // Get user's IP address from server (uses CF-Connecting-IP or random fallback)
+            // get users ip address from server. uses cf-connecting-ip or random fallback
             let ipAddress = "unknown";
             try {
                 const ipResponse = await fetch("/api/ip");
                 const ipData = await ipResponse.json();
                 ipAddress = ipData.ip;
             } catch {
-                // Fallback if IP fetch fails
+                // fallback if ip fetch fails. making up a number
                 ipAddress = `${Math.floor(Math.random() * 1000000)}`;
             }
 
@@ -55,7 +55,7 @@ export default function Home() {
             const demoPassword = "demo@2026!";
             const demoName = `Demo User ${ipAddress}`;
 
-            // Create the demo account
+            // create the demo account. making you a test user
             const registerResponse = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -70,7 +70,7 @@ export default function Home() {
                 throw new Error("Failed to create demo account");
             }
 
-            // Sign in with the demo account
+            // sign in with the demo account. logging you in bestie
             const signInResult = await signIn("credentials", {
                 email: demoEmail,
                 password: demoPassword,
@@ -81,7 +81,7 @@ export default function Home() {
                 throw new Error("Failed to sign in to demo account");
             }
 
-            // Redirect to onboarding
+            // redirect to onboarding. lets get you set up
             router.push("/onboarding");
         } catch (error) {
             console.error("Demo account creation error:", error);
@@ -91,7 +91,7 @@ export default function Home() {
         }
     };
 
-    // Force dark mode for this page
+    // force dark mode for this page. dark theme supremacy
     useEffect(() => {
         document.documentElement.classList.add("dark");
         return () => {

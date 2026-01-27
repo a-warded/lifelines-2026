@@ -1,4 +1,4 @@
-// Profile feature type definitions
+// profile feature type definitions. who are you types
 
 export interface FarmProfileData {
   farmName?: string;

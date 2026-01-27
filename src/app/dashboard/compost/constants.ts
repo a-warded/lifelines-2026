@@ -1,4 +1,4 @@
-// Compost feature constants
+// compost feature constants. the composting magic numbers
 
 import type { AddSiteForm, WasteFormEntry } from "./types";
 

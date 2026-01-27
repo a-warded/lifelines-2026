@@ -5,15 +5,15 @@ import { Edit2, Save } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
 
-// Components
+// components - the profile ui pieces
 import {
-    UserInfoCard,
-    FarmDetailsCard,
-    GrowingConditionsCard,
-    LocationCard,
+  FarmDetailsCard,
+  GrowingConditionsCard,
+  LocationCard,
+  UserInfoCard,
 } from "./components";
 
-// Hooks
+// hooks - profile state gang
 import { useFarmProfile } from "./hooks";
 
 export default function ProfilePage() {

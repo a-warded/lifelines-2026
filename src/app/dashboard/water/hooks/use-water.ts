@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
 import {
     calculateWater,
     type WaterEntry,
 } from "@/lib/logic/water-calculator";
-import type { PlantEntry, WaterHistory, WaterCalculationResult } from "../types";
+import { useCallback, useEffect, useState } from "react";
+import type { PlantEntry, WaterCalculationResult, WaterHistory } from "../types";
 
 const DEFAULT_ENTRY: PlantEntry = {
     id: "1",
@@ -17,7 +17,7 @@ const DEFAULT_ENTRY: PlantEntry = {
 const STORAGE_KEY = "waterHistory";
 const MAX_HISTORY = 10;
 
-// Hook for managing plant entries and water calculation
+// hook for managing plant entries and water calculation. the hydration orchestrator fr
 export function useWaterCalculator() {
     const [entries, setEntries] = useState<PlantEntry[]>([DEFAULT_ENTRY]);
     const [result, setResult] = useState<WaterCalculationResult | null>(null);
@@ -88,7 +88,7 @@ export function useWaterCalculator() {
     };
 }
 
-// Hook for managing calculation history with localStorage
+// hook for managing calculation history with localStorage. keeping receipts
 export function useWaterHistory() {
     const [history, setHistory] = useState<WaterHistory[]>([]);
 
@@ -98,7 +98,7 @@ export function useWaterHistory() {
             try {
                 setHistory(JSON.parse(cached));
             } catch {
-                // Ignore parse errors
+                // ignore parse errors. ts pmo
             }
         }
     }, []);

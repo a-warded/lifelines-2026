@@ -1,5 +1,5 @@
-// Water Calculator - Uses central plant database
-// Calculates water requirements for multiple plant entries
+// water calculator - uses central plant database
+// calculates water requirements for multiple plant entries. i-its not like i care about your plants staying hydrated...
 
 import { GrowthStage, getPlantById, getPlantOptions } from "../plants";
 
@@ -25,7 +25,7 @@ export interface WaterCalculationResult {
     tips: string[];
 }
 
-// Growth stage labels for display
+// growth stage labels for display. lowkey self explanatory
 export const GROWTH_STAGES: { value: GrowthStage; label: string }[] = [
     { value: "seedling", label: "Seedling" },
     { value: "vegetative", label: "Vegetative" },
@@ -34,9 +34,9 @@ export const GROWTH_STAGES: { value: GrowthStage; label: string }[] = [
     { value: "mature", label: "Mature" },
 ];
 
-// Water level thresholds for warnings
+// water level thresholds for warnings. bruh if you hit these your plants are thirsty af
 const HIGH_WATER_THRESHOLD = 10; // liters/day
-const VERY_HIGH_WATER_THRESHOLD = 20; // liters/day
+const VERY_HIGH_WATER_THRESHOLD = 20; // liters/day deadass
 
 export function calculateWater(entries: WaterEntry[]): WaterCalculationResult {
     const results: WaterResult[] = [];
@@ -131,7 +131,7 @@ function generateTips(results: WaterResult[], totalLiters: number): string[] {
     return tips.slice(0, 4); // Max 4 tips
 }
 
-// Calculate water for a single plant (convenience function)
+// calculate water for a single plant (convenience function cause im nice like that)
 export function calculateSinglePlantWater(
     plantId: string,
     stage: GrowthStage,
@@ -153,9 +153,9 @@ export function calculateSinglePlantWater(
     };
 }
 
-// Get all plant options for dropdowns
+// get all plant options for dropdowns. ts pmo having to export everything
 export { getPlantOptions };
 
-// Re-export growth stages type
-export type { GrowthStage };
+// re-export growth stages type cause imports are lowkey confusing
+    export type { GrowthStage };
 

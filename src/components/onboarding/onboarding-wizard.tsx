@@ -23,7 +23,7 @@ import ColorBends from "../ColorBends";
 import { FadesLogo } from "../fades-logo";
 import SplitText from "../SplitText";
 
-// Dynamically import the map to avoid SSR issues
+// dynamically import the map to avoid ssr issues. next.js be acting goofy sometimes
 const LocationPickerMap = dynamic(
     () => import("./location-picker-map").then((mod) => mod.LocationPickerMap),
     {
@@ -66,7 +66,7 @@ const FARM_EMOJI_OPTIONS = [
     "🏡", "🏠", "🌳", "🌴", "🪴", "🌵", "🍀", "☘️",
 ];
 
-// Options will be translated inside the component
+// options will be translated inside the component. n-not like i care if you understand
 const SPACE_OPTION_VALUES = ["rooftop", "balcony", "containers", "backyard", "microplot"] as const;
 const SPACE_OPTION_EMOJIS: Record<typeof SPACE_OPTION_VALUES[number], string> = {
     rooftop: "🏢",
@@ -133,7 +133,7 @@ export function OnboardingWizard() {
         locationLabel: "",
     });
 
-    // Translated step labels
+    // translated step labels. localization is bussin fr
     const STEPS_TRANSLATED = [
         { id: "welcome", title: t("onboarding.steps.welcome"), icon: HomeIcon },
         { id: "location", title: t("onboarding.steps.location"), icon: MapPin },
@@ -143,7 +143,7 @@ export function OnboardingWizard() {
         { id: "complete", title: t("onboarding.steps.complete"), icon: Check },
     ];
 
-    // Translated options
+    // translated options. making it multilingual and stuff
     const SPACE_OPTIONS = SPACE_OPTION_VALUES.map((value) => ({
         value,
         emoji: SPACE_OPTION_EMOJIS[value],
@@ -230,7 +230,7 @@ export function OnboardingWizard() {
             });
 
             if (response.ok) {
-                // Generate the initial plan immediately so the dashboard isn't empty.
+                // generate the initial plan immediately so the dashboard isnt empty. cant have an empty dashboard thats lowkey embarrassing
                 const planResponse = await fetch("/api/plans", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -288,14 +288,14 @@ export function OnboardingWizard() {
         }
     };
 
-    // Auto-detect location on mount
+    // auto-detect location on mount. gps doing the heavy lifting
     useEffect(() => {
         if (currentStep === 1 && data.latitude === null) {
             detectLocation();
         }
     }, [currentStep, data.latitude, detectLocation]);
 
-    // Selection button component
+    // selection button component. reusable king right here
     const SelectionButton = ({ 
         selected, 
         onClick, 

@@ -1,5 +1,5 @@
-// WARNING: Whoever touches this file needs to make sure that it build without a .env file present
-// Docker build does not contain environment variables, any errors should be thrown at runtime, not build time
+// WARNING: yo whoever touches this file needs to make sure it builds without a .env file present
+// docker build doesnt have env vars so any errors should be thrown at runtime not build time. ts pmo
 // https://media1.tenor.com/m/r57P_q9DDycAAAAC/futaba-bunny-girl-senpai.gif
 
 import { MongoClient, MongoClientOptions } from "mongodb";
@@ -75,7 +75,7 @@ function createMongoClientPromise() {
     return mongoClientCached.promise;
 }
 
-// Official MongoDB client for auth mainly
+// official mongodb client for auth mainly. n-not like i understand how it works or anything baka
 export const clientPromise: any = {
     then: (onfulfilled: any, onrejected: any) => createMongoClientPromise().then(onfulfilled, onrejected),
     catch: (onrejected: any) => createMongoClientPromise().catch(onrejected),

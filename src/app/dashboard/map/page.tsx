@@ -1,27 +1,27 @@
 "use client";
 
-import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
-// Components
+// components - the ui building blocks
 import {
-    MapHeader,
-    LayerToggle,
-    MapStatsCards,
-    MapSearch,
-    FarmDetailsCard,
     CompostSiteDetailsCard,
+    FarmDetailsCard,
+    LayerToggle,
+    MapHeader,
+    MapSearch,
+    MapStatsCards,
 } from "./components";
 
-// Hooks
+// hooks - the state wizards
 import { useMapData, useMapFiltering, useMapSelection } from "./hooks";
 
-// Types
+// types - the typescript stuff
 import type { MapLayer } from "./types";
 
-// Dynamically import map to avoid SSR issues with Leaflet
+// dynamically import map to avoid ssr issues with leaflet. csr only gang
 const FarmMap = dynamic(
     () => import("@/components/map/farm-map").then((mod) => mod.FarmMap),
     {
@@ -41,17 +41,17 @@ export default function MapPage() {
 
     const [activeLayer, setActiveLayer] = useState<MapLayer>(initialLayer);
 
-    // Data fetching
+    // data fetching - getting the goods
     const { farms, compostSites, userProfile, loading, stats, refetch } = useMapData();
 
-    // Filtering and search
+    // filtering and search - narrowing it down
     const { searchQuery, setSearchQuery, mapItems } = useMapFiltering({
         farms,
         compostSites,
         activeLayer,
     });
 
-    // Selection state
+    // selection state - what did you click on
     const selection = useMapSelection(compostSites);
 
     return (

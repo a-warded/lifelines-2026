@@ -1,5 +1,5 @@
-// Central Plant Database
-// Single source of truth for all plant data used across the application
+// central plant database - deadass the most important file in this whole project
+// single source of truth for all plant data used across the application. touch this and ima get slimed
 
 export type WaterNeed = "very-low" | "low" | "medium" | "high" | "very-high";
 export type SunNeed = "shade" | "partial-shade" | "partial-sun" | "full-sun";
@@ -18,7 +18,7 @@ export interface PlantData {
     scientificName?: string;
     description?: string;
 
-    // Growing requirements
+    // growing requirements - lowkey important stuff
     waterNeed: WaterNeed;
     sunNeed: SunNeed;
     preferredSoil: SoilType[];
@@ -27,18 +27,18 @@ export interface PlantData {
     maxTemperatureC: number;
     optimalTemperatureC: { min: number; max: number };
 
-    // Space and difficulty
+    // space and difficulty - bruh some plants are just harder to grow
     spaceEfficiency: GrowingSpace[];
     difficulty: Difficulty;
-    spacingCm: number; // spacing between plants in cm
-    depthCm: number; // planting depth in cm
+    spacingCm: number; // spacing between plants in cm. dont plant em too close
+    depthCm: number; // planting depth in cm. dig a hole lol
 
-    // Timing
+    // timing - patience is a virtue or whatever
     germinationDays: { min: number; max: number };
     harvestDays: { min: number; max: number };
-    seasonalPlanting?: string[]; // e.g., ["spring", "fall"]
+    seasonalPlanting?: string[]; // e.g., ["spring", "fall"]. lowkey depends on where you live
 
-    // Water calculations (liters per day per plant)
+    // water calculations (liters per day per plant). ts pmo having to figure all this out
     waterByStage: {
         seedling: number;
         vegetative: number;
@@ -47,27 +47,27 @@ export interface PlantData {
         mature: number;
     };
 
-    // Yield and nutrition
-    expectedYieldKg?: number; // per plant
+    // yield and nutrition - the good stuff
+    expectedYieldKg?: number; // per plant. results may vary lol
     caloriesPer100g?: number;
     nutritionHighlights?: string[];
 
-    // Goals this plant serves
+    // goals this plant serves. lowkey important for the algorithm
     goalFit: Goal[];
 
-    // Companion planting
-    companions?: string[]; // plant IDs that grow well together
-    avoid?: string[]; // plant IDs to avoid planting nearby
+    // companion planting - some plants are besties
+    companions?: string[]; // plant ids that grow well together. friendship is magic
+    avoid?: string[]; // plant ids to avoid planting nearby. they got beef
 
-    // Additional notes
+    // additional notes - i-i spent a lot of time on these okay??
     tips?: string[];
     commonPests?: string[];
     commonDiseases?: string[];
 }
 
-// Complete plant database
+// complete plant database. bruh this took forever to compile
 export const PLANTS: Record<string, PlantData> = {
-    // === VEGETABLES ===
+    // === VEGETABLES === lowkey the most important section
     tomato: {
         id: "tomato",
         name: "Tomato",
@@ -410,7 +410,7 @@ export const PLANTS: Record<string, PlantData> = {
         commonDiseases: ["Clubroot"],
     },
 
-    // === LEAFY GREENS ===
+    // === LEAFY GREENS === the healthy stuff that bussin fr
     lettuce: {
         id: "lettuce",
         name: "Lettuce",
@@ -639,7 +639,7 @@ export const PLANTS: Record<string, PlantData> = {
         commonDiseases: ["Clubroot"],
     },
 
-    // === LEGUMES ===
+    // === LEGUMES === protein gang rise up
     beans: {
         id: "beans",
         name: "Beans (Green/String)",
@@ -792,7 +792,7 @@ export const PLANTS: Record<string, PlantData> = {
         commonDiseases: ["Ascochyta blight"],
     },
 
-    // === ROOTS & TUBERS ===
+    // === ROOTS & TUBERS === underground gang deadass
     carrot: {
         id: "carrot",
         name: "Carrot",
@@ -1021,7 +1021,7 @@ export const PLANTS: Record<string, PlantData> = {
         commonDiseases: ["Clubroot"],
     },
 
-    // === ALLIUMS ===
+    // === ALLIUMS === the stinky crew ngl
     onion: {
         id: "onion",
         name: "Onion",
@@ -1174,7 +1174,7 @@ export const PLANTS: Record<string, PlantData> = {
         commonDiseases: ["Downy mildew"],
     },
 
-    // === HERBS ===
+    // === HERBS === flavor town population these guys
     basil: {
         id: "basil",
         name: "Basil",
@@ -1555,7 +1555,7 @@ export const PLANTS: Record<string, PlantData> = {
         commonDiseases: ["Powdery mildew"],
     },
 
-    // === FRUITS ===
+    // === FRUITS === sweet things that lowkey slap
     strawberry: {
         id: "strawberry",
         name: "Strawberry",
@@ -1708,7 +1708,7 @@ export const PLANTS: Record<string, PlantData> = {
         commonDiseases: ["Powdery mildew", "Downy mildew"],
     },
 
-    // === GRAINS ===
+    // === GRAINS === carb city no cap
     corn: {
         id: "corn",
         name: "Corn/Maize",
@@ -1824,7 +1824,7 @@ export const PLANTS: Record<string, PlantData> = {
     },
 };
 
-// Utility functions
+// utility functions. helper gang assemble
 export function getPlantById(id: string): PlantData | undefined {
     return PLANTS[id];
 }
@@ -1869,7 +1869,7 @@ export function getPlantOptions(): { value: string; label: string }[] {
     }));
 }
 
-// Calculate daily water for a plant at a specific stage
+// calculate daily water for a plant at a specific stage. hydration math
 export function calculatePlantWater(
     plantId: string,
     stage: GrowthStage,
@@ -1880,7 +1880,7 @@ export function calculatePlantWater(
     return plant.waterByStage[stage] * plantCount;
 }
 
-// Get category display name
+// get category display name. making it readable
 export const CATEGORY_LABELS: Record<PlantCategory, string> = {
     vegetable: "Vegetables",
     fruit: "Fruits",

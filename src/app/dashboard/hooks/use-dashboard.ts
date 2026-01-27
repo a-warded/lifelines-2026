@@ -140,7 +140,7 @@ export function useSuggestedCrops(
     const [showModal, setShowModal] = useState(false);
     const [adding, setAdding] = useState(false);
 
-    // Check localStorage for dismissed state on mount
+    // check localStorage for dismissed state on mount. did they say no already
     const [dismissed, setDismissed] = useState(() => {
         if (typeof window !== "undefined") {
             return localStorage.getItem("suggestedCropsDismissed") === "true";
@@ -151,7 +151,7 @@ export function useSuggestedCrops(
     const closeModal = useCallback(() => {
         setShowModal(false);
         setDismissed(true);
-        // Persist the dismissed state to localStorage
+        // persist the dismissed state to localStorage. remembering your choice
         if (typeof window !== "undefined") {
             localStorage.setItem("suggestedCropsDismissed", "true");
         }

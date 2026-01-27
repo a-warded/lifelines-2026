@@ -5,7 +5,7 @@ import { initReactI18next } from "react-i18next";
 import ar from "./locales/ar.json";
 import en from "./locales/en.json";
 
-// Language configuration with RTL support
+// language configuration with rtl support. n-not like i spent time on accessibility or anything
 export const languages = {
     en: { name: "English", nativeName: "English", dir: "ltr" as const },
     ar: { name: "Arabic", nativeName: "العربية", dir: "rtl" as const },
@@ -27,20 +27,20 @@ i18n
         supportedLngs: ["en", "ar"],
         
         interpolation: {
-            escapeValue: false, // React already handles XSS
+            escapeValue: false, // react already handles xss so we dont need to double escape. efficiency
         },
 
         detection: {
-            // Order of language detection
+            // order of language detection. bruh it checks like everything
             order: ["querystring", "localStorage", "navigator", "htmlTag"],
             lookupQuerystring: "lang",
             lookupLocalStorage: "i18nextLng",
             caches: ["localStorage"],
         },
 
-        // React-specific options
+        // react-specific options. ts hits different with proper config
         react: {
-            useSuspense: false, // Disable suspense for SSR compatibility
+            useSuspense: false, // disable suspense for ssr compatibility. lowkey annoying but necessary
         },
     });
 

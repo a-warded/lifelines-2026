@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-// Hooks
+// hooks - the state managers
 import {
     useCropManager,
     useDashboardData,
@@ -18,7 +18,7 @@ import {
     useSuggestedCrops,
 } from "./hooks";
 
-// Components
+// components - the ui pieces
 import {
     GetStartedCard,
     LatestPlanCard,
@@ -26,10 +26,10 @@ import {
     SuggestedCropsModal
 } from "./components";
 
-// Constants
+// constants - the magic values
 import { getQuickActions } from "./constants";
 
-// Dynamic import for map to avoid SSR issues
+// dynamic import for map to avoid ssr issues. next.js be weird sometimes
 const FarmMap = dynamic(
     () => import("@/components/map/farm-map").then((mod) => mod.FarmMap),
     {
@@ -42,7 +42,7 @@ const FarmMap = dynamic(
     }
 );
 
-// Compost sites hook for dashboard map
+// compost sites hook for dashboard map. the trash treasures locator
 function useCompostSites() {
     const [sites, setSites] = useState<Array<{
     id: string;
@@ -86,7 +86,7 @@ export default function DashboardPage() {
     const [showStatsModal, setShowStatsModal] = useState(false);
     const showDemo = searchParams.get("demo") === "true";
 
-    // Check URL params to enable compost locations
+    // check url params to enable compost locations. query string parsing
     useEffect(() => {
         const showCompost = searchParams.get("showCompost") === "true";
         if (showCompost) {
@@ -95,7 +95,7 @@ export default function DashboardPage() {
         }
     }, [searchParams]);
 
-    // Data hooks
+    // data hooks - the data fetching gang
     const dashboardData = useDashboardData();
     const {
         latestPlan,
@@ -110,17 +110,17 @@ export default function DashboardPage() {
         refreshFarms,
     } = dashboardData;
 
-    // Compost sites
+    // compost sites - the recycling spots
     const compostSitesHook = useCompostSites();
 
-    // Fetch compost sites when toggle is enabled
+    // fetch compost sites when toggle is enabled. lazy loading bestie
     useEffect(() => {
         if (showCompostLocations && compostSitesHook.sites.length === 0) {
             compostSitesHook.fetchSites();
         }
     }, [showCompostLocations, compostSitesHook]);
 
-    // Action hooks
+    // action hooks - the doers
     const cropManager = useCropManager(
         farmProfile,
         setFarmProfile,
@@ -139,7 +139,7 @@ export default function DashboardPage() {
 
     const demo = useDemoData(refreshPlan);
 
-  // Define map farm type that FarmMap expects
+  // define map farm type that FarmMap expects. type safety
   type MapFarm = {
     userId: string;
     userName?: string;
@@ -154,7 +154,7 @@ export default function DashboardPage() {
     dailyWaterLiters: number;
   };
 
-  // Combine farms and compost sites for map display
+  // combine farms and compost sites for map display. mashup time
   const mapItems = useMemo((): MapFarm[] => {
       const items: MapFarm[] = allFarms.map(farm => ({
           userId: farm.userId,
@@ -190,7 +190,7 @@ export default function DashboardPage() {
       return items;
   }, [allFarms, showCompostLocations, compostSitesHook.sites]);
 
-  // Compute stats for modal
+  // compute stats for modal. crunching numbers
   const mapStats = useMemo(() => ({
       totalFarms: allFarms.length,
       totalCompostSites: compostSitesHook.sites.length,
@@ -201,7 +201,7 @@ export default function DashboardPage() {
       ),
   }), [allFarms, compostSitesHook.sites]);
 
-  // Show suggested crops modal when user has a plan but no crops yet
+  // show suggested crops modal when user has a plan but no crops yet. helpful popup
   useEffect(() => {
       if (
           !loading && 

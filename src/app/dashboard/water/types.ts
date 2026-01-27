@@ -1,6 +1,6 @@
-// Water calculator feature type definitions
-import type { TFunction } from "i18next";
+// water calculator feature type definitions. hydration check types
 import type { GrowthStage, WaterCalculationResult } from "@/lib/logic/water-calculator";
+import type { TFunction } from "i18next";
 
 export type TranslateFunction = TFunction<"translation", undefined>;
 
@@ -17,4 +17,5 @@ export interface WaterHistory {
   plants: string[];
 }
 
-export { WaterCalculationResult, GrowthStage };
+export { GrowthStage, WaterCalculationResult };
+

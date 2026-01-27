@@ -1,7 +1,7 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 import { GrowthStage } from "../plants";
 
-// Crop entry for tracking what's growing in the farm
+// crop entry for tracking whats growing in the farm. n-not like i care about your garden
 export interface ICropEntry {
     plantId: string;
     plantName: string;
@@ -15,7 +15,7 @@ export interface IFarmProfile extends Document {
     userId: string;
     userName?: string;
     
-    // Farm details
+    // farm details - tell me about your goofy ahh garden
     farmName?: string;
     farmEmoji?: string;
     waterAvailability: "none" | "low" | "medium" | "high";
@@ -25,22 +25,22 @@ export interface IFarmProfile extends Document {
     primaryGoal: "calories" | "nutrition" | "fast";
     experienceLevel?: "beginner" | "intermediate" | "advanced";
     
-    // Location
+    // location - where the magic happens
     latitude: number;
     longitude: number;
     locationLabel?: string;
     country?: string;
     
-    // Crops currently growing
+    // crops currently growing - lowkey exciting
     crops: ICropEntry[];
     
-    // Calculated water needs (updated when crops change)
+    // calculated water needs (updated when crops change). hydration check
     dailyWaterLiters: number;
     
-    // Visibility settings
+    // visibility settings - who can see your farm
     isPublic: boolean;
     
-    // Onboarding completion
+    // onboarding completion - did you finish setting up
     onboardingCompleted: boolean;
     
     createdAt: Date;
@@ -101,24 +101,24 @@ const FarmProfileSchema = new Schema<IFarmProfile>(
             required: false,
         },
         
-        // Location fields
+        // location fields - bruh where you farming
         latitude: { type: Number, required: true },
         longitude: { type: Number, required: true },
         locationLabel: { type: String },
         country: { type: String },
         
-        // Crops
+        // crops - the good stuff
         crops: { type: [CropEntrySchema], default: [] },
         dailyWaterLiters: { type: Number, default: 0 },
         
-        // Settings
+        // settings - lowkey important
         isPublic: { type: Boolean, default: true },
         onboardingCompleted: { type: Boolean, default: false },
     },
     { timestamps: true }
 );
 
-// Geospatial index for location-based queries
+// geospatial index for location-based queries. gotta go fast
 FarmProfileSchema.index({ latitude: 1, longitude: 1 });
 FarmProfileSchema.index({ country: 1, isPublic: 1 });
 

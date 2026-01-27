@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next";
 
-// Type alias for i18next translation function
+// type alias for i18next translation function. fancy type magic
 export type TranslateFunction = TFunction<"translation", undefined>;
 
 export interface PlanFormData {

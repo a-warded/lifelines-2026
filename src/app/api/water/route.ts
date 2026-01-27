@@ -4,7 +4,7 @@ import { WaterCalculation } from "@/lib/models";
 import { connectMongo } from "@/lib/mongo";
 import { NextRequest, NextResponse } from "next/server";
 
-// POST - Calculate and optionally save water usage
+// POST - calculate and optionally save water usage. bruh hydration is key
 export async function POST(request: NextRequest) {
     try {
         const session = await auth();
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { entries, save } = body as { entries: WaterEntry[]; save?: boolean };
 
-        // Validation
+        // validation - gotta make sure the data is good
         if (!entries || !Array.isArray(entries) || entries.length === 0) {
             return NextResponse.json(
                 { error: "Please provide at least one plant entry" },
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate each entry
+        // validate each entry. ts pmo when people send bad data
         for (const entry of entries) {
             if (!entry.plantId || !entry.stage || !entry.count || entry.count <= 0) {
                 return NextResponse.json(
@@ -33,10 +33,10 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Calculate
+        // calculate. math time bestie
         const result = calculateWater(entries);
 
-        // Optionally save
+        // optionally save. n-not like i want to remember your water usage or anything
         let savedId = null;
         if (save) {
             await connectMongo();
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// GET - Fetch user's water calculation history
+// GET - fetch users water calculation history. lowkey useful for tracking
 export async function GET(request: NextRequest) {
     try {
         const session = await auth();

@@ -1,7 +1,7 @@
-import type { TFunction } from "i18next";
 import { GrowthStage } from "@/lib/plants";
+import type { TFunction } from "i18next";
 
-// Type alias for i18next translation function
+// type alias for i18next translation function. fancy type magic
 export type TranslateFunction = TFunction<"translation", undefined>;
 
 export interface CropEntry {
@@ -38,7 +38,7 @@ export interface FarmProfile {
   crops: CropEntry[];
   spaceType: string;
   dailyWaterLiters: number;
-  // Extended properties that may exist
+  // extended properties that may exist. bonus fields ig
   waterAvailability?: string;
   soilCondition?: string;
   sunlight?: string;

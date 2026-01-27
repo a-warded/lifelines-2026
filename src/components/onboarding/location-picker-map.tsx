@@ -4,7 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
 
-// Fix for default marker icons in Leaflet with webpack
+// fix for default marker icons in leaflet with webpack. ts pmo but we gotta do it
 const DefaultIcon = L.icon({
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
     iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -42,7 +42,7 @@ export function LocationPickerMap({
         
         if (!mapRef.current) return;
         
-        // Check if container already has a map (prevents double initialization)
+        // check if container already has a map. cant have two maps fighting for the same spot bruh
         if (mapInstanceRef.current) return;
         
         const container = mapRef.current;
@@ -50,36 +50,36 @@ export function LocationPickerMap({
             return;
         }
 
-        // Initialize map centered on user location or default
+        // initialize map centered on user location or default. gotta start somewhere
         const initialLat = latitude || 20;
         const initialLng = longitude || 0;
         const initialZoom = latitude && longitude ? 13 : 2;
 
         const map = L.map(mapRef.current).setView([initialLat, initialLng], initialZoom);
 
-        // Add OpenStreetMap tiles
+        // add openstreetmap tiles. free maps for the win
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             maxZoom: 19,
         }).addTo(map);
 
-        // Add marker if initial position
+        // add marker if initial position. gotta show where you at
         if (latitude && longitude) {
             markerRef.current = L.marker([latitude, longitude]).addTo(map);
         }
 
-        // Click handler
+        // click handler. when they click we do stuff
         map.on("click", async (e: L.LeafletMouseEvent) => {
             const { lat, lng } = e.latlng;
 
-            // Update or create marker
+            // update or create marker. marker manipulation fr
             if (markerRef.current) {
                 markerRef.current.setLatLng([lat, lng]);
             } else {
                 markerRef.current = L.marker([lat, lng]).addTo(map);
             }
 
-            // Reverse geocode
+            // reverse geocode. turning coords into addresses like magic
             try {
                 const response = await fetch(
                     `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
@@ -100,7 +100,7 @@ export function LocationPickerMap({
                 try {
                     markerRef.current.remove();
                 } catch {
-                    // Ignore errors during cleanup
+                    // ignore errors during cleanup. vibes only
                 }
                 markerRef.current = null;
             }
@@ -108,7 +108,7 @@ export function LocationPickerMap({
                 try {
                     mapInstanceRef.current.remove();
                 } catch {
-                    // Ignore errors during cleanup
+                    // ignore errors during cleanup. we ball
                 }
                 mapInstanceRef.current = null;
             }
@@ -116,7 +116,7 @@ export function LocationPickerMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Update marker when props change
+    // update marker when props change. reactive gang
     useEffect(() => {
         if (!mapInstanceRef.current) return;
 

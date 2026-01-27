@@ -1,4 +1,4 @@
-// Speech Recognition API types
+// bruh these are the speech recognition api types. lowkey kinda goofy ahh but they work
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
   resultIndex: number;

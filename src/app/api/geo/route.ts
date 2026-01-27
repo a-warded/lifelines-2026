@@ -1,15 +1,15 @@
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET - Get user's country from Cloudflare header (fallback for no GPS)
+// GET - get users country from cloudflare header (fallback for no gps). lowkey hacky but it works
 export async function GET(request: NextRequest) {
     try {
         const headersList = await headers();
         
-        // Cloudflare provides CF-IPCountry header
+        // cloudflare provides CF-IPCountry header. ty cloudflare ur a real one
         const cfCountry = headersList.get("cf-ipcountry");
         
-        // Fallback to other headers if available
+        // fallback to other headers if available. gotta have a backup plan
         const xCountry = headersList.get("x-vercel-ip-country");
         
         const country = cfCountry || xCountry || "US";

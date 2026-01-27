@@ -1,28 +1,28 @@
 "use client";
 
+import { getPlantOptions } from "@/lib/plants";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { getPlantOptions } from "@/lib/plants";
 
-// Components
+// components - the ui elements
 import {
-    PlantEntryForm,
-    WaterResults,
-    WaterTips,
-    WaterHistoryCard,
+  PlantEntryForm,
+  WaterHistoryCard,
+  WaterResults,
+  WaterTips,
 } from "./components";
 
-// Hooks
+// hooks - hydration state management
 import { useWaterCalculator, useWaterHistory } from "./hooks";
 
 export default function WaterCalculatorPage() {
     const { t } = useTranslation();
     const plantOptions = useMemo(() => getPlantOptions(), []);
 
-    // Calculator state and logic
+    // calculator state and logic. the water math
     const calculator = useWaterCalculator();
 
-    // History management
+    // history management. keeping receipts of your hydration
     const { history, saveCalculation } = useWaterHistory();
 
     const handleSave = () => {

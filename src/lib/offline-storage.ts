@@ -1,5 +1,5 @@
-// Offline Storage Utility
-// Lightweight caching using localStorage for offline support
+// offline storage utility - deadass lightweight caching using localStorage
+// i-its not like i care if your app works offline or anything...
 
 const STORAGE_KEYS = {
     LATEST_PLAN: "farm_latest_plan",
@@ -13,12 +13,12 @@ interface CachedData<T> {
   timestamp: number;
 }
 
-// Check if we're in browser
+// gotta check if we're in browser cause server-side rendering is lowkey annoying
 function isBrowser(): boolean {
     return typeof window !== "undefined" && typeof localStorage !== "undefined";
 }
 
-// Generic get with expiry check (default 24h)
+// generic get with expiry check (default 24h cause i said so)
 export function getFromCache<T>(key: string, maxAgeMs = 24 * 60 * 60 * 1000): T | null {
     if (!isBrowser()) return null;
 
@@ -40,7 +40,7 @@ export function getFromCache<T>(key: string, maxAgeMs = 24 * 60 * 60 * 1000): T 
     }
 }
 
-// Generic set
+// generic set - lowkey just saves stuff to localStorage
 export function setToCache<T>(key: string, data: T): void {
     if (!isBrowser()) return;
 
@@ -51,17 +51,17 @@ export function setToCache<T>(key: string, data: T): void {
         };
         localStorage.setItem(key, JSON.stringify(cached));
     } catch {
-    // Storage full or not available - fail silently
+    // storage full or not available - we just fail silently cause whatever
     }
 }
 
-// Remove from cache
+// yeet stuff from cache
 export function removeFromCache(key: string): void {
     if (!isBrowser()) return;
     localStorage.removeItem(key);
 }
 
-// Specific helpers for our data types
+// specific helpers for our data types. not that you asked
 export function cachePlan(plan: unknown): void {
     setToCache(STORAGE_KEYS.LATEST_PLAN, plan);
 }
@@ -86,7 +86,7 @@ export function getCachedAssistantChat<T>(): T[] | null {
     return getFromCache<T[]>(STORAGE_KEYS.ASSISTANT_CHAT);
 }
 
-// Offline queue for pending requests
+// offline queue for pending requests when internet decides to ghost you
 interface QueuedRequest {
   id: string;
   endpoint: string;
@@ -115,13 +115,13 @@ export function clearOfflineQueue(): void {
     removeFromCache(STORAGE_KEYS.OFFLINE_QUEUE);
 }
 
-// Check online status
+// check if we got wifi or nah
 export function isOnline(): boolean {
     if (!isBrowser()) return true;
     return navigator.onLine;
 }
 
-// Clear all cached data
+// nuke all cached data from orbit. its the only way to be sure
 export function clearAllCache(): void {
     Object.values(STORAGE_KEYS).forEach(removeFromCache);
 }

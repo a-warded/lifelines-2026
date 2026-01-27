@@ -56,7 +56,7 @@ export function useExchangeListings({
         searchQuery: "",
     });
   
-    // Use refs to track fetch state and prevent race conditions
+    // use refs to track fetch state and prevent race conditions. no data races on my watch
     const fetchIdRef = useRef(0);
     const hasFetchedRef = useRef(false);
 
@@ -65,7 +65,7 @@ export function useExchangeListings({
         value: ExchangeFilters[K]
     ) => {
         setFilters(prev => ({ ...prev, [key]: value }));
-        setCurrentPage(1); // Reset to first page when filters change
+        setCurrentPage(1); // reset to first page when filters change. back to page one bestie
     }, []);
 
     const clearFilters = useCallback(() => {
@@ -86,7 +86,7 @@ export function useExchangeListings({
     const fetchListings = useCallback(async () => {
         const fetchId = ++fetchIdRef.current;
     
-        // Only show loading on initial fetch, not on refetch
+        // only show loading on initial fetch, not on refetch. lowkey ux improvement
         if (!hasFetchedRef.current) {
             setLoading(true);
         }
@@ -97,8 +97,8 @@ export function useExchangeListings({
             if (filters.type) params.set("type", filters.type);
             if (filters.status) params.set("status", filters.status);
             if (filters.mode) params.set("mode", filters.mode);
-            // Don't filter by country - show all listings globally
-            // This allows seeing seeded data regardless of user's location
+            // dont filter by country - show all listings globally
+            // this allows seeing seeded data regardless of users location. worldwide gang
             params.set("page", currentPage.toString());
             params.set("limit", "12");
 
@@ -109,9 +109,9 @@ export function useExchangeListings({
 
             const response = await fetch(`/api/exchange?${params}`);
       
-            // Check if this fetch is still the latest one
+            // check if this fetch is still the latest one. race condition check
             if (fetchId !== fetchIdRef.current) {
-                return; // Abort if a newer fetch has been initiated
+                return; // abort if a newer fetch has been initiated. old news
             }
       
             const data = await response.json();
@@ -126,26 +126,26 @@ export function useExchangeListings({
             }
             hasFetchedRef.current = true;
         } catch (err) {
-            // Only set error if this is still the latest fetch
+            // only set error if this is still the latest fetch. relevant errors only
             if (fetchId === fetchIdRef.current) {
                 setError(err instanceof Error ? err.message : "Failed to load listings");
             }
         } finally {
-            // Only update loading if this is still the latest fetch
+            // only update loading if this is still the latest fetch. staying current
             if (fetchId === fetchIdRef.current) {
                 setLoading(false);
             }
         }
     }, [userLocation, filters.type, filters.status, filters.mode, currentPage]);
 
-    // Fetch on mount and when dependencies change, but only after location is ready
+    // fetch on mount and when dependencies change, but only after location is ready. patience
     useEffect(() => {
         if (isLocationReady) {
             fetchListings();
         }
     }, [fetchListings, isLocationReady]);
 
-    // Client-side filtering for delivery method and search
+    // client-side filtering for delivery method and search. frontend filter gang
     const filteredListings = useMemo(() => {
         let result = listings;
 
@@ -181,7 +181,7 @@ export function useExchangeListings({
     };
 }
 
-// Hook for managing create listing form
+// hook for managing create listing form. the form whisperer
 interface UseCreateListingOptions {
   userCountry: string;
   userLocation: GeoLocation | null;
@@ -284,7 +284,7 @@ export function useCreateListing({
     };
 }
 
-// Hook for claiming a listing
+// hook for claiming a listing. dibs on this one
 interface UseClaimListingOptions {
   onSuccess: () => void;
 }

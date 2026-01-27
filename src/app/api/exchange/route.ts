@@ -1,11 +1,11 @@
 import { auth } from "@/lib/auth";
-import { calculateDistance, MAX_LISTING_DISTANCE_KM } from "@/lib/geo";
+import { calculateDistance } from "@/lib/geo";
 import { ExchangeClaim, ExchangeListing } from "@/lib/models";
 import { connectMongo } from "@/lib/mongo";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET - List listings with filters and location-based filtering
+// GET - list listings with filters and location-based filtering. lowkey the backbone of the exchange feature
 export async function GET(request: NextRequest) {
     try {
         const session = await auth();
@@ -21,14 +21,14 @@ export async function GET(request: NextRequest) {
         const page = parseInt(searchParams.get("page") || "1");
         const myListings = searchParams.get("my") === "true";
         
-        // Location filtering
+        // location filtering - gotta know where youre at
         const lat = parseFloat(searchParams.get("lat") || "");
         const lon = parseFloat(searchParams.get("lon") || "");
         const country = searchParams.get("country") || "";
 
         await connectMongo();
 
-        // Build query
+        // build query. ts pmo with all these conditionals
         const query: Record<string, unknown> = {};
         
         if (type && ["seeds", "produce", "tools", "fertilizer", "other"].includes(type)) {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         if (status && ["available", "claimed", "completed", "cancelled"].includes(status)) {
             query.status = status;
         } else if (!myListings) {
-            // Default to available for public listings
+            // default to available for public listings. nobody wants to see claimed stuff
             query.status = "available";
         }
         if (mode && ["offering", "seeking"].includes(mode)) {
@@ -47,13 +47,13 @@ export async function GET(request: NextRequest) {
             query.userId = session.user.id;
         }
         
-        // Country filtering (optional - if provided, filter by country)
+        // country filtering (optional - if provided filter by country). lowkey useful for localization
         if (!myListings && country) {
             query.country = country.toUpperCase();
         }
-        // Note: If no country provided, show all countries (useful for testing/demo)
+        // note: if no country provided show all countries (useful for testing/demo). bruh
 
-        // Get total count for pagination
+        // get total count for pagination. math is lowkenuinely important here
         const totalCount = await ExchangeListing.countDocuments(query);
         const skip = (page - 1) * limit;
 
@@ -63,9 +63,9 @@ export async function GET(request: NextRequest) {
             .limit(limit)
             .lean();
 
-        // Distance filtering is disabled to show all listings globally
-        // This allows testing with seeded data from any location
-        // Uncomment below to re-enable location-based filtering:
+        // distance filtering is disabled to show all listings globally
+        // this allows testing with seeded data from any location. ts hits different when it just works
+        // uncomment below to re-enable location-based filtering:
         // if (!myListings && !isNaN(lat) && !isNaN(lon)) {
         //     listings = listings.filter((l) => {
         //         if (!l.latitude || !l.longitude) return false;
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
         //     });
         // }
 
-        // Get claim counts for all listings in one query
+        // get claim counts for all listings in one query. efficiency is key bestie
         const listingIds = listings.map(l => l._id.toString());
         const claimCounts = await ExchangeClaim.aggregate([
             { $match: { listingId: { $in: listingIds } } },
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             listings: listings.map((l) => {
-                // Calculate distance if coordinates available
+                // calculate distance if coordinates available. haversine formula go brr
                 let distance: number | undefined;
                 if (!isNaN(lat) && !isNaN(lon) && l.latitude && l.longitude) {
                     distance = Math.round(calculateDistance(lat, lon, l.latitude, l.longitude) * 10) / 10;
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST - Create a new listing
+// POST - create a new listing. n-not like i want to help you share stuff or anything baka
 export async function POST(request: NextRequest) {
     try {
         const session = await auth();
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// PATCH - Update listing status (complete/cancel)
+// PATCH - update listing status (complete/cancel). bruh gotta keep track of everything
 export async function PATCH(request: NextRequest) {
     try {
         const session = await auth();
@@ -278,7 +278,7 @@ export async function PATCH(request: NextRequest) {
         listing.status = statusMap[action] as typeof listing.status;
         await listing.save();
 
-        // If cancelled/reopened, update related claims
+        // if cancelled/reopened update related claims. gotta stay consistent
         if (action === "cancel" || action === "reopen") {
             await ExchangeClaim.updateMany(
                 { listingId: listing._id.toString(), status: "pending" },
@@ -299,7 +299,7 @@ export async function PATCH(request: NextRequest) {
     }
 }
 
-// Endpoint to get user's country from Cloudflare header (fallback)
+// endpoint to get users country from cloudflare header (fallback). lowkey hacky but it works
 export async function OPTIONS(request: NextRequest) {
     try {
         const headersList = await headers();

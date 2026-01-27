@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         const client = await clientPromise;
         const db = client.db();
 
-        // Check if user already exists
+        // check if user already exists. bruh we dont need duplicates
         const existingUser = await db.collection("users").findOne({ email });
         if (existingUser) {
             return NextResponse.json(
@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Hash password
+        // hash password cause storing plaintext is lowkey criminal
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        // Create user
+        // create user. n-not like i care if it succeeds or anything
         const result = await db.collection("users").insertOne({
             name,
             email,
@@ -36,13 +36,13 @@ export async function POST(request: NextRequest) {
             createdAt: new Date(),
         });
 
-        // Create an initial empty plan for this new user.
-        // Use the same MongoDB connection as signup (no separate Mongoose connection).
+        // create an initial empty plan for this new user. lowkey important for onboarding
+        // use the same mongodb connection as signup (no separate mongoose connection). efficiency or whatever
         try {
             const now = new Date();
             await db.collection("plans").insertOne({
                 userId: result.insertedId.toString(),
-                // farmProfileId intentionally omitted until onboarding is complete
+                // farmProfileId intentionally omitted until onboarding is complete. ts pmo
                 recommendedCrops: [],
                 timeline: [],
                 setupChecklist: [],
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
                 updatedAt: now,
             });
         } catch (planError) {
-            // Keep signup atomic: if we can't create the initial plan, roll back the user.
+            // keep signup atomic: if we cant create the initial plan, roll back the user. deadass important
             await db.collection("users").deleteOne({ _id: result.insertedId });
             console.error("Registration error (plan initialization failed):", planError);
             return NextResponse.json(

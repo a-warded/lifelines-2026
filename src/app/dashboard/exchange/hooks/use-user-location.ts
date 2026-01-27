@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { 
-    GeoLocation, 
-    getUserLocation, 
-    getCountryFromCoords, 
-    getLocationLabel 
+import {
+    GeoLocation,
+    getCountryFromCoords,
+    getLocationLabel,
+    getUserLocation
 } from "@/lib/geo";
+import { useCallback, useEffect, useState } from "react";
 
 type LocationStatus = "idle" | "loading" | "detecting" | "success" | "error";
 
@@ -25,7 +25,7 @@ export function useUserLocation(): UseUserLocationReturn {
     const [locationStatus, setLocationStatus] = useState<LocationStatus>("loading");
     const [locationError, setLocationError] = useState<string>("");
 
-    // Fetch from farm profile on mount
+    // fetch from farm profile on mount. gotta know where you at
     useEffect(() => {
         fetchUserProfile();
     }, []);
@@ -49,14 +49,14 @@ export function useUserLocation(): UseUserLocationReturn {
                 }
             }
       
-            // Fallback to IP-based country detection
+            // fallback to ip-based country detection. plan b
             const response = await fetch("/api/geo");
             const geoData = await response.json();
             setUserCountry(geoData.country || "");
             setLocationStatus("success");
         } catch {
-            setUserCountry(""); // Don't filter by country on error
-            setLocationStatus("success"); // Still mark as ready so listings can load
+            setUserCountry(""); // dont filter by country on error. just show everything
+            setLocationStatus("success"); // still mark as ready so listings can load. we move
         }
     };
 

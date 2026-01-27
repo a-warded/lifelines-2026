@@ -1,4 +1,4 @@
-// Assistant feature type definitions
+// assistant feature type definitions. the helper types
 
 declare global {
   interface Window {
@@ -18,4 +18,5 @@ export interface WebSocketMessage {
   error?: unknown;
 }
 
-export {};
+export { };
+

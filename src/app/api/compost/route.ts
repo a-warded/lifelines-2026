@@ -4,9 +4,9 @@ import { CompostSite } from "@/lib/models/compost-site";
 import { connectMongo } from "@/lib/mongo";
 import { NextRequest, NextResponse } from "next/server";
 
-const MAX_COMPOST_DISTANCE_KM = 100; // Show compost sites within 100km
+const MAX_COMPOST_DISTANCE_KM = 100; // show compost sites within 100km. any further and thats a you problem
 
-// GET - Get compost sites (all public or user's own)
+// GET - get compost sites (all public or users own). n-not like i made this endpoint for you or anything
 export async function GET(request: NextRequest) {
     try {
         const session = await auth();
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
         await connectMongo();
 
-        // Return user's own compost sites
+        // return users own compost sites. lowkey useful
         if (my) {
             if (!session?.user?.id) {
                 return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Return all public compost sites
+        // return all public compost sites. ts hits different when everyone shares
         if (all) {
             const query: Record<string, unknown> = { isPublic: true };
             
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
                 .limit(limit * 2)
                 .lean();
 
-            // Filter by distance if coordinates provided
+            // filter by distance if coordinates provided. math is lowkey cool
             if (!isNaN(lat) && !isNaN(lon)) {
                 sites = sites.filter((s) => {
                     const distance = calculateDistance(lat, lon, s.latitude, s.longitude);
@@ -78,13 +78,13 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Default: return nearest sites if location provided
+        // default: return nearest sites if location provided. bruh just tell us where you are
         if (!isNaN(lat) && !isNaN(lon)) {
             const sites = await CompostSite.find({ isPublic: true })
                 .select("userId userName siteName siteEmoji siteType acceptsWaste sellsFertilizer latitude longitude locationLabel country isVerified")
                 .lean();
 
-            // Calculate distances and sort
+            // calculate distances and sort. gotta find the closest ones fr fr
             const sitesWithDistance = sites
                 .map((s) => ({
                     ...s,

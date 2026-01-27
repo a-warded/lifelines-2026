@@ -7,7 +7,7 @@ export async function GET() {
     try {
         const conn = await connectMongo();
 
-        // Check mongo (those who know)
+        // check mongo (those who know). bruh
         const ping = await conn.connection.db.admin().ping();
 
         return NextResponse.json(
@@ -32,7 +32,7 @@ export async function GET() {
                 mongo: {
                     ok: false,
                 },
-                error: err?.message ?? "Unknown error", // Womp womp
+                error: err?.message ?? "Unknown error", // womp womp ts pmo
             },
             { status: 503 },
         );

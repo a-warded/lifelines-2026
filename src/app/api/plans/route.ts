@@ -5,7 +5,7 @@ import { connectMongo } from "@/lib/mongo";
 import { getPlantByName } from "@/lib/plants";
 import { NextRequest, NextResponse } from "next/server";
 
-// POST - Create profile and generate plan
+// POST - create profile and generate plan. n-not like i care about your farming success or anything
 export async function POST(request: NextRequest) {
     try {
         const session = await auth();
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
             experienceLevel,
         } = body;
 
-        // Validation
+        // validation - bruh just fill out the form properly
         if (!waterAvailability || !soilCondition || !spaceType || !sunlight || !primaryGoal) {
             return NextResponse.json(
                 { error: "Missing required fields" },
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
         await connectMongo();
 
-        // Create or update farm profile
+        // create or update farm profile. lowkey important
         const profileData = {
             userId: session.user.id,
             waterAvailability,
@@ -50,10 +50,10 @@ export async function POST(request: NextRequest) {
             { upsert: true, new: true, runValidators: true }
         );
 
-        // Generate plan
+        // generate plan. ts hits different when the algorithm does its thing
         const planDraft = generatePlan(profile);
 
-        // Save plan (prefer updating an existing placeholder plan created at signup)
+        // save plan (prefer updating an existing placeholder plan created at signup). gotta be efficient
         const placeholderPlan = await Plan.findOne({
             userId: session.user.id,
             $or: [
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// GET - Fetch user's latest plan or specific plan by id
+// GET - fetch users latest plan or specific plan by id. i-its not like i organized this for you
 export async function GET(request: NextRequest) {
     try {
         const session = await auth();
@@ -137,13 +137,13 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ plan: null });
         }
 
-        // Get associated profile (optional for placeholder plans)
+        // get associated profile (optional for placeholder plans). lowkey useful
         const profile = plan.farmProfileId
             ? await FarmProfile.findById(plan.farmProfileId)
             : null;
 
-        // Recalculate water estimate to ensure consistency with crop manager
-        // Uses 1 plant per recommended crop at seedling stage (matching "Add All to My Farm" behavior)
+        // recalculate water estimate to ensure consistency with crop manager
+        // uses 1 plant per recommended crop at seedling stage (matching "add all to my farm" behavior). deadass important
         let estimatedDailyWaterLiters = 0;
         if (plan.recommendedCrops && plan.recommendedCrops.length > 0) {
             for (const crop of plan.recommendedCrops) {

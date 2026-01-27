@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
-import type { Farm, CompostSite, FarmProfile, MapLayer, MapStats } from "../types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { CompostSite, Farm, FarmProfile, MapLayer, MapStats } from "../types";
 
-// Hook for fetching and managing map data
+// hook for fetching and managing map data. the geo data wrangler
 export function useMapData() {
     const [farms, setFarms] = useState<Farm[]>([]);
     const [compostSites, setCompostSites] = useState<CompostSite[]>([]);
@@ -64,7 +64,7 @@ export function useMapData() {
     };
 }
 
-// Hook for filtering and combining map items
+// hook for filtering and combining map items. search and filter gang
 interface UseMapFilteringOptions {
   farms: Farm[];
   compostSites: CompostSite[];
@@ -97,7 +97,7 @@ export function useMapFiltering({ farms, compostSites, activeLayer }: UseMapFilt
         );
     }, [compostSites, searchQuery]);
 
-    // Combine items for the map based on active layer
+    // combine items for the map based on active layer. mixing it up
     const mapItems = useMemo(() => {
         const items: Farm[] = [];
 
@@ -106,7 +106,7 @@ export function useMapFiltering({ farms, compostSites, activeLayer }: UseMapFilt
         }
 
         if (activeLayer === "compost" || activeLayer === "all") {
-            // Convert compost sites to farm-like objects for the map
+            // convert compost sites to farm-like objects for the map. gotta make them compatible
             filteredCompostSites.forEach((site) => {
                 items.push({
                     userId: site.userId,
@@ -136,13 +136,13 @@ export function useMapFiltering({ farms, compostSites, activeLayer }: UseMapFilt
     };
 }
 
-// Hook for managing selected item state
+// hook for managing selected item state. what did you click on
 export function useMapSelection(compostSites: CompostSite[]) {
     const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
     const [selectedCompostSite, setSelectedCompostSite] = useState<CompostSite | null>(null);
 
     const handleItemClick = useCallback((item: Farm) => {
-    // Check if it's a compost site (no crops) or a farm
+    // check if its a compost site (no crops) or a farm. gotta tell them apart
         if (item.crops && item.crops.length === 0 && item.spaceType.includes("compost")) {
             const site = compostSites.find((s) => s.siteName === item.farmName);
             if (site) {

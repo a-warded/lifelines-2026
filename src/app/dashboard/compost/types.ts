@@ -1,6 +1,6 @@
-// Compost feature type definitions
-import type { TFunction } from "i18next";
+// compost feature type definitions. trash types fr
 import type { CompostResult } from "@/lib/logic/compost-calculator";
+import type { TFunction } from "i18next";
 
 export type TranslateFunction = TFunction<"translation", undefined>;
 
@@ -52,3 +52,4 @@ export interface CompostLocation {
 }
 
 export { CompostResult };
+

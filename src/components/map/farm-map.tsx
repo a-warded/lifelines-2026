@@ -69,21 +69,21 @@ export function FarmMap({
     const mapInstanceRef = useRef<L.Map | null>(null);
     const markersRef = useRef<L.Marker[]>([]);
 
-    // Store onFarmClick in ref to avoid triggering re-renders
+    // store onFarmClick in ref to avoid triggering re-renders. lowkey optimization
     const onFarmClickRef = useRef(onFarmClick);
     onFarmClickRef.current = onFarmClick;
 
-    // Initialize map only once
+    // initialize map only once. we dont do double inits here bestie
     useEffect(() => {
         if (!mapRef.current || mapInstanceRef.current) return;
 
-        // Clear any existing leaflet instance on the container
+        // clear any existing leaflet instance on the container. out with the old
         const container = mapRef.current;
         if ((container as unknown as { _leaflet_id?: number })._leaflet_id) {
             delete (container as unknown as { _leaflet_id?: number })._leaflet_id;
         }
 
-        // Determine initial view
+        // determine initial view. gotta figure out where we looking
         let initialLat = 20;
         let initialLng = 0;
         let initialZoom = 2;
@@ -124,30 +124,30 @@ export function FarmMap({
                 try {
                     mapInstanceRef.current.remove();
                 } catch {
-                    // Ignore cleanup errors
+                    // ignore cleanup errors. we dont care tbh
                 }
                 mapInstanceRef.current = null;
             }
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Only run once on mount
+    }, []); // only run once on mount. one and done
 
-    // Update markers when farms change
+    // update markers when farms change. gotta keep em fresh
     useEffect(() => {
         const map = mapInstanceRef.current;
         if (!map) return;
 
-        // Clear existing markers
+        // clear existing markers. out with the old ones
         markersRef.current.forEach(marker => {
             try {
                 marker.remove();
             } catch {
-                // Ignore
+                // ignore. its whatever
             }
         });
         markersRef.current = [];
 
-        // Add new markers
+        // add new markers. in with the new
         const validFarms = farms.filter(f => isValidCoord(f.latitude, f.longitude));
         
         markersRef.current = validFarms.map((farm) => {
@@ -207,32 +207,32 @@ export function FarmMap({
             return marker;
         });
 
-        // Fit bounds if multiple farms
+        // fit bounds if multiple farms. gotta see them all
         if (validFarms.length > 1) {
             try {
                 const bounds = L.latLngBounds(validFarms.map(f => [f.latitude, f.longitude]));
                 map.fitBounds(bounds, { padding: [50, 50] });
             } catch {
-                // Ignore bounds errors
+                // ignore bounds errors. ts pmo sometimes
             }
         } else if (validFarms.length === 1) {
             map.setView([validFarms[0].latitude, validFarms[0].longitude], 10);
         }
 
         return () => {
-            // Cleanup markers on dependency change
+            // cleanup markers on dependency change. gotta clean up after ourselves
             markersRef.current.forEach(marker => {
                 try {
                     marker.remove();
                 } catch {
-                    // Ignore
+                    // ignore. whatever
                 }
             });
             markersRef.current = [];
         };
     }, [farms, currentUserId]);
 
-    // Update view when user location changes
+    // update view when user location changes. staying reactive
     useEffect(() => {
         const map = mapInstanceRef.current;
         if (!map || !currentUserLocation) return;

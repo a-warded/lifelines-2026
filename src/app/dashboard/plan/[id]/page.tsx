@@ -6,17 +6,17 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
-// Components
+// components - plan ui elements
 import {
+    ChecklistCard,
     FallbackWarning,
     RecommendedCropsCard,
-    WaterEstimateCard,
-    ChecklistCard,
     TimelineCard,
+    WaterEstimateCard,
 } from "../components";
 
-// Hooks
-import { usePlanView, useAddCropsToFarm } from "../hooks";
+// hooks - plan state management
+import { useAddCropsToFarm, usePlanView } from "../hooks";
 
 export default function PlanViewPage() {
     const params = useParams();

@@ -20,7 +20,7 @@ const AssistantMessageSchema = new Schema<IAssistantMessage>(
     { timestamps: true }
 );
 
-// Index for fetching recent messages
+// index for fetching recent messages. gotta be fast
 AssistantMessageSchema.index({ userId: 1, createdAt: -1 });
 
 export const AssistantMessage: Model<IAssistantMessage> =

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { cachePlan, getCachedPlan } from "@/lib/offline-storage";
 import { getPlantByName } from "@/lib/plants";
+import { useCallback, useEffect, useState } from "react";
 import type { Plan, Profile } from "../types";
 
 interface UsePlanViewOptions {
@@ -32,7 +32,7 @@ export function usePlanView({ planId }: UsePlanViewOptions) {
                     throw new Error("Failed to fetch");
                 }
             } catch {
-                // Try cached data
+                // try cached data. offline mode activated
                 const cached = getCachedPlan<Plan>();
                 if (cached) {
                     setPlan(cached);

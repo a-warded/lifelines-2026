@@ -42,7 +42,7 @@ const SplitText: React.FC<SplitTextProps> = ({
     const onCompleteRef = useRef(onLetterAnimationComplete);
     const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
 
-    // Keep callback ref updated
+    // keep callback ref updated or else bad things happen bestie
     useEffect(() => {
         onCompleteRef.current = onLetterAnimationComplete;
     }, [onLetterAnimationComplete]);
@@ -60,7 +60,7 @@ const SplitText: React.FC<SplitTextProps> = ({
     useGSAP(
         () => {
             if (!ref.current || !text || !fontsLoaded) return;
-            // Prevent re-animation if already completed
+            // prevent re-animation if already completed. we dont do double duty here
             if (animationCompletedRef.current) return;
             const el = ref.current as HTMLElement & {
         _rbsplitInstance?: GSAPSplitText;

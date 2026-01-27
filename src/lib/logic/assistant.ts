@@ -1,5 +1,5 @@
-// AI Assistant Logic
-// Rule-based assistant with optional LLM integration
+// AI assistant logic - lowkey fire
+// rule-based assistant with optional llm integration. n-not like i spent hours on this or anything
 
 export interface AssistantInput {
   message: string;
@@ -11,7 +11,7 @@ export interface AssistantResponse {
   intent: string;
 }
 
-// Intent classification by keywords
+// intent classification by keywords. this is lowkenuinely the brains of the operation
 const INTENTS: Record<string, string[]> = {
     lowWater: ["low water", "little water", "no water", "drought", "dry", "save water"],
     containers: ["container", "pot", "bucket", "box", "balcony", "rooftop", "indoor"],
@@ -27,7 +27,7 @@ const INTENTS: Record<string, string[]> = {
     general: [],
 };
 
-// Curated responses for each intent
+// curated responses for each intent. i-i worked really hard on these okay??
 const RESPONSES: Record<string, string> = {
     lowWater: `**Growing with limited water:**
 
@@ -162,7 +162,7 @@ const RESPONSES: Record<string, string> = {
 What would you like to know more about?`,
 };
 
-// Preset prompts for UI
+// preset prompts for the ui. deadass useful for users who cant think of questions
 export const PRESET_PROMPTS = [
     { text: "What can I grow with low water?", intent: "lowWater" },
     { text: "How do I grow food in containers?", intent: "containers" },
@@ -186,7 +186,7 @@ function classifyIntent(message: string): string {
     return "general";
 }
 
-// Rule-based response (used when no LLM available)
+// rule-based response (used when no llm available cause money is fake)
 export function generateRuleBasedResponse(input: AssistantInput): AssistantResponse {
     const intent = classifyIntent(input.message);
     const content = RESPONSES[intent] || RESPONSES.general;
@@ -194,7 +194,7 @@ export function generateRuleBasedResponse(input: AssistantInput): AssistantRespo
     return { content, intent };
 }
 
-// LLM-based response (when API key available)
+// llm-based response (when api key available). ts hits different fr fr
 export async function generateLLMResponse(
     input: AssistantInput,
     apiKey: string
@@ -245,12 +245,12 @@ RULES:
 
         return { content, intent: "llm" };
     } catch {
-    // Fallback to rule-based
+    // fallback to rule-based cause the api decided to ghost us
         return generateRuleBasedResponse(input);
     }
 }
 
-// Main function - tries LLM first, falls back to rules
+// main function - tries llm first, falls back to rules. bruh its lowkey smart
 export async function getAssistantResponse(
     input: AssistantInput
 ): Promise<AssistantResponse> {

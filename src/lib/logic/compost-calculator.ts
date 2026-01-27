@@ -1,21 +1,21 @@
 /**
- * Waste-to-Fertilizer Calculator
+ * waste-to-fertilizer calculator - lowkey turns trash into treasure
  * 
- * Converts different types of agricultural waste into estimated organic fertilizer output.
- * Based on typical composting ratios and timeframes.
+ * converts different types of agricultural waste into estimated organic fertilizer output.
+ * based on typical composting ratios and timeframes. i-its not like i researched this for hours or anything...
  */
 
 export type WasteType = 
-    | "crop_residue"      // Stalks, leaves, stems
-    | "fruit_waste"       // Spoiled/excess fruits
-    | "vegetable_waste"   // Spoiled/excess vegetables  
-    | "grass_clippings"   // Lawn/field grass
-    | "leaves"            // Dry/fallen leaves
-    | "manure"            // Animal manure
-    | "food_scraps"       // Kitchen waste
-    | "sawdust"           // Wood shavings
-    | "straw"             // Dry straw/hay
-    | "coffee_grounds";   // Used coffee grounds
+    | "crop_residue"      // stalks leaves stems whatever
+    | "fruit_waste"       // spoiled/excess fruits rip
+    | "vegetable_waste"   // spoiled/excess vegetables also rip  
+    | "grass_clippings"   // lawn/field grass
+    | "leaves"            // dry/fallen leaves
+    | "manure"            // animal manure (lowkey gross but it works)
+    | "food_scraps"       // kitchen waste
+    | "sawdust"           // wood shavings
+    | "straw"             // dry straw/hay
+    | "coffee_grounds";   // used coffee grounds cause were all addicted
 
 export interface WasteEntry {
     wasteType: WasteType;
@@ -25,7 +25,7 @@ export interface WasteEntry {
 export interface CompostResult {
     totalWasteKg: number;
     estimatedFertilizerKg: number;
-    conversionRate: number; // percentage
+    conversionRate: number; // percentage. the conversion math
     compostingDays: number;
     nitrogenContent: "high" | "medium" | "low";
     carbonContent: "high" | "medium" | "low";
@@ -39,12 +39,12 @@ export interface CompostResult {
     }>;
 }
 
-// Waste conversion data
+// waste conversion data. deadass researched all these numbers
 const WASTE_DATA: Record<WasteType, {
     conversionRate: number; // % of weight retained as compost
-    category: "green" | "brown"; // High nitrogen (green) or high carbon (brown)
-    cnRatio: number; // Carbon to Nitrogen ratio
-    compostDays: number; // Typical days to compost
+    category: "green" | "brown"; // high nitrogen (green) or high carbon (brown). science is cool i guess
+    cnRatio: number; // carbon to nitrogen ratio. chemistry vibes
+    compostDays: number; // typical days to compost. patience required
 }> = {
     crop_residue: { conversionRate: 0.35, category: "brown", cnRatio: 60, compostDays: 90 },
     fruit_waste: { conversionRate: 0.25, category: "green", cnRatio: 35, compostDays: 45 },
@@ -163,10 +163,10 @@ export function calculateCompost(entries: WasteEntry[]): CompostResult {
     const avgCNRatio = totalWaste > 0 ? weightedCN / totalWaste : 0;
     const cnRatioBalanced = avgCNRatio >= 25 && avgCNRatio <= 35;
     
-    // Ideal is about 2-3 parts brown to 1 part green by volume (roughly 50-50 by weight)
+    // ideal is about 2-3 parts brown to 1 part green by volume (roughly 50-50 by weight). lowkenuinely important
     const greenRatio = totalWaste > 0 ? greenWeight / totalWaste : 0;
 
-    // Generate tips
+    // generate tips cause users need help lol
     const tips: string[] = [];
     
     if (greenRatio > 0.7) {
@@ -191,7 +191,7 @@ export function calculateCompost(entries: WasteEntry[]): CompostResult {
         tips.push("Small batch - consider collecting more before composting for better results.");
     }
 
-    // Determine nutrient content based on inputs
+    // determine nutrient content based on inputs. ts hits different when you understand the science
     const nitrogenContent: "high" | "medium" | "low" = 
         greenRatio > 0.5 ? "high" : greenRatio > 0.3 ? "medium" : "low";
     const carbonContent: "high" | "medium" | "low" = 
@@ -211,28 +211,29 @@ export function calculateCompost(entries: WasteEntry[]): CompostResult {
 }
 
 /**
- * Estimate market value of produced fertilizer
- * Based on average organic compost prices
+ * estimate market value of produced fertilizer. bruh money is cool
+ * based on average organic compost prices
  */
 export function estimateFertilizerValue(fertilizerKg: number, country?: string): {
     lowEstimate: number;
     highEstimate: number;
     currency: string;
 } {
-    // Average compost price ranges from $0.50 to $2.00 per kg globally
-    // This varies greatly by region
+    // average compost price ranges from $0.50 to $2.00 per kg globally
+    // this varies greatly by region. ima get slimed for these estimates
     const baseRateLow = 0.50;
     const baseRateHigh = 1.50;
     
     return {
         lowEstimate: Math.round(fertilizerKg * baseRateLow * 100) / 100,
         highEstimate: Math.round(fertilizerKg * baseRateHigh * 100) / 100,
-        currency: "USD", // Simplified - in production would use country-specific currency
+        currency: "USD", // simplified - in production would use country-specific currency but aint nobody got time for that
     };
 }
 
 /**
- * Get composting method recommendations based on waste type and quantity
+ * get composting method recommendations based on waste type and quantity
+ * n-not like i spent time researching composting methods or anything baka
  */
 export function getCompostingMethod(totalKg: number, hasManure: boolean): {
     method: string;

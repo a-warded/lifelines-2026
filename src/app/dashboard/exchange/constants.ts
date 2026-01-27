@@ -1,4 +1,4 @@
-// Exchange feature constants
+// exchange feature constants. the magic numbers and strings
 
 import type { DeliveryMethodOption } from "./types";
 

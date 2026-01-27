@@ -16,12 +16,12 @@ export async function middleware(request: NextRequest) {
     const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
     const isOnboarding = request.nextUrl.pathname.startsWith("/onboarding");
 
-    // Redirect logged-in users away from auth pages
+    // bruh why are you trying to login when youre already logged in. i-its not like i care or anything
     if (isLoggedIn && isAuthPage) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    // Redirect non-logged-in users to login when accessing dashboard or onboarding
+    // lowkey you cant just waltz into the dashboard without logging in first. ts pmo
     if (!isLoggedIn && (isDashboard || isOnboarding)) {
         return NextResponse.redirect(new URL("/login", request.url));
     }

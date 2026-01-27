@@ -1,4 +1,4 @@
-// Plan feature type definitions
+// plan feature type definitions. scheming types fr
 
 export interface RecommendedCrop {
   cropName: string;

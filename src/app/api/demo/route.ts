@@ -11,7 +11,7 @@ import {
 import { connectMongo } from "@/lib/mongo";
 import { NextResponse } from "next/server";
 
-// POST - Load demo data
+// POST - load demo data. bruh this is just for testing dont use in prod
 export async function POST() {
     try {
         const session = await auth();
@@ -23,7 +23,7 @@ export async function POST() {
 
         const userId = session.user.id;
 
-        // Create demo farm profile and plan
+        // create demo farm profile and plan. lowkey useful for showing off the app
         const demoProfile = await FarmProfile.findOneAndUpdate(
             { userId },
             {
@@ -49,7 +49,7 @@ export async function POST() {
             { upsert: true, new: true }
         );
 
-        // Create demo exchange listings (5 total) with new structure
+        // create demo exchange listings (5 total) with new structure. ts hits different
         const demoListings = [
             {
                 userId,

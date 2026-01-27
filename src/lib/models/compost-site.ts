@@ -6,30 +6,30 @@ export interface ICompostSite extends Document {
     userId: string;
     userName?: string;
     
-    // Site details
+    // site details - bruh gotta know what youre working with
     siteName: string;
     siteEmoji?: string;
     description?: string;
     siteType: CompostSiteType;
     
-    // What they accept
-    acceptsWaste: boolean; // Accept waste from others
-    sellsFertilizer: boolean; // Has fertilizer available
+    // what they accept - lowkey important
+    acceptsWaste: boolean; // accept waste from others
+    sellsFertilizer: boolean; // has fertilizer available. the good stuff
     
-    // Capacity info
-    capacityKg?: number; // Max capacity in kg
-    currentLoadKg?: number; // Current load
+    // capacity info - gotta know your limits
+    capacityKg?: number; // max capacity in kg. know your limits
+    currentLoadKg?: number; // current load. how full you at
     
-    // Contact
+    // contact - slide into dms
     contactInfo?: string;
     
-    // Location
+    // location - where you at
     latitude: number;
     longitude: number;
     locationLabel?: string;
     country?: string;
     
-    // Visibility
+    // visibility - who can see this
     isPublic: boolean;
     isVerified: boolean;
     
@@ -70,7 +70,7 @@ const CompostSiteSchema = new Schema<ICompostSite>(
     { timestamps: true }
 );
 
-// Indexes
+// indexes - gotta go fast
 CompostSiteSchema.index({ latitude: 1, longitude: 1 });
 CompostSiteSchema.index({ country: 1, isPublic: 1 });
 CompostSiteSchema.index({ siteType: 1 });

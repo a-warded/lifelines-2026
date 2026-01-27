@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const STORAGE_KEY = "savedExchangeListings";
 
@@ -13,7 +13,7 @@ interface UseSavedListingsReturn {
 export function useSavedListings(): UseSavedListingsReturn {
     const [savedListings, setSavedListings] = useState<Set<string>>(new Set());
 
-    // Load from localStorage on mount
+    // load from localStorage on mount. checking your bookmarks
     useEffect(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -21,7 +21,7 @@ export function useSavedListings(): UseSavedListingsReturn {
                 setSavedListings(new Set(JSON.parse(saved)));
             }
         } catch {
-            // Ignore parse errors
+            // ignore parse errors. corrupted data who
         }
     }, []);
 
@@ -34,11 +34,11 @@ export function useSavedListings(): UseSavedListingsReturn {
                 newSet.add(listingId);
             }
       
-            // Persist to localStorage
+            // persist to localStorage. saving for later
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify([...newSet]));
             } catch {
-                // Ignore storage errors
+                // ignore storage errors. storage acting up ngl
             }
       
             return newSet;

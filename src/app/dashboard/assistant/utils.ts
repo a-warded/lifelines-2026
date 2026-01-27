@@ -1,6 +1,6 @@
 
 export function getPrompt() {
-    // For caching purposes, any variables should be at the end of the prompt
+    // for caching purposes, any variables should be at the end of the prompt. optimization stuff
     const promptBase = `
     You are Aila, an advanced AI farming assistant integrated into "Fades", a community food supply chain rebuilding platform designed for crisis zones.
     Your role is to assist inexperienced civilians who need to grow their own food quickly and efficiently in challenging environments.
@@ -65,7 +65,7 @@ export function int16ToFloat32(int16Array: Int16Array) {
     return float32Array;
 }
 
-// VAD constants
+// vad constants. voice activity detection magic numbers
 export const VAD_THRESHOLD = 0.01;
 
 export function detectSpeech(inputData: Float32Array) {

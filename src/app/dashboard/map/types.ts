@@ -1,4 +1,4 @@
-// Map feature type definitions
+// map feature type definitions. cartography types or whatever
 
 export interface Farm {
   userId: string;

@@ -53,7 +53,7 @@ const TimelineBlockSchema = new Schema<ITimelineBlock>(
 const PlanSchema = new Schema<IPlan>(
     {
         userId: { type: String, required: true, index: true },
-        // Optional: allows a placeholder plan to exist before onboarding creates a farm profile.
+        // optional: allows a placeholder plan to exist before onboarding creates a farm profile. flexibility king
         farmProfileId: { type: String, required: false },
         recommendedCrops: { type: [RecommendedCropSchema], default: [] },
         timeline: { type: [TimelineBlockSchema], default: [] },

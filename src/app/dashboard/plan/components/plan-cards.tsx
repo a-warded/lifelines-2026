@@ -2,13 +2,13 @@
 
 import { Badge, Button, Card, CardContent } from "@/components/ui";
 import {
+    AlertTriangle,
+    Calendar,
     CheckCircle2,
     Clock,
     Droplets,
     Leaf,
     Plus,
-    AlertTriangle,
-    Calendar,
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
@@ -199,7 +199,7 @@ interface ChecklistCardProps {
   items: string[];
 }
 
-// Legacy checklist item mapping for old database entries
+// legacy checklist item mapping for old database entries. backwards compat gang
 const LEGACY_CHECKLIST_MAP: Record<string, string> = {
     "Find or prepare growing containers/space": "plan.view.checklist.items.findContainers",
     "Ensure adequate drainage": "plan.view.checklist.items.ensureDrainage",
@@ -210,7 +210,7 @@ const LEGACY_CHECKLIST_MAP: Record<string, string> = {
     "Consider salt-flushing or container growing": "plan.view.checklist.items.saltFlushing",
     "Set up water recycling/collection": "plan.view.checklist.items.waterRecycling",
     "Establish water source or collection system": "plan.view.checklist.items.establishWater",
-    // Legacy seed data mappings
+    // legacy seed data mappings. old data compatibility vibes
     "Prepare containers or growing area": "plan.view.checklist.items.findContainers",
     "Test soil pH and salinity": "plan.view.checklist.items.prepareSoil",
     "Set up irrigation system": "plan.view.checklist.items.setupWatering",
@@ -226,17 +226,17 @@ const LEGACY_CHECKLIST_MAP: Record<string, string> = {
 export function ChecklistCard({ items }: ChecklistCardProps) {
     const { t } = useTranslation();
 
-    // Helper to translate checklist items (they are now translation keys)
+    // helper to translate checklist items. theyre translation keys now
     const translateItem = (item: string) => {
-    // Check if it's a translation key
+    // check if its a translation key. is it or nah
         if (item.startsWith("plan.view.checklist.items.")) {
             return t(item);
         }
-        // Check legacy mapping
+        // check legacy mapping. old data check
         if (LEGACY_CHECKLIST_MAP[item]) {
             return t(LEGACY_CHECKLIST_MAP[item]);
         }
-        // Fallback for legacy data
+        // fallback for legacy data. just return it ig
         return item;
     };
 
@@ -264,7 +264,7 @@ interface TimelineCardProps {
   timeline: Plan["timeline"];
 }
 
-// Legacy timeline label mapping
+// legacy timeline label mapping. old labels need love too
 const LEGACY_LABEL_MAP: Record<string, string> = {
     "Today": "plan.view.timeline.today",
     "This Week": "plan.view.timeline.thisWeek",
@@ -272,7 +272,7 @@ const LEGACY_LABEL_MAP: Record<string, string> = {
     "+Week 2": "plan.view.timeline.week2",
 };
 
-// Legacy timeline step mapping
+// legacy timeline step mapping. ancient step data compatibility
 const LEGACY_STEP_MAP: Record<string, string> = {
     "Survey your growing space and note sunlight patterns": "plan.view.timeline.steps.surveySpace",
     "Gather containers with drainage holes": "plan.view.timeline.steps.gatherContainers",
@@ -290,7 +290,7 @@ const LEGACY_STEP_MAP: Record<string, string> = {
     "Add mulch to retain moisture": "plan.view.timeline.steps.addMulch",
     "Connect with local growers through the Exchange feature": "plan.view.timeline.steps.connectGrowers",
     "Keep a simple log of what you plant and when": "plan.view.timeline.steps.keepLog",
-    // Legacy seed data mappings
+    // legacy seed data mappings. old data we still respect
     "Prepare growing containers or beds": "plan.view.timeline.steps.gatherContainers",
     "Check water supply availability": "plan.view.timeline.steps.checkWater",
     "Gather seeds or seedlings from exchange": "plan.view.timeline.steps.surveySpace",
@@ -307,40 +307,40 @@ const LEGACY_STEP_MAP: Record<string, string> = {
 export function TimelineCard({ timeline }: TimelineCardProps) {
     const { t } = useTranslation();
 
-    // Helper to translate timeline labels
+    // helper to translate timeline labels. making them readable
     const translateLabel = (label: string) => {
         if (label.startsWith("plan.view.timeline.")) {
             return t(label);
         }
-        // Check legacy mapping
+        // check legacy mapping. old label check
         if (LEGACY_LABEL_MAP[label]) {
             return t(LEGACY_LABEL_MAP[label]);
         }
-        // Fallback for legacy data
+        // fallback for legacy data. just return it
         return label;
     };
 
-    // Helper to translate timeline steps
+    // helper to translate timeline steps. step by step translation
     const translateStep = (step: string) => {
-    // Check for special format with crops list: "key::crops"
+    // check for special format with crops list. fancy format
         if (step.includes("::")) {
             const [key, crops] = step.split("::");
             return t(key, { crops });
         }
-        // Check if it's a translation key
+        // check if its a translation key. maybe it is
         if (step.startsWith("plan.view.timeline.steps.")) {
             return t(step);
         }
-        // Check legacy mapping
+        // check legacy mapping. old step check
         if (LEGACY_STEP_MAP[step]) {
             return t(LEGACY_STEP_MAP[step]);
         }
-        // Check if it starts with "Obtain seeds" (special case with crop list)
+        // check if it starts with "Obtain seeds". special case with crop list
         if (step.startsWith("Obtain seeds or seedlings for:")) {
             const crops = step.replace("Obtain seeds or seedlings for:", "").trim();
             return t("plan.view.timeline.steps.obtainSeeds", { crops });
         }
-        // Fallback for legacy data
+        // fallback for legacy data. just return it bestie
         return step;
     };
 

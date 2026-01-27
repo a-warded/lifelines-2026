@@ -1,4 +1,4 @@
-// Geolocation utilities for exchange feature
+// lowkey this handles all the location stuff for the exchange feature. dont touch it unless you know what youre doing
 
 export interface GeoLocation {
     latitude: number;
@@ -7,14 +7,14 @@ export interface GeoLocation {
     locationLabel?: string;
 }
 
-// Calculate distance between two points using Haversine formula
+// deadass calculating distance between two points using that goofy ahh haversine formula from math class
 export function calculateDistance(
     lat1: number,
     lon1: number,
     lat2: number,
     lon2: number
 ): number {
-    const R = 6371; // Earth's radius in kilometers
+    const R = 6371; // earths radius in km. dont @ me if this is wrong
     const dLat = toRadians(lat2 - lat1);
     const dLon = toRadians(lon2 - lon1);
     const a =
@@ -31,7 +31,7 @@ function toRadians(degrees: number): number {
     return degrees * (Math.PI / 180);
 }
 
-// Get user's location using browser Geolocation API
+// n-not like i want to know where you are or anything... baka! uses browser geolocation api
 export function getUserLocation(): Promise<GeoLocation> {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
@@ -39,13 +39,13 @@ export function getUserLocation(): Promise<GeoLocation> {
             return;
         }
 
-        // Check if we're in a secure context (required for geolocation on mobile)
+        // gotta check if we're in a secure context cause mobile browsers are lowkey strict about this
         if (typeof window !== 'undefined' && window.isSecureContext === false) {
             reject(new Error("Geolocation requires a secure connection (HTTPS)"));
             return;
         }
 
-        // Mobile browsers need more time and may need high accuracy for initial fix
+        // mobile browsers lowkenuinely need more time and might need high accuracy for initial fix
         const isMobile = typeof navigator !== 'undefined' && 
             /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -57,7 +57,7 @@ export function getUserLocation(): Promise<GeoLocation> {
                 });
             },
             (error) => {
-                // On mobile, try again with lower accuracy if high accuracy fails
+                // bruh on mobile we try again with lower accuracy if high accuracy fails. its not perfect but whatever
                 if (isMobile && error.code === error.TIMEOUT) {
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
@@ -72,7 +72,7 @@ export function getUserLocation(): Promise<GeoLocation> {
                         {
                             enableHighAccuracy: false,
                             timeout: 15000,
-                            maximumAge: 600000, // 10 min cache
+                            maximumAge: 600000, // 10 min cache cause im not tryna spam the gps
                         }
                     );
                     return;
@@ -80,9 +80,9 @@ export function getUserLocation(): Promise<GeoLocation> {
                 handleGeolocationError(error, reject);
             },
             {
-                enableHighAccuracy: isMobile, // Use high accuracy on mobile for better results
-                timeout: isMobile ? 20000 : 10000, // Give mobile more time
-                maximumAge: 300000, // Cache for 5 minutes
+                enableHighAccuracy: isMobile, // use high accuracy on mobile for better results i guess
+                timeout: isMobile ? 20000 : 10000, // give mobile more time cause theyre slow
+                maximumAge: 300000, // cache for 5 minutes, not that you asked
             }
         );
     });
@@ -104,13 +104,13 @@ function handleGeolocationError(error: GeolocationPositionError, reject: (reason
     }
 }
 
-// Reverse geocode to get country from coordinates (using a simple approach)
+// ima get slimed for ts but we're using a simple approach to reverse geocode and get country from coords
 export async function getCountryFromCoords(
     latitude: number,
     longitude: number
 ): Promise<string> {
     try {
-        // Using openstreetmap api for reverse geocoding
+        // using openstreetmap api for reverse geocoding cause google maps costs money bruh
         const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
         );
@@ -122,11 +122,11 @@ export async function getCountryFromCoords(
     } catch {
         console.error("Failed to reverse geocode");
     }
-    return "QA"; // Fallback to Qatar
+    return "QA"; // fallback to qatar cause why not lol
 }
 
-// Reverse geocode to get a detailed location label from coordinates
-export async function getLocationLabel(
+// lowkey gets a detailed location label from coords. i-its not like i worked hard on this or anything
+async function getLocationLabel(
     latitude: number,
     longitude: number
 ): Promise<string> {
@@ -142,30 +142,30 @@ export async function getLocationLabel(
                 // Build a detailed location string
                 const parts: string[] = [];
                 
-                // Add neighborhood/suburb
+                // add neighborhood/suburb
                 if (address.neighbourhood) parts.push(address.neighbourhood);
                 else if (address.suburb) parts.push(address.suburb);
                 
-                // Add city/town/village
+                // add city/town/village whatever
                 if (address.city) parts.push(address.city);
                 else if (address.town) parts.push(address.town);
                 else if (address.village) parts.push(address.village);
                 else if (address.municipality) parts.push(address.municipality);
                 
-                // Add state/region
+                // add state/region i guess
                 if (address.state) parts.push(address.state);
                 else if (address.region) parts.push(address.region);
                 
-                // Add country
+                // add country obviously
                 if (address.country) parts.push(address.country);
                 
                 if (parts.length > 0) {
                     return parts.join(", ");
                 }
             }
-            // Fallback to display_name
+            // fallback to display_name if everything else is bussin
             if (data.display_name) {
-                // Truncate if too long
+                // truncate if too long cause nobody wants to read all that
                 const displayName = data.display_name;
                 if (displayName.length > 60) {
                     return displayName.substring(0, 57) + "...";
@@ -179,7 +179,7 @@ export async function getLocationLabel(
     return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
 }
 
-// Currency symbols by country code
+// currency symbols by country code. deadass had to look all these up
 export const CURRENCY_BY_COUNTRY: Record<string, { code: string; symbol: string }> = {
     US: { code: "USD", symbol: "$" },
     GB: { code: "GBP", symbol: "£" },
@@ -236,7 +236,7 @@ export function formatPrice(amount: number, countryCode: string): string {
     return `${currency.symbol}${amount.toFixed(2)}`;
 }
 
-// Country names for display
+// country names for display. ts pmo having to type all of these
 export const COUNTRY_NAMES: Record<string, string> = {
     QA: "Qatar",
     SD: "Sudan",
@@ -269,8 +269,8 @@ export const COUNTRY_NAMES: Record<string, string> = {
     TR: "Turkey",
     SA: "Saudi Arabia",
     AE: "UAE",
-    IL: "Palestine", // Bro we gonna get slimed by judges if we set this to israel so I changed it to palestine
-    PS: "Palestine", // Same here
+    IL: "Palestine", // bruh ima get slimed for ts but we changed it to palestine
+    PS: "Palestine", // same here dont @ me
     PL: "Poland",
     SE: "Sweden",
     NO: "Norway",
@@ -291,5 +291,5 @@ export function getCountryName(countryCode: string): string {
     return COUNTRY_NAMES[countryCode] || countryCode;
 }
 
-// Max distance for listing visibility in km
+// max distance for listing visibility in km. lowkey might need to adjust this later
 export const MAX_LISTING_DISTANCE_KM = 50;

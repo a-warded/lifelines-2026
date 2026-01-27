@@ -6,7 +6,7 @@ import { connectMongo } from "@/lib/mongo";
 import { getPlantById } from "@/lib/plants";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET - Get current user's farm profile or all public farms
+// GET - get current users farm profile or all public farms. i-its not like i made this for you specifically
 export async function GET(request: NextRequest) {
     try {
         const session = await auth();
@@ -16,14 +16,14 @@ export async function GET(request: NextRequest) {
 
         await connectMongo();
 
-        // Return all public farms (for map)
+        // return all public farms (for map). lowkey cool to see everyone growing stuff
         if (all) {
             const query: Record<string, unknown> = { 
                 isPublic: true,
                 onboardingCompleted: true
             };
 
-            // Optional: filter by map bounds
+            // optional: filter by map bounds. gotta optimize or the map will be goofy ahh slow
             if (bounds) {
                 const [lat1, lng1, lat2, lng2] = bounds.split(",").map(Number);
                 if (!isNaN(lat1) && !isNaN(lng1) && !isNaN(lat2) && !isNaN(lng2)) {
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ farms });
         }
 
-        // Return current user's profile
+        // return current users profile. n-not like i care about your farm or anything
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ profile: null, needsOnboarding: true });
         }
 
-        // Calculate water requirements if the profile has crops
+        // calculate water requirements if the profile has crops. hydration is lowkenuinely important
         let waterCalculation = null;
         if (profile.crops && profile.crops.length > 0) {
             const waterEntries: WaterEntry[] = profile.crops.map((c: { plantId: string; stage: string; count: number }) => ({
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST - Create or update farm profile
+// POST - create or update farm profile. ts hits different when you finally save your data
 export async function POST(request: NextRequest) {
     try {
         const session = await auth();
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
             onboardingCompleted = false,
         } = body;
 
-        // Validate required fields
+        // validate required fields. bruh you gotta fill out the form
         if (!waterAvailability || !soilCondition || !spaceType || !sunlight || !primaryGoal) {
             return NextResponse.json(
                 { error: "Missing required farm details" },
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 
         await connectMongo();
 
-        // Get country from coordinates
+        // get country from coordinates. gotta know where youre farming
         const country = await getCountryFromCoords(latitude, longitude);
 
         const profileData = {
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// PATCH - Update crops and calculate water
+// PATCH - update crops and calculate water. n-not like i care about your plants or anything
 export async function PATCH(request: NextRequest) {
     try {
         const session = await auth();
@@ -176,7 +176,7 @@ export async function PATCH(request: NextRequest) {
 
         await connectMongo();
 
-        // Validate and enrich crop data
+        // validate and enrich crop data. ts pmo when users send bad data
         const validCrops = crops
             .filter((c) => c.plantId && c.count > 0)
             .map((c) => {
@@ -191,7 +191,7 @@ export async function PATCH(request: NextRequest) {
                 };
             });
 
-        // Calculate water requirements
+        // calculate water requirements. hydration check bestie
         const waterEntries: WaterEntry[] = validCrops.map((c) => ({
             plantId: c.plantId,
             stage: c.stage,

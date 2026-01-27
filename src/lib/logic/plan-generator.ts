@@ -1,6 +1,6 @@
-// Plan Generator - Rule Engine MVP
-// Generates farming plans based on user constraints
-// Uses central plant database
+// plan generator - rule engine mvp. lowkey the most goofy ahh code ive ever written
+// generates farming plans based on user constraints
+// uses central plant database cause im organized like that
 
 import { IFarmProfile } from "../models/farm-profile";
 import { IRecommendedCrop, ITimelineBlock } from "../models/plan";
@@ -29,7 +29,7 @@ interface CropScore {
     reasons: string[];
 }
 
-// Map profile values to plant data values
+// map profile values to plant data values. n-not like this took forever to figure out or anything
 const WATER_AVAILABILITY_MAP: Record<string, number> = {
     none: 0,
     low: 1,
@@ -279,7 +279,7 @@ function estimateWaterUsage(crops: IRecommendedCrop[]): number {
             total += plant.waterByStage.seedling * 1; // 1 plant per crop
         }
     }
-    return Math.round(total * 100) / 100; // Round to 2 decimals for consistency
+    return Math.round(total * 100) / 100; // round to 2 decimals. clean numbers only
 }
 
 function generateFallbackNotes(profile: IFarmProfile): string {

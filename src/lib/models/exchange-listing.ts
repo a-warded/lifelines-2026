@@ -10,33 +10,33 @@ export interface IExchangeListing extends Document {
     userId: string;
     userName?: string;
     
-    // What they're listing
+    // what theyre listing - lowkey important info
     type: ListingType;
-    plantId?: string; // Reference to plant from central database
+    plantId?: string; // reference to plant from central database. the plant link
     title: string;
     description: string;
     quantity?: string; // Free-form: "50 seeds", "2 kg", etc.
     imageUrl?: string; // Optional image URL for the listing
     
-    // Mode: offering something or looking for something
+    // mode: offering something or looking for something. sharing is caring or whatever
     mode: ListingMode;
     
-    // Deal type
+    // deal type - whats the vibe
     dealType: DealType;
-    price?: number; // Only for dealType === "price"
+    price?: number; // only for dealType === "price". show me the money
     currencyCountry?: string; // ISO country code for currency display
     tradeItems?: string[]; // Items wanted in exchange for dealType === "trade"
     
-    // Delivery method
+    // delivery method - how you gonna get it there bestie
     deliveryMethod?: DeliveryMethod;
     
-    // Location
+    // location - bruh where you at
     latitude?: number;
     longitude?: number;
     country: string; // ISO country code
     locationLabel?: string; // Human-readable location
     
-    // Status
+    // status - whats the situation
     status: ListingStatus;
     
     createdAt: Date;
@@ -94,7 +94,7 @@ const ExchangeListingSchema = new Schema<IExchangeListing>(
     { timestamps: true }
 );
 
-// Indexes for efficient querying
+// indexes for efficient querying. gotta go fast bestie
 ExchangeListingSchema.index({ type: 1, status: 1 });
 ExchangeListingSchema.index({ country: 1, status: 1 });
 ExchangeListingSchema.index({ latitude: 1, longitude: 1 });
