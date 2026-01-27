@@ -1,11 +1,16 @@
 import { I18nProvider } from "@/components/providers/i18n-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Arabic } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Arabic, Sora } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
+    subsets: ["latin"],
+});
+
+const sora = Sora({
+    variable: "--font-sora",
     subsets: ["latin"],
 });
 
@@ -40,7 +45,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} ${notoSansArabic.variable} antialiased`}
+                className={`${sora.variable} ${geistSans.variable} ${geistMono.variable} ${notoSansArabic.variable} antialiased`}
             >
                 <SessionProvider>
                     <I18nProvider>{children}</I18nProvider>
