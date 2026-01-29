@@ -115,6 +115,9 @@ export default function ForumPage() {
                 </p>
             </header>
 
+            {/* Seed to Seed visualizer - above posts */}
+            <JourneyVisualizer t={t} />
+
             <div className="grid gap-6 lg:grid-cols-[1fr,300px]">
                 {/* Main Content */}
                 <main className="space-y-5">
@@ -224,9 +227,6 @@ export default function ForumPage() {
 
                 {/* Sidebar */}
                 <aside className={`hidden lg:block space-y-4 ${isRTL ? "order-first" : ""}`}>
-                    {/* Seed to Seed visualizer */}
-                    <JourneyVisualizer t={t} />
-
                     {/* Desktop filters */}
                     <div className="rounded-lg border border-border/50 p-4 space-y-4">
                         <h3 className="font-semibold text-sm text-foreground">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Sprout, Recycle } from "lucide-react";
+import { Sprout, Sun, Apple, Recycle } from "lucide-react";
 import type { TranslateFunction } from "../types";
 
 interface JourneyVisualizerProps {
@@ -9,50 +9,55 @@ interface JourneyVisualizerProps {
 
 export function JourneyVisualizer({ t }: JourneyVisualizerProps) {
     const stages = [
-        { id: "seed", label: t("forum.journey.seed", "Seed"), icon: Sprout },
-        { id: "growing", label: t("forum.journey.growing", "Growing"), icon: Sprout },
-        { id: "harvest", label: t("forum.journey.harvest", "Harvest"), icon: Sprout },
-        { id: "compost", label: t("forum.journey.compost", "Compost"), icon: Recycle },
+        { id: "seed", label: t("forum.journey.seed", "Seed"), number: "01", icon: Sprout },
+        { id: "growing", label: t("forum.journey.growing", "Grow"), number: "02", icon: Sun },
+        { id: "harvest", label: t("forum.journey.harvest", "Harvest"), number: "03", icon: Apple },
+        { id: "compost", label: t("forum.journey.compost", "Return"), number: "04", icon: Recycle },
     ];
 
     return (
-        <div className="rounded-lg border border-border/50 p-4 bg-gradient-to-br from-green-50/50 to-amber-50/50 dark:from-green-950/20 dark:to-amber-950/20">
-            <div className="flex items-center gap-2 mb-3">
-                <Recycle className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-sm text-foreground">
+        <div className="rounded-lg border border-border bg-card p-5">
+            {/* Header */}
+            <div className="mb-5">
+                <h3 className="text-sm font-semibold text-foreground tracking-tight">
                     {t("forum.seedToSeed.title", "Seed to Seed")}
                 </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                    {t("forum.seedToSeed.description", "The complete cycle of sustainable farming.")}
+                </p>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">
-                {t("forum.seedToSeed.description", "The complete cycle of sustainable farming. Every ending is a new beginning.")}
-            </p>
             
-            {/* Circular journey visualization */}
+            {/* Steps */}
             <div className="relative">
-                <div className="flex items-center justify-between">
-                    {stages.map((stage, index) => (
-                        <div key={stage.id} className="flex flex-col items-center relative">
-                            <div className="w-10 h-10 rounded-full bg-card border-2 border-primary/30 flex items-center justify-center">
-                                <stage.icon className="w-5 h-5 text-primary" />
+                {/* Connecting line */}
+                <div className="absolute top-4 left-6 right-6 h-px bg-border" />
+                
+                <div className="relative flex justify-between">
+                    {stages.map((stage) => (
+                        <div key={stage.id} className="flex flex-col items-center">
+                            {/* Step indicator */}
+                            <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center relative z-10">
+                                <stage.icon className="w-4 h-4 text-primary" strokeWidth={1.5} />
                             </div>
-                            <span className="text-xs text-muted-foreground mt-1.5">{stage.label}</span>
                             
-                            {/* Arrow to next */}
-                            {index < stages.length - 1 && (
-                                <div className="absolute top-5 left-full w-full h-0.5 bg-gradient-to-r from-primary/30 to-primary/10 -translate-y-1/2" 
-                                    style={{ width: "calc(100% - 40px)", marginLeft: "20px" }}
-                                />
-                            )}
+                            {/* Label */}
+                            <div className="mt-2 text-center">
+                                <span className="text-[10px] text-muted-foreground/60 font-medium block">
+                                    {stage.number}
+                                </span>
+                                <span className="text-xs text-foreground font-medium">
+                                    {stage.label}
+                                </span>
+                            </div>
                         </div>
                     ))}
                 </div>
                 
-                {/* Return arrow */}
-                <div className="flex justify-center mt-3">
-                    <div className="flex items-center gap-1 text-xs text-primary">
-                        <Sprout className="w-3 h-3" />
-                        <span>{t("forum.seedToSeed.cycle", "And the cycle continues...")}</span>
-                    </div>
+                {/* Cycle indicator */}
+                <div className="mt-4 pt-3 border-t border-dashed border-border/60">
+                    <p className="text-[11px] text-muted-foreground text-center">
+                        {t("forum.seedToSeed.cycle", "Every harvest returns to seed")}
+                    </p>
                 </div>
             </div>
         </div>
