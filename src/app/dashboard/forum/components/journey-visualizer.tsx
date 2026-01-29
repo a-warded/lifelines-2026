@@ -12,7 +12,7 @@ export function JourneyVisualizer({ t }: JourneyVisualizerProps) {
         { id: "seed", label: t("forum.journey.seed", "Seed"), number: "01", icon: Sprout },
         { id: "growing", label: t("forum.journey.growing", "Grow"), number: "02", icon: Sun },
         { id: "harvest", label: t("forum.journey.harvest", "Harvest"), number: "03", icon: Apple },
-        { id: "compost", label: t("forum.journey.compost", "Return"), number: "04", icon: Recycle },
+        { id: "compost", label: t("forum.journey.compost", "Organic Compost"), number: "04", icon: Recycle },
     ];
 
     return (
@@ -29,8 +29,8 @@ export function JourneyVisualizer({ t }: JourneyVisualizerProps) {
             
             {/* Steps */}
             <div className="relative">
-                {/* Connecting line */}
-                <div className="absolute top-4 left-6 right-6 h-px bg-border" />
+                {/* Connecting line - exactly between icon centers */}
+                <div className="absolute top-4 left-10 right-10 h-px bg-border" />
                 
                 <div className="relative flex justify-between">
                     {stages.map((stage) => (
