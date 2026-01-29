@@ -2,12 +2,14 @@
 
 import { PhoneOff } from "lucide-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import CallAvatar from "@/components/ui/call-avatar";
 import { CameraPreview, ControlButton } from "./components";
 import { useCamera, useRealtimeAudio } from "./hooks";
 
 export default function AilaRealtimeAssistant() {
+    const { t } = useTranslation();
     const audio = useRealtimeAudio();
     const camera = useCamera({ getWebSocket: audio.getWebSocket });
 
@@ -52,8 +54,8 @@ export default function AilaRealtimeAssistant() {
 
             {audio.isMuted && (
                 <div className="mt-4 text-center text-white bg-foreground/40  px-4 py-2 rounded-lg">
-                    <p className="font-bold">AI Farming Assistant</p>
-                    <p className="text-sm">Press the mic button to start talking</p>
+                    <p className="font-bold">{t("assistant.realtime.title", "AI Farming Assistant")}</p>
+                    <p className="text-sm">{t("assistant.realtime.pressToTalk", "Press the microphone button to start talking")}</p>
                 </div>
             )}
 

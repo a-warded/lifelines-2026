@@ -134,6 +134,13 @@
             "regenerate": "Generate a new farming plan",
             "addCrops": "Add Crops"
         },
+        "waterSummary": {
+            "title": "Daily Water Need",
+            "crops": "{{count}} crop",
+            "crops_other": "{{count}} crops",
+            "plants": "{{count}} plant",
+            "plants_other": "{{count}} plants"
+        },
         "getStarted": {
             "title": "Ready to Start Growing?",
             "description": "Create your personalized farming plan based on your space, water access, and goals.",
@@ -497,6 +504,10 @@
             "welcome": "Hello! I'm your farming assistant. Ask me anything about growing food, dealing with pests, saving water, or getting started. You can type or use your voice!",
             "thinking": "Let me think...",
             "error": "Sorry, I couldn't process that. Please try again."
+        },
+        "realtime": {
+            "title": "AI Farming Assistant",
+            "pressToTalk": "Press the microphone button to start talking"
         }
     },
     "plants": {

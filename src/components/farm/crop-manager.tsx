@@ -200,7 +200,7 @@ export function CropManager({
 
                                             {waterInfo && (
                                                 <span className="shrink-0 text-sm font-medium text-blue-600 dark:text-blue-400">
-                                                    💧 {waterInfo.totalLiters.toFixed(1)}L/{t("common.day", "day")}
+                                                    💧 {waterInfo.totalLiters.toFixed(2)}L/{t("common.day", "day")}
                                                 </span>
                                             )}
                                         </div>

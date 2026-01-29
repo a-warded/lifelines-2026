@@ -328,7 +328,7 @@ export default function DashboardPage() {
                                       </div>
                                       <div>
                                           <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                                        Daily Water Need
+                                              {t("dashboard.waterSummary.title")}
                                           </p>
                                           <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
                                               {waterCalculation.totalDailyLiters.toFixed(2)}L
@@ -337,10 +337,10 @@ export default function DashboardPage() {
                                   </div>
                                   <div className="text-right">
                                       <p className="text-xs text-blue-600 dark:text-blue-400">
-                                          {farmProfile?.crops.length} crop{farmProfile?.crops.length !== 1 && "s"}
+                                          {t("dashboard.waterSummary.crops", { count: farmProfile?.crops.length || 0 })}
                                       </p>
                                       <p className="text-xs text-blue-600 dark:text-blue-400">
-                                          {farmProfile?.crops.reduce((sum, c) => sum + c.count, 0)} plants
+                                          {t("dashboard.waterSummary.plants", { count: farmProfile?.crops.reduce((sum, c) => sum + c.count, 0) || 0 })}
                                       </p>
                                   </div>
                               </div>
