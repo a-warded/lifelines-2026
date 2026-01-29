@@ -1,4 +1,4 @@
-import { MessageCircle, Recycle, RefreshCw } from "lucide-react";
+import { Leaf, MessageCircle, Recycle, RefreshCw } from "lucide-react";
 import type { TranslateFunction, QuickActionFeature, PlanFormData } from "./types";
 
 export const DEFAULT_PLAN_FORM: PlanFormData = {
@@ -18,6 +18,16 @@ export function getQuickActions(t: TranslateFunction): QuickActionFeature[] {
             href: "/dashboard/exchange",
             icon: RefreshCw,
             color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+        },
+        {
+            title: t("dashboard.features.forum.title", "Farmers' Forum"),
+            description: t(
+                "dashboard.features.forum.description",
+                "Share sustainability tips with fellow farmers"
+            ),
+            href: "/dashboard/forum",
+            icon: Leaf,
+            color: "bg-lime-100 text-lime-700 dark:bg-lime-900 dark:text-lime-300",
         },
         {
             title: t("dashboard.features.compost.title", "Waste to Fertilizer"),

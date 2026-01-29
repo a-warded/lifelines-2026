@@ -44,6 +44,7 @@
         "plan": "Farming Plan",
         "newPlan": "Get Farming Plan",
         "exchange": "Exchange",
+        "forum": "Farmers' Forum",
         "compost": "Composting",
         "map": "Community Map",
         "water": "Water Calculator",
@@ -107,6 +108,10 @@
             "exchange": {
                 "title": "Exchange Seeds & Surplus",
                 "description": "Share and find resources in your community"
+            },
+            "forum": {
+                "title": "Farmers' Forum",
+                "description": "Share sustainability tips with fellow farmers"
             },
             "compost": {
                 "title": "Waste to Fertilizer",
@@ -822,5 +827,88 @@
         "title": "Language",
         "english": "English",
         "arabic": "العربية"
+    },
+    "forum": {
+        "title": "Farmers' Forum",
+        "subtitle": "Share wisdom, reduce waste. From seed to seed, we grow together.",
+        "shareStory": "Share Your Story",
+        "filterPosts": "Filter Posts",
+        "pinned": "Pinned",
+        "verified": "Verified Practice",
+        "likes": "likes",
+        "comments": "comments",
+        "commentsSection": "Discussion",
+        "commentPlaceholder": "Share your thoughts...",
+        "signInToComment": "Sign in to join the discussion",
+        "noComments": "No comments yet. Start the discussion!",
+        "categories": {
+            "all": "All Topics",
+            "composting": "Composting",
+            "waterSaving": "Water Saving",
+            "seedSaving": "Seed Saving",
+            "cropRotation": "Crop Rotation",
+            "organic": "Organic Methods",
+            "zeroWaste": "Zero Waste",
+            "general": "General"
+        },
+        "journey": {
+            "seed": "Seed",
+            "growing": "Growing",
+            "harvest": "Harvest",
+            "compost": "Compost",
+            "fullCycle": "Full Cycle"
+        },
+        "filters": {
+            "topic": "Topic",
+            "journeyStage": "Seed-to-Seed Journey"
+        },
+        "seedToSeed": {
+            "title": "Seed to Seed",
+            "description": "The complete cycle of sustainable farming. Every ending is a new beginning.",
+            "cycle": "And the cycle continues..."
+        },
+        "community": {
+            "title": "Community Impact",
+            "posts": "Stories shared",
+            "motto": "Every tip shared is waste prevented. Keep growing!"
+        },
+        "empty": {
+            "title": "Be the first to share",
+            "description": "No posts yet in this category. Share your sustainable farming wisdom with the community!"
+        },
+        "time": {
+            "justNow": "just now",
+            "minsAgo": "{{count}}m ago",
+            "hoursAgo": "{{count}}h ago",
+            "daysAgo": "{{count}}d ago"
+        },
+        "create": {
+            "title": "Share Your Wisdom",
+            "intro": "Help fellow farmers reduce waste and grow sustainably. What have you learned on your journey from seed back to seed?",
+            "titleLabel": "Title",
+            "titlePlaceholder": "e.g., How I cut water usage by 40% with mulching",
+            "contentLabel": "Your Story",
+            "contentPlaceholder": "Share your experience, tips, and what worked for your farm...",
+            "categoryLabel": "Topic",
+            "journeyLabel": "Part of the Cycle",
+            "journeyHint": "Where in the seed-to-seed journey does this tip apply?",
+            "imageLabel": "Image URL",
+            "submit": "Share with Community"
+        },
+        "edit": {
+            "title": "Edit Your Post",
+            "intro": "Update your story or fix any details you'd like to change.",
+            "button": "Edit",
+            "submit": "Save Changes"
+        },
+        "delete": {
+            "title": "Delete Post",
+            "button": "Delete",
+            "confirm": "Are you sure you want to delete this post? This action cannot be undone."
+        },
+        "actions": "Post actions",
+        "richText": {
+            "markdownHint": "Markdown supported: **bold**, *italic*, ## headers, [links](url)"
+        }
     }
 }

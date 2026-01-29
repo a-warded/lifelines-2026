@@ -2,6 +2,7 @@
 
 import {
     LayoutDashboard,
+    Leaf,
     LogOut,
     Menu,
     Recycle,
@@ -28,6 +29,7 @@ export function Sidebar() {
     const navItems = [
         { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
         { href: "/dashboard/exchange", label: t("nav.exchange"), icon: RefreshCw },
+        { href: "/dashboard/forum", label: t("nav.forum", "Farmers' Forum"), icon: Leaf },
         { href: "/dashboard/compost", label: t("nav.compost", "Composting"), icon: Recycle },
         { href: "/dashboard/profile", label: t("nav.profile"), icon: User },
     ];
@@ -66,18 +68,20 @@ export function Sidebar() {
                         <Link href="/" className="flex items-center gap-2">
                             <FadesLogo className="h-14 w-14" fill="var(--primary)" />
                             
-                            <SplitText
-                                text="FADES"
-                                className="text-3xl fades-font mt-1 font-semibold text-center  text-primary"
-                                duration={1.25}
-                                ease="power3.out"
-                                splitType="chars"
-                                from={{ opacity: 0, y: 40 }}
-                                to={{ opacity: 1, y: 0 }}
-                                threshold={0.1}
-                                rootMargin="-100px"
-                                textAlign="center"
-                            />
+                            <div dir="ltr">
+                                <SplitText
+                                    text="FADES"
+                                    className="text-3xl fades-font mt-1 font-semibold text-center text-primary"
+                                    duration={1.25}
+                                    ease="power3.out"
+                                    splitType="chars"
+                                    from={{ opacity: 0, y: 40 }}
+                                    to={{ opacity: 1, y: 0 }}
+                                    threshold={0.1}
+                                    rootMargin="-100px"
+                                    textAlign="center"
+                                />
+                            </div>
 
                         </Link>
                     </div>
