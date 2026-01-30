@@ -1,6 +1,7 @@
 "use client";
 
 import type { GeoLocation } from "@/lib/geo";
+import { addToOfflineQueue, getFromCache, setToCache } from "@/lib/offline-storage";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_CREATE_FORM } from "../constants";
 import type { CreateListingForm, ExchangeFilters, Listing } from "../types";
@@ -30,17 +31,34 @@ interface UseExchangeListingsReturn {
   filteredListings: Listing[];
   pagination: Pagination;
   setPage: (page: number) => void;
+  isOffline: boolean;
+  isCached: boolean;
 }
+
+// Cache key generator for exchange listings
+const getExchangeCacheKey = (filters: ExchangeFilters, page: number) =>
+    `exchange_listings_${filters.type || "all"}_${filters.mode || "all"}_${page}`;
+
+// Helper to get initial cached exchange data
+const getInitialExchangeCache = () => {
+    if (typeof window === 'undefined') return null;
+    const defaultFilters: ExchangeFilters = { type: "", status: "", mode: "", delivery: "", searchQuery: "" };
+    const cacheKey = getExchangeCacheKey(defaultFilters, 1);
+    return getFromCache<{ listings: Listing[]; pagination: Pagination }>(cacheKey);
+};
 
 export function useExchangeListings({ 
     userCountry, 
     userLocation,
     isLocationReady,
 }: UseExchangeListingsOptions): UseExchangeListingsReturn {
+    // Initialize empty, will load from cache in useEffect
     const [listings, setListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [isOffline, setIsOffline] = useState(false);
+    const [isCached, setIsCached] = useState(false);
     const [pagination, setPagination] = useState<Pagination>({
         page: 1,
         limit: 12,
@@ -55,6 +73,17 @@ export function useExchangeListings({
         delivery: "",
         searchQuery: "",
     });
+    
+    // Load from cache on client mount
+    useEffect(() => {
+        const cached = getInitialExchangeCache();
+        if (cached) {
+            setListings(cached.listings || []);
+            setPagination(cached.pagination);
+            setIsCached(true);
+        }
+        setIsOffline(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+    }, []);
   
     // use refs to track fetch state and prevent race conditions. no data races on my watch
     const fetchIdRef = useRef(0);
@@ -85,6 +114,7 @@ export function useExchangeListings({
 
     const fetchListings = useCallback(async () => {
         const fetchId = ++fetchIdRef.current;
+        const cacheKey = getExchangeCacheKey(filters, currentPage);
     
         // only show loading on initial fetch, not on refetch. lowkey ux improvement
         if (!hasFetchedRef.current) {
@@ -124,11 +154,28 @@ export function useExchangeListings({
             if (data.pagination) {
                 setPagination(data.pagination);
             }
+            setIsCached(false);
+            setIsOffline(false);
             hasFetchedRef.current = true;
+            
+            // Cache the response for offline use
+            setToCache(cacheKey, { listings: data.listings, pagination: data.pagination });
         } catch (err) {
             // only set error if this is still the latest fetch. relevant errors only
             if (fetchId === fetchIdRef.current) {
-                setError(err instanceof Error ? err.message : "Failed to load listings");
+                // Try to load from cache when offline
+                const cached = getFromCache<{ listings: Listing[]; pagination: Pagination }>(cacheKey);
+                if (cached) {
+                    setListings(cached.listings || []);
+                    if (cached.pagination) {
+                        setPagination(cached.pagination);
+                    }
+                    setIsCached(true);
+                    setError("");
+                } else {
+                    setError(err instanceof Error ? err.message : "Failed to load listings");
+                }
+                setIsOffline(!navigator.onLine);
             }
         } finally {
             // only update loading if this is still the latest fetch. staying current
@@ -136,7 +183,7 @@ export function useExchangeListings({
                 setLoading(false);
             }
         }
-    }, [userLocation, filters.type, filters.status, filters.mode, currentPage]);
+    }, [userLocation, filters, currentPage]);
 
     // fetch on mount and when dependencies change, but only after location is ready. patience
     useEffect(() => {
@@ -144,6 +191,25 @@ export function useExchangeListings({
             fetchListings();
         }
     }, [fetchListings, isLocationReady]);
+
+    // Refetch when coming back online
+    useEffect(() => {
+        const handleOnline = () => {
+            setIsOffline(false);
+            if (isCached && isLocationReady) {
+                fetchListings();
+            }
+        };
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+            window.removeEventListener("offline", handleOffline);
+        };
+    }, [fetchListings, isCached, isLocationReady]);
 
     // client-side filtering for delivery method and search. frontend filter gang
     const filteredListings = useMemo(() => {
@@ -178,6 +244,8 @@ export function useExchangeListings({
         filteredListings,
         pagination,
         setPage,
+        isOffline,
+        isCached,
     };
 }
 

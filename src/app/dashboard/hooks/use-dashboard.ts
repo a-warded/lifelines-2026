@@ -1,6 +1,6 @@
 "use client";
 
-import { cachePlan, getCachedPlan } from "@/lib/offline-storage";
+import { cachePlan, cacheWaterCalculation, getCachedPlan, getCachedWaterCalculation, getFromCache, setToCache } from "@/lib/offline-storage";
 import { getPlantByName } from "@/lib/plants";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -13,13 +13,38 @@ import type {
     WaterCalculation,
 } from "../types";
 
+// Cache keys for offline storage
+const CACHE_KEYS = {
+    FARM_PROFILE: "cache_farm_profile",
+    ALL_FARMS: "cache_all_farms",
+} as const;
+
 export function useDashboardData() {
     const router = useRouter();
+    // Initialize empty, will load from cache in useEffect
     const [latestPlan, setLatestPlan] = useState<PlanPreview | null>(null);
     const [farmProfile, setFarmProfile] = useState<FarmProfile | null>(null);
     const [allFarms, setAllFarms] = useState<FarmProfile[]>([]);
     const [waterCalculation, setWaterCalculation] = useState<WaterCalculation | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isOffline, setIsOffline] = useState(false);
+    const [isCached, setIsCached] = useState(false);
+    
+    // Load from cache on client mount
+    useEffect(() => {
+        const cachedPlan = getCachedPlan<PlanPreview>();
+        const cachedProfile = getFromCache<FarmProfile>(CACHE_KEYS.FARM_PROFILE);
+        const cachedFarms = getFromCache<FarmProfile[]>(CACHE_KEYS.ALL_FARMS);
+        const cachedWater = getCachedWaterCalculation<WaterCalculation>();
+        
+        if (cachedPlan) setLatestPlan(cachedPlan);
+        if (cachedProfile) setFarmProfile(cachedProfile);
+        if (cachedFarms) setAllFarms(cachedFarms);
+        if (cachedWater) setWaterCalculation(cachedWater);
+        
+        setIsCached(!!(cachedPlan || cachedProfile));
+        setIsOffline(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+    }, []);
 
     const fetchLatestPlan = useCallback(async () => {
         try {
@@ -29,13 +54,16 @@ export function useDashboardData() {
                 if (data.plan) {
                     setLatestPlan(data.plan);
                     cachePlan(data.plan);
+                    setIsCached(false);
                 }
             }
         } catch {
             const cached = getCachedPlan<PlanPreview>();
             if (cached) {
                 setLatestPlan(cached);
+                setIsCached(true);
             }
+            setIsOffline(!navigator.onLine);
         }
     }, []);
 
@@ -49,12 +77,26 @@ export function useDashboardData() {
                     return;
                 }
                 setFarmProfile(data.profile);
+                setToCache(CACHE_KEYS.FARM_PROFILE, data.profile);
                 if (data.waterCalculation) {
                     setWaterCalculation(data.waterCalculation);
+                    cacheWaterCalculation(data.waterCalculation);
                 }
+                setIsCached(false);
             }
         } catch (error) {
             console.error("Failed to fetch farm profile:", error);
+            // Try to load from cache
+            const cachedProfile = getFromCache<FarmProfile>(CACHE_KEYS.FARM_PROFILE);
+            if (cachedProfile) {
+                setFarmProfile(cachedProfile);
+                setIsCached(true);
+            }
+            const cachedWater = getCachedWaterCalculation<WaterCalculation>();
+            if (cachedWater) {
+                setWaterCalculation(cachedWater);
+            }
+            setIsOffline(!navigator.onLine);
         }
     }, [router]);
 
@@ -64,9 +106,17 @@ export function useDashboardData() {
             if (res.ok) {
                 const data = await res.json();
                 setAllFarms(data.farms || []);
+                setToCache(CACHE_KEYS.ALL_FARMS, data.farms || []);
             }
         } catch (error) {
             console.error("Failed to fetch farms:", error);
+            // Try to load from cache
+            const cachedFarms = getFromCache<FarmProfile[]>(CACHE_KEYS.ALL_FARMS);
+            if (cachedFarms) {
+                setAllFarms(cachedFarms);
+                setIsCached(true);
+            }
+            setIsOffline(!navigator.onLine);
         }
     }, []);
 
@@ -74,6 +124,24 @@ export function useDashboardData() {
         Promise.all([fetchLatestPlan(), fetchFarmProfile(), fetchAllFarms()]).finally(() => {
             setLoading(false);
         });
+    }, [fetchLatestPlan, fetchFarmProfile, fetchAllFarms]);
+
+    // Refetch when coming back online
+    useEffect(() => {
+        const handleOnline = () => {
+            setIsOffline(false);
+            // Refetch data when back online
+            Promise.all([fetchLatestPlan(), fetchFarmProfile(), fetchAllFarms()]);
+        };
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+            window.removeEventListener("offline", handleOffline);
+        };
     }, [fetchLatestPlan, fetchFarmProfile, fetchAllFarms]);
 
     const refreshPlan = fetchLatestPlan;
@@ -88,6 +156,8 @@ export function useDashboardData() {
         waterCalculation,
         setWaterCalculation,
         loading,
+        isOffline,
+        isCached,
         refreshPlan,
         refreshFarms,
     };

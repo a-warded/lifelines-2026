@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { FadesLogo } from "../fades-logo";
 import SplitText from "../SplitText";
 import { LanguageSwitcher } from "./language-switcher";
+import { NetworkStatusIndicator } from "./network-status-indicator";
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -118,8 +119,13 @@ export function Sidebar() {
                     {/* User section */}
                     <div className="border-t border-sidebar-border p-4">
                         {/* Language switcher - above user info */}
-                        <div className="mb-3">
+                        <div className="mb-2">
                             <LanguageSwitcher />
+                        </div>
+                        
+                        {/* Network status indicator - live online/offline status */}
+                        <div className="mb-3">
+                            <NetworkStatusIndicator />
                         </div>
                         
                         {session?.user && (

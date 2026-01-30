@@ -1,5 +1,6 @@
 export { Badge } from "./badge";
 export { Button } from "./button";
+export { CachedDataIndicator } from "./cached-data-indicator";
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
 export { Input } from "./input";
 export { Modal } from "./modal";

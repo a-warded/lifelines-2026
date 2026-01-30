@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { addToOfflineQueue, getFromCache, setToCache } from "@/lib/offline-storage";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { ForumPost, PostCategory, JourneyStage } from "../types";
 
 interface UseForumPostsOptions {
@@ -14,22 +15,72 @@ interface Pagination {
     totalPages: number;
 }
 
+// Cache key generator for forum posts
+const getForumCacheKey = (category: string, journeyStage: string | null, searchQuery: string, page: number) =>
+    `forum_posts_${category}_${journeyStage || "all"}_${searchQuery || ""}_${page}`;
+
+// Helper to get initial cached forum data
+const getInitialForumCache = (category: PostCategory | "all") => {
+    if (typeof window === 'undefined') return null;
+    const cacheKey = getForumCacheKey(category, null, "", 1);
+    return getFromCache<{ posts: ForumPost[]; pagination: Pagination }>(cacheKey);
+};
+
 export function useForumPosts(options: UseForumPostsOptions = {}) {
+    const initialCategory = options.initialCategory || "all";
+    
+    // Initialize empty, will load from cache in useEffect
     const [posts, setPosts] = useState<ForumPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [category, setCategory] = useState<PostCategory | "all">(options.initialCategory || "all");
+    const [category, setCategory] = useState<PostCategory | "all">(initialCategory);
     const [journeyStage, setJourneyStage] = useState<JourneyStage | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
     const [pagination, setPagination] = useState<Pagination>({
         page: 1,
-        limit: 20,
+        limit: 21,
         total: 0,
         totalPages: 0,
     });
+    const [isOffline, setIsOffline] = useState(false);
+    const [isCached, setIsCached] = useState(false);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    
+    // Debounce search query - wait 300ms after user stops typing
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+    
+    // Load from cache on client mount - show cached data immediately
+    useEffect(() => {
+        const cached = getInitialForumCache(initialCategory);
+        if (cached) {
+            setPosts(cached.posts || []);
+            setPagination(cached.pagination);
+            setIsCached(true);
+            setLoading(false); // Don't show loading if we have cached data
+        }
+        setIsOffline(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+    }, [initialCategory]);
 
-    const fetchPosts = useCallback(async (page = 1) => {
-        setLoading(true);
+    const fetchPosts = useCallback(async (page = 1, showLoading = true) => {
+        // Cancel any in-flight request
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        abortControllerRef.current = new AbortController();
+        
+        // Only show loading spinner if we don't have cached data
+        if (showLoading && posts.length === 0) {
+            setLoading(true);
+        }
         setError(null);
+        
+        const cacheKey = getForumCacheKey(category, journeyStage, debouncedSearchQuery, page);
         
         try {
             const params = new URLSearchParams({
@@ -43,31 +94,74 @@ export function useForumPosts(options: UseForumPostsOptions = {}) {
             if (journeyStage) {
                 params.set("journeyStage", journeyStage);
             }
+            if (debouncedSearchQuery.trim()) {
+                params.set("search", debouncedSearchQuery.trim());
+            }
             
-            const response = await fetch(`/api/forum?${params}`);
+            const response = await fetch(`/api/forum?${params}`, {
+                signal: abortControllerRef.current.signal,
+            });
             if (!response.ok) throw new Error("Failed to fetch posts");
             
             const data = await response.json();
             setPosts(data.posts);
             setPagination(data.pagination);
+            setIsCached(false);
+            setIsOffline(false);
+            
+            // Cache the response
+            setToCache(cacheKey, { posts: data.posts, pagination: data.pagination });
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Something went wrong");
+            // Ignore abort errors
+            if (err instanceof Error && err.name === 'AbortError') return;
+            
+            // Try to load from cache
+            const cached = getFromCache<{ posts: ForumPost[]; pagination: Pagination }>(cacheKey);
+            if (cached) {
+                setPosts(cached.posts);
+                setPagination(cached.pagination);
+                setIsCached(true);
+                setError(null);
+            } else {
+                setError(err instanceof Error ? err.message : "Something went wrong");
+            }
+            setIsOffline(!navigator.onLine);
         } finally {
             setLoading(false);
         }
-    }, [category, journeyStage, pagination.limit]);
+    }, [category, journeyStage, debouncedSearchQuery, pagination.limit, posts.length]);
 
     const refetch = useCallback(() => {
-        fetchPosts(pagination.page);
+        fetchPosts(pagination.page, false);
     }, [fetchPosts, pagination.page]);
 
     const setPage = useCallback((page: number) => {
         fetchPosts(page);
     }, [fetchPosts]);
 
+    // Fetch when filters change (using debounced search)
     useEffect(() => {
         fetchPosts(1);
-    }, [category, journeyStage]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [category, journeyStage, debouncedSearchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Refetch when coming back online
+    useEffect(() => {
+        const handleOnline = () => {
+            setIsOffline(false);
+            if (isCached) {
+                fetchPosts(pagination.page);
+            }
+        };
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+            window.removeEventListener("offline", handleOffline);
+        };
+    }, [fetchPosts, pagination.page, isCached]);
 
     return {
         posts,
@@ -77,15 +171,20 @@ export function useForumPosts(options: UseForumPostsOptions = {}) {
         setCategory,
         journeyStage,
         setJourneyStage,
+        searchQuery,
+        setSearchQuery,
         pagination,
         setPage,
         refetch,
+        isOffline,
+        isCached,
     };
 }
 
 export function useCreatePost() {
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isQueued, setIsQueued] = useState(false);
 
     const createPost = useCallback(async (postData: {
         title: string;
@@ -96,6 +195,7 @@ export function useCreatePost() {
     }) => {
         setIsCreating(true);
         setError(null);
+        setIsQueued(false);
         
         try {
             const response = await fetch("/api/forum", {
@@ -112,6 +212,17 @@ export function useCreatePost() {
             const data = await response.json();
             return data.post as ForumPost;
         } catch (err) {
+            // If offline, queue the post for later
+            if (!navigator.onLine) {
+                addToOfflineQueue({
+                    endpoint: "/api/forum",
+                    method: "POST",
+                    body: postData,
+                });
+                setIsQueued(true);
+                setError(null);
+                return null;
+            }
             setError(err instanceof Error ? err.message : "Something went wrong");
             return null;
         } finally {
@@ -119,7 +230,7 @@ export function useCreatePost() {
         }
     }, []);
 
-    return { createPost, isCreating, error };
+    return { createPost, isCreating, error, isQueued };
 }
 
 export function useLikePost() {

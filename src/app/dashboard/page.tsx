@@ -43,6 +43,8 @@ const FarmMap = dynamic(
 );
 
 // compost sites hook for dashboard map. the trash treasures locator
+const DASHBOARD_COMPOST_CACHE_KEY = "cache_dashboard_compost_sites";
+
 function useCompostSites() {
     const [sites, setSites] = useState<Array<{
     id: string;
@@ -57,6 +59,25 @@ function useCompostSites() {
     country?: string;
   }>>([]);
     const [loading, setLoading] = useState(false);
+    const [isCached, setIsCached] = useState(false);
+
+    // Load from cache on mount
+    useEffect(() => {
+        if (typeof localStorage !== 'undefined') {
+            try {
+                const cached = localStorage.getItem(DASHBOARD_COMPOST_CACHE_KEY);
+                if (cached) {
+                    const { data, timestamp } = JSON.parse(cached);
+                    if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+                        setSites(data || []);
+                        setIsCached(true);
+                    }
+                }
+            } catch {
+                // Invalid cache
+            }
+        }
+    }, []);
 
     const fetchSites = useCallback(async () => {
         setLoading(true);
@@ -64,16 +85,27 @@ function useCompostSites() {
             const res = await fetch("/api/compost?all=true");
             if (res.ok) {
                 const data = await res.json();
-                setSites(data.sites || []);
+                const sitesData = data.sites || [];
+                setSites(sitesData);
+                setIsCached(false);
+                
+                // Cache for offline use
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem(DASHBOARD_COMPOST_CACHE_KEY, JSON.stringify({
+                        data: sitesData,
+                        timestamp: Date.now()
+                    }));
+                }
             }
         } catch (error) {
             console.error("Failed to fetch compost sites:", error);
+            // Keep cached data if we have it
         } finally {
             setLoading(false);
         }
     }, []);
 
-    return { sites, loading, fetchSites };
+    return { sites, loading, fetchSites, isCached };
 }
 
 export default function DashboardPage() {

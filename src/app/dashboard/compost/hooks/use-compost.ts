@@ -101,15 +101,53 @@ export function useCompostCalculator() {
     };
 }
 
+// Cache key for compost sites
+const COMPOST_CACHE_KEY = "cache_compost_sites";
+
+// Helper to get initial cached compost data
+const getInitialCompostCache = () => {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
+    try {
+        const cached = localStorage.getItem(COMPOST_CACHE_KEY);
+        if (!cached) return null;
+        const { data, timestamp } = JSON.parse(cached);
+        // Check if cache is still valid (24 hours)
+        if (Date.now() - timestamp > 24 * 60 * 60 * 1000) return null;
+        return data;
+    } catch {
+        return null;
+    }
+};
+
 // hook for managing nearby compost sites. finding the composters near you
 export function useCompostSites() {
+    // Initialize empty, will load from cache in useEffect
     const [sites, setSites] = useState<CompostSite[]>([]);
     const [loading, setLoading] = useState(false);
     const [userLocation, setUserLocation] = useState<CompostLocation | null>(null);
     const [locationLabel, setLocationLabel] = useState("");
+    const [isOffline, setIsOffline] = useState(false);
+    const [isCached, setIsCached] = useState(false);
+
+    // Load from cache on client mount
+    useEffect(() => {
+        const cached = getInitialCompostCache();
+        if (cached) {
+            setSites(cached.sites || []);
+            if (cached.location) {
+                setUserLocation({ lat: cached.location.latitude, lng: cached.location.longitude });
+            }
+            if (cached.locationLabel) {
+                setLocationLabel(cached.locationLabel);
+            }
+            setIsCached(true);
+        }
+        setIsOffline(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+    }, []);
 
     const fetchSites = useCallback(async () => {
         setLoading(true);
+        
         try {
             const location = await getUserLocation();
             setUserLocation({ lat: location.latitude, lng: location.longitude });
@@ -121,9 +159,40 @@ export function useCompostSites() {
             if (res.ok) {
                 const data = await res.json();
                 setSites(data.sites || []);
+                setIsCached(false);
+                setIsOffline(false);
+                
+                // Cache for offline use
+                if (typeof localStorage !== "undefined") {
+                    localStorage.setItem(COMPOST_CACHE_KEY, JSON.stringify({
+                        data: { sites: data.sites, location, locationLabel: location.locationLabel },
+                        timestamp: Date.now()
+                    }));
+                }
             }
         } catch (error) {
             console.error("Failed to fetch compost sites:", error);
+            
+            // Try to load from cache if not already loaded
+            if (!isCached && typeof localStorage !== "undefined") {
+                const cached = localStorage.getItem(COMPOST_CACHE_KEY);
+                if (cached) {
+                    try {
+                        const { data } = JSON.parse(cached);
+                        setSites(data.sites || []);
+                        if (data.location) {
+                            setUserLocation({ lat: data.location.latitude, lng: data.location.longitude });
+                        }
+                        if (data.locationLabel) {
+                            setLocationLabel(data.locationLabel);
+                        }
+                        setIsCached(true);
+                    } catch {
+                        // Invalid cache
+                    }
+                }
+            }
+            setIsOffline(!navigator.onLine);
         } finally {
             setLoading(false);
         }
@@ -133,6 +202,25 @@ export function useCompostSites() {
         fetchSites();
     }, [fetchSites]);
 
+    // Refetch when coming back online
+    useEffect(() => {
+        const handleOnline = () => {
+            setIsOffline(false);
+            if (isCached) {
+                fetchSites();
+            }
+        };
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+            window.removeEventListener("offline", handleOffline);
+        };
+    }, [fetchSites, isCached]);
+
     return {
         sites,
         loading,
@@ -141,6 +229,8 @@ export function useCompostSites() {
         locationLabel,
         setLocationLabel,
         refetch: fetchSites,
+        isOffline,
+        isCached,
     };
 }
 
@@ -154,6 +244,7 @@ interface UseAddSiteOptions {
 export function useAddSite({ userLocation, locationLabel, onSuccess }: UseAddSiteOptions) {
     const [form, setForm] = useState<AddSiteForm>(DEFAULT_SITE_FORM);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isQueued, setIsQueued] = useState(false);
 
     const updateForm = useCallback(<K extends keyof AddSiteForm>(
         key: K,
@@ -170,17 +261,21 @@ export function useAddSite({ userLocation, locationLabel, onSuccess }: UseAddSit
         if (!form.siteName || !userLocation) return;
 
         setIsSubmitting(true);
+        setIsQueued(false);
+        
+        const payload = {
+            ...form,
+            capacityKg: form.capacityKg ? parseInt(form.capacityKg) : undefined,
+            latitude: userLocation.lat,
+            longitude: userLocation.lng,
+            locationLabel,
+        };
+        
         try {
             const res = await fetch("/api/compost", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...form,
-                    capacityKg: form.capacityKg ? parseInt(form.capacityKg) : undefined,
-                    latitude: userLocation.lat,
-                    longitude: userLocation.lng,
-                    locationLabel,
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (res.ok) {
@@ -189,6 +284,23 @@ export function useAddSite({ userLocation, locationLabel, onSuccess }: UseAddSit
             }
         } catch (error) {
             console.error("Failed to add site:", error);
+            
+            // Queue for later if offline
+            if (!navigator.onLine) {
+                const queueKey = "farm_offline_queue";
+                const existingQueue = localStorage.getItem(queueKey);
+                const queue = existingQueue ? JSON.parse(existingQueue) : [];
+                queue.push({
+                    id: crypto.randomUUID(),
+                    endpoint: "/api/compost",
+                    method: "POST",
+                    body: payload,
+                    timestamp: Date.now(),
+                });
+                localStorage.setItem(queueKey, JSON.stringify(queue));
+                setIsQueued(true);
+                resetForm();
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -200,5 +312,6 @@ export function useAddSite({ userLocation, locationLabel, onSuccess }: UseAddSit
         resetForm,
         submitSite,
         isSubmitting,
+        isQueued,
     };
 }

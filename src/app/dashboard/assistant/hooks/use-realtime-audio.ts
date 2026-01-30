@@ -330,21 +330,8 @@ export function useRealtimeAudio() {
         };
     }, []);
 
-    // Auto-start if permission granted
+    // Cleanup on unmount
     useEffect(() => {
-        (async () => {
-            let fn = checkMicrophoneAutoStartPermission;
-            if (typeof window !== "undefined" && window.checkMicrophoneAutoStartPermission) {
-                fn = window.checkMicrophoneAutoStartPermission as typeof checkMicrophoneAutoStartPermission;
-            }
-
-            const permission = await fn();
-            if (permission === "granted") {
-                setIsMuted(false);
-                startRecording();
-            }
-        })();
-
         return () => {
             stopRecording();
             stopAssistantAudio();

@@ -7,7 +7,7 @@ import { Select } from "@/components/ui/select";
 import { Sprout, User } from "lucide-react";
 import type { Session } from "next-auth";
 import type { FarmProfileData, EditableProfileData } from "../types";
-import { SPACE_TYPE_OPTIONS, EXPERIENCE_LEVEL_OPTIONS } from "../constants";
+import { SPACE_TYPE_OPTIONS, EXPERIENCE_LEVEL_OPTIONS, FARM_EMOJI_OPTIONS } from "../constants";
 
 interface UserInfoCardProps {
   session: Session | null;
@@ -61,13 +61,31 @@ export function FarmDetailsCard({
             <CardContent className="space-y-4">
                 {editing ? (
                     <>
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Farm Name</label>
-                            <Input
-                                value={editData.farmName || ""}
-                                onChange={(e) => onUpdate("farmName", e.target.value)}
-                                placeholder="My Farm"
-                            />
+                        <div className="flex gap-4">
+                            <div className="flex-1">
+                                <label className="mb-1 block text-sm font-medium">Farm Name</label>
+                                <Input
+                                    value={editData.farmName || ""}
+                                    onChange={(e) => onUpdate("farmName", e.target.value)}
+                                    placeholder="My Farm"
+                                />
+                            </div>
+                            <div>
+                                <label className="mb-1 block text-sm font-medium">Emoji</label>
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        className="flex h-10 w-14 items-center justify-center rounded-lg border border-input bg-background text-2xl hover:bg-muted"
+                                        onClick={() => {
+                                            const currentIndex = FARM_EMOJI_OPTIONS.indexOf(editData.farmEmoji || "🌱");
+                                            const nextIndex = (currentIndex + 1) % FARM_EMOJI_OPTIONS.length;
+                                            onUpdate("farmEmoji", FARM_EMOJI_OPTIONS[nextIndex]);
+                                        }}
+                                    >
+                                        {editData.farmEmoji || "🌱"}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
@@ -98,7 +116,10 @@ export function FarmDetailsCard({
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                             <p className="text-sm text-muted-foreground">Farm Name</p>
-                            <p className="font-medium">{profile?.farmName || "Unnamed Farm"}</p>
+                            <p className="font-medium">
+                                <span className="mr-1">{profile?.farmEmoji || "🌱"}</span>
+                                {profile?.farmName || "Unnamed Farm"}
+                            </p>
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Space Type</p>

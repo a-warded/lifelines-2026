@@ -53,34 +53,28 @@ export async function GET(request: NextRequest) {
         }
         // note: if no country provided show all countries (useful for testing/demo). bruh
 
-        // get total count for pagination. math is lowkenuinely important here
-        const totalCount = await ExchangeListing.countDocuments(query);
         const skip = (page - 1) * limit;
 
-        const listings = await ExchangeListing.find(query)
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .lean();
-
-        // distance filtering is disabled to show all listings globally
-        // this allows testing with seeded data from any location. ts hits different when it just works
-        // uncomment below to re-enable location-based filtering:
-        // if (!myListings && !isNaN(lat) && !isNaN(lon)) {
-        //     listings = listings.filter((l) => {
-        //         if (!l.latitude || !l.longitude) return false;
-        //         const distance = calculateDistance(lat, lon, l.latitude, l.longitude);
-        //         return distance <= MAX_LISTING_DISTANCE_KM;
-        //     });
-        // }
-
-        // get claim counts for all listings in one query. efficiency is key bestie
-        const listingIds = listings.map(l => l._id.toString());
-        const claimCounts = await ExchangeClaim.aggregate([
-            { $match: { listingId: { $in: listingIds } } },
-            { $group: { _id: "$listingId", count: { $sum: 1 } } }
+        // run count and find in parallel for speed. parallel goes brr
+        const [totalCount, listings] = await Promise.all([
+            ExchangeListing.countDocuments(query),
+            ExchangeListing.find(query)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean()
         ]);
-        const claimCountMap = new Map(claimCounts.map(c => [c._id, c.count]));
+
+        // get claim counts in parallel with response mapping
+        const listingIds = listings.map(l => l._id.toString());
+        const claimCountMap = listingIds.length > 0 
+            ? new Map(
+                (await ExchangeClaim.aggregate([
+                    { $match: { listingId: { $in: listingIds } } },
+                    { $group: { _id: "$listingId", count: { $sum: 1 } } }
+                ])).map(c => [c._id, c.count])
+              )
+            : new Map();
 
         return NextResponse.json({
             listings: listings.map((l) => {

@@ -921,5 +921,18 @@
         "richText": {
             "markdownHint": "Markdown supported: **bold**, *italic*, ## headers, [links](url)"
         }
+    },
+    "status": {
+        "online": "Online",
+        "offline": "Offline",
+        "offlineMode": "Offline Mode",
+        "backOnline": "Back Online",
+        "syncing": "Syncing...",
+        "syncComplete": "Sync Complete",
+        "cachedData": "Showing cached data",
+        "pendingChanges": "Changes pending sync",
+        "connectionLost": "Connection lost",
+        "connectionRestored": "Connection restored",
+        "updateAvailable": "Update available"
     }
 }

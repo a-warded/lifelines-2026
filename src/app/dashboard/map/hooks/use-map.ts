@@ -3,6 +3,39 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CompostSite, Farm, FarmProfile, MapLayer, MapStats } from "../types";
 
+// cache keys for map data. gotta save that geo data bestie
+const CACHE_KEYS = {
+    MAP_FARMS: "map_farms_cache",
+    MAP_COMPOST_SITES: "map_compost_sites_cache",
+    MAP_USER_PROFILE: "map_user_profile_cache",
+};
+
+// cache helpers - borrowed from offline-storage pattern
+function getFromCache<T>(key: string, maxAgeMs = 24 * 60 * 60 * 1000): T | null {
+    if (typeof window === "undefined") return null;
+    try {
+        const stored = localStorage.getItem(key);
+        if (!stored) return null;
+        const cached = JSON.parse(stored);
+        if (Date.now() - cached.timestamp > maxAgeMs) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        return cached.data;
+    } catch {
+        return null;
+    }
+}
+
+function setToCache<T>(key: string, data: T): void {
+    if (typeof window === "undefined") return;
+    try {
+        localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+    } catch {
+        // storage full - whatever
+    }
+}
+
 // hook for fetching and managing map data. the geo data wrangler
 export function useMapData() {
     const [farms, setFarms] = useState<Farm[]>([]);
@@ -10,8 +43,29 @@ export function useMapData() {
     const [userProfile, setUserProfile] = useState<FarmProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // load cached data on mount (client-side only)
+    useEffect(() => {
+        const cachedFarms = getFromCache<Farm[]>(CACHE_KEYS.MAP_FARMS);
+        const cachedCompostSites = getFromCache<CompostSite[]>(CACHE_KEYS.MAP_COMPOST_SITES);
+        const cachedProfile = getFromCache<FarmProfile>(CACHE_KEYS.MAP_USER_PROFILE);
+        
+        if (cachedFarms) setFarms(cachedFarms);
+        if (cachedCompostSites) setCompostSites(cachedCompostSites);
+        if (cachedProfile) setUserProfile(cachedProfile);
+        
+        // if we have cached data, dont show loading spinner
+        if (cachedFarms || cachedCompostSites) {
+            setLoading(false);
+        }
+    }, []);
+
     const fetchData = useCallback(async () => {
-        setLoading(true);
+        // only show loading if we have no cached data
+        const hasCachedData = farms.length > 0 || compostSites.length > 0;
+        if (!hasCachedData) {
+            setLoading(true);
+        }
+        
         try {
             const [farmsRes, profileRes, compostRes] = await Promise.all([
                 fetch("/api/farm?all=true"),
@@ -21,24 +75,31 @@ export function useMapData() {
 
             if (farmsRes.ok) {
                 const data = await farmsRes.json();
-                setFarms(data.farms || []);
+                const farmsData = data.farms || [];
+                setFarms(farmsData);
+                setToCache(CACHE_KEYS.MAP_FARMS, farmsData);
             }
 
             if (profileRes.ok) {
                 const data = await profileRes.json();
                 setUserProfile(data.profile);
+                if (data.profile) {
+                    setToCache(CACHE_KEYS.MAP_USER_PROFILE, data.profile);
+                }
             }
 
             if (compostRes.ok) {
                 const data = await compostRes.json();
-                setCompostSites(data.sites || []);
+                const sitesData = data.sites || [];
+                setCompostSites(sitesData);
+                setToCache(CACHE_KEYS.MAP_COMPOST_SITES, sitesData);
             }
         } catch (error) {
             console.error("Failed to fetch data:", error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [farms.length, compostSites.length]);
 
     useEffect(() => {
         fetchData();

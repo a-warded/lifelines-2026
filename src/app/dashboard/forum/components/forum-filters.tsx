@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Check, RotateCcw, X } from "lucide-react";
 import { CATEGORIES, JOURNEY_STAGES } from "../constants";
 import type { PostCategory, JourneyStage, TranslateFunction } from "../types";
 
@@ -9,6 +9,7 @@ interface ForumFiltersProps {
     onCategoryChange: (category: PostCategory | "all") => void;
     journeyStage: JourneyStage | null;
     onJourneyStageChange: (stage: JourneyStage | null) => void;
+    onClearFilters: () => void;
     t: TranslateFunction;
 }
 
@@ -17,57 +18,129 @@ export function ForumFilters({
     onCategoryChange,
     journeyStage,
     onJourneyStageChange,
+    onClearFilters,
     t,
 }: ForumFiltersProps) {
+    const hasActiveFilters = category !== "all" || journeyStage !== null;
+
     return (
-        <div className="space-y-4">
-            {/* Category filter */}
-            <div>
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {t("forum.filters.topic", "Topic")}
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                    {CATEGORIES.map((cat) => (
-                        <Button
-                            key={cat.value}
-                            variant={category === cat.value ? "primary" : "ghost"}
-                            size="sm"
-                            onClick={() => onCategoryChange(cat.value)}
-                            className={`text-xs ${category === cat.value ? "" : "text-muted-foreground"}`}
-                        >
-                            {t(cat.labelKey, cat.value === "all" ? "All" : cat.value)}
-                        </Button>
-                    ))}
-                </div>
+        <div className="space-y-6">
+            {/* Filter controls */}
+            <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--color-text-secondary)]">
+                    {hasActiveFilters 
+                        ? t("forum.filters.applied", "Filters applied") 
+                        : t("forum.filters.noFilters", "No filters applied")}
+                </span>
+                <button
+                    onClick={onClearFilters}
+                    className="p-1.5 rounded-lg bg-[var(--color-background)] hover:bg-[var(--color-border)] transition-colors"
+                    aria-label={t("forum.filters.clear", "Clear filters")}
+                >
+                    <RotateCcw className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+                </button>
             </div>
 
+            {/* Category filter */}
+            <FilterSection
+                title={t("forum.filters.topic", "TOPIC")}
+                onClear={() => onCategoryChange("all")}
+            >
+                {CATEGORIES.map((cat) => (
+                    <RadioOption
+                        key={cat.value}
+                        label={t(cat.labelKey, cat.value === "all" ? "All" : cat.value)}
+                        selected={category === cat.value}
+                        onClick={() => onCategoryChange(cat.value)}
+                    />
+                ))}
+            </FilterSection>
+
             {/* Journey stage filter */}
-            <div>
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {t("forum.filters.journeyStage", "Seed-to-Seed Journey")}
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        variant={!journeyStage ? "primary" : "ghost"}
-                        size="sm"
-                        onClick={() => onJourneyStageChange(null)}
-                        className={`text-xs ${!journeyStage ? "" : "text-muted-foreground"}`}
-                    >
-                        {t("common.all", "All")}
-                    </Button>
-                    {JOURNEY_STAGES.map((stage) => (
-                        <Button
-                            key={stage.value}
-                            variant={journeyStage === stage.value ? "primary" : "ghost"}
-                            size="sm"
-                            onClick={() => onJourneyStageChange(stage.value)}
-                            className={`text-xs ${journeyStage === stage.value ? "" : "text-muted-foreground"}`}
-                        >
-                            {t(stage.labelKey, stage.value)}
-                        </Button>
-                    ))}
-                </div>
-            </div>
+            <FilterSection
+                title={t("forum.filters.journeyStage", "SEED-TO-SEED JOURNEY")}
+                onClear={() => onJourneyStageChange(null)}
+                description={t("forum.filters.journeyDescription", "Filter by farming stage")}
+            >
+                <RadioOption
+                    label={t("common.all", "All Stages")}
+                    selected={!journeyStage}
+                    onClick={() => onJourneyStageChange(null)}
+                />
+                {JOURNEY_STAGES.map((stage) => (
+                    <RadioOption
+                        key={stage.value}
+                        label={t(stage.labelKey, stage.value)}
+                        selected={journeyStage === stage.value}
+                        onClick={() => onJourneyStageChange(stage.value)}
+                    />
+                ))}
+            </FilterSection>
         </div>
+    );
+}
+
+// Helper components - matching exchange-filters.tsx pattern
+function FilterSection({
+    title,
+    description,
+    onClear,
+    children,
+}: {
+    title: string;
+    description?: string;
+    onClear: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <div>
+            <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+                    {title}
+                </h3>
+                <button
+                    onClick={onClear}
+                    className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                    aria-label={`Clear ${title.toLowerCase()} filter`}
+                >
+                    <X className="w-4 h-4" />
+                </button>
+            </div>
+            {description && (
+                <p className="text-xs text-[var(--color-text-secondary)] mb-2">
+                    {description}
+                </p>
+            )}
+            <div className="space-y-2">{children}</div>
+        </div>
+    );
+}
+
+function RadioOption({
+    label,
+    selected,
+    onClick,
+}: {
+    label: string;
+    selected: boolean;
+    onClick: () => void;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className="flex items-center gap-2 cursor-pointer w-full text-left hover:bg-[var(--color-background)] rounded p-1 -m-1 transition-colors"
+        >
+            <div
+                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                    selected
+                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]"
+                        : "border-[var(--color-border)]"
+                }`}
+            >
+                {selected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+            </div>
+            <span className="text-sm text-[var(--color-text-primary)]">{label}</span>
+        </button>
     );
 }

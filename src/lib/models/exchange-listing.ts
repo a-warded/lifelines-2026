@@ -95,10 +95,12 @@ const ExchangeListingSchema = new Schema<IExchangeListing>(
 );
 
 // indexes for efficient querying. gotta go fast bestie
+ExchangeListingSchema.index({ status: 1, createdAt: -1 }); // main listing query
 ExchangeListingSchema.index({ type: 1, status: 1 });
 ExchangeListingSchema.index({ country: 1, status: 1 });
 ExchangeListingSchema.index({ latitude: 1, longitude: 1 });
 ExchangeListingSchema.index({ mode: 1, status: 1 });
+ExchangeListingSchema.index({ userId: 1, createdAt: -1 }); // my listings query
 
 export const ExchangeListing: Model<IExchangeListing> =
     mongoose.models.ExchangeListing ||

@@ -2,6 +2,7 @@
 
 export interface FarmProfileData {
   farmName?: string;
+  farmEmoji?: string;
   waterAvailability: string;
   soilCondition: string;
   spaceType: string;

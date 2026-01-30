@@ -921,5 +921,18 @@
         "richText": {
             "markdownHint": "دعم Markdown: **غامق**، *مائل*، ## عناوين، [روابط](url)"
         }
+    },
+    "status": {
+        "online": "متصل",
+        "offline": "غير متصل",
+        "offlineMode": "وضع عدم الاتصال",
+        "backOnline": "عاد الاتصال",
+        "syncing": "جاري المزامنة...",
+        "syncComplete": "اكتملت المزامنة",
+        "cachedData": "عرض البيانات المخزنة",
+        "pendingChanges": "تغييرات في انتظار المزامنة",
+        "connectionLost": "انقطع الاتصال",
+        "connectionRestored": "تم استعادة الاتصال",
+        "updateAvailable": "تحديث متاح"
     }
 }

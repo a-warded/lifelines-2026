@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageCircle, CheckCircle2, Pin, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { CATEGORIES, JOURNEY_STAGES } from "../constants";
-import { MarkdownRenderer } from "./markdown-renderer";
 import type { ForumPost, TranslateFunction } from "../types";
 
 interface PostCardProps {
@@ -40,21 +39,10 @@ export function PostCard({ post, userId, onLike, onOpenPost, onEdit, onDelete, i
 
     return (
         <article 
-            className="bg-card rounded-xl border border-border overflow-hidden hover:border-primary/30 transition-colors cursor-pointer"
+            className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] overflow-hidden hover:border-[var(--color-primary)]/30 transition-colors cursor-pointer flex flex-col"
             onClick={() => onOpenPost(post)}
         >
-            {/* Image header if present */}
-            {post.imageUrl && (
-                <div className="relative h-40 bg-gradient-to-br from-green-800 to-green-950 overflow-hidden">
-                    <img
-                        src={post.imageUrl}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover"
-                    />
-                </div>
-            )}
-
-            <div className="p-4">
+            <div className="p-4 flex-1 flex flex-col">
                 {/* Status badges row */}
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
                     {post.isPinned && (
@@ -69,7 +57,7 @@ export function PostCard({ post, userId, onLike, onOpenPost, onEdit, onDelete, i
                             {t("forum.verified", "Verified")}
                         </span>
                     )}
-                    <Badge className="text-xs bg-muted text-muted-foreground border-0">
+                    <Badge className="text-xs bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-0">
                         {t(category?.labelKey || "forum.categories.general", post.category)}
                     </Badge>
                     {journeyStage && (
@@ -80,27 +68,27 @@ export function PostCard({ post, userId, onLike, onOpenPost, onEdit, onDelete, i
                     
                     {/* Owner actions menu */}
                     {isOwner && (
-                        <div className="relative ml-auto" ref={menuRef}>
+                        <div className="relative ml-auto flex-shrink-0" ref={menuRef}>
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setMenuOpen(!menuOpen);
                                 }}
-                                className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                                className="p-1 rounded-md hover:bg-[var(--color-surface)] transition-colors text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                                 aria-label={t("forum.actions", "Post actions")}
                             >
                                 <MoreVertical className="w-4 h-4" />
                             </button>
                             
                             {menuOpen && (
-                                <div className="absolute right-0 top-full mt-1 z-50 min-w-[140px] bg-card border border-border rounded-lg shadow-lg py-1">
+                                <div className="absolute right-0 top-full mt-1 z-50 min-w-[140px] bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg shadow-lg py-1">
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setMenuOpen(false);
                                             onEdit?.(post);
                                         }}
-                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] transition-colors"
                                     >
                                         <Pencil className="w-4 h-4" />
                                         {t("forum.edit.button", "Edit")}
@@ -123,33 +111,33 @@ export function PostCard({ post, userId, onLike, onOpenPost, onEdit, onDelete, i
                 </div>
 
                 {/* Title */}
-                <h3 className="font-semibold text-foreground text-base mb-2 line-clamp-2">
+                <h3 className="font-semibold text-[var(--color-text-primary)] text-base mb-2 line-clamp-2">
                     {post.title}
                 </h3>
 
-                {/* Content preview */}
-                <div className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                    <MarkdownRenderer content={post.content} className="[&_p]:m-0 [&_h1]:text-sm [&_h2]:text-sm [&_h3]:text-sm" />
-                </div>
+                {/* Content preview - plain text only */}
+                <p className="text-sm text-[var(--color-text-secondary)] line-clamp-3 mb-4">
+                    {getPlainTextPreview(post.content)}
+                </p>
 
                 {/* Author and meta */}
-                <div className="flex items-center justify-between pt-3 border-t border-border">
-                    <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-xs text-primary-foreground font-medium">
+                <div className="flex items-center justify-between pt-3 border-t border-[var(--color-border)] mt-auto gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="w-6 h-6 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-xs text-white font-medium flex-shrink-0">
                             {(post.userName || "A")[0].toUpperCase()}
                         </div>
-                        <div>
-                            <span className="text-sm font-medium text-foreground">
+                        <div className="min-w-0">
+                            <span className="text-sm font-medium text-[var(--color-text-primary)] truncate block">
                                 {post.userName || t("common.anonymous", "Anonymous")}
                             </span>
-                            <span className="text-xs text-muted-foreground ml-2">
+                            <span className="text-xs text-[var(--color-text-secondary)]">
                                 {timeAgo}
                             </span>
                         </div>
                     </div>
 
                     {/* Engagement */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-shrink-0">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -159,13 +147,13 @@ export function PostCard({ post, userId, onLike, onOpenPost, onEdit, onDelete, i
                             className={`flex items-center gap-1 text-sm transition-colors ${
                                 hasLiked 
                                     ? "text-red-500" 
-                                    : "text-muted-foreground hover:text-red-500"
+                                    : "text-[var(--color-text-secondary)] hover:text-red-500"
                             }`}
                         >
                             <Heart className={`w-4 h-4 ${hasLiked ? "fill-current" : ""}`} />
                             {post.likes.length}
                         </button>
-                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
                             <MessageCircle className="w-4 h-4" />
                             {post.commentCount}
                         </span>
@@ -174,6 +162,33 @@ export function PostCard({ post, userId, onLike, onOpenPost, onEdit, onDelete, i
             </div>
         </article>
     );
+}
+
+// Helper to strip markdown and get plain text preview
+function getPlainTextPreview(markdown: string): string {
+    return markdown
+        // Remove headers
+        .replace(/^#{1,6}\s+/gm, '')
+        // Remove bold/italic
+        .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1')
+        // Remove links
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        // Remove images
+        .replace(/!\[([^\]]*)\]\([^)]+\)/g, '')
+        // Remove code blocks
+        .replace(/```[\s\S]*?```/g, '')
+        // Remove inline code
+        .replace(/`([^`]+)`/g, '$1')
+        // Remove blockquotes
+        .replace(/^>\s+/gm, '')
+        // Remove horizontal rules
+        .replace(/^[-*_]{3,}\s*$/gm, '')
+        // Remove list markers
+        .replace(/^[-*+]\s+/gm, '')
+        .replace(/^\d+\.\s+/gm, '')
+        // Collapse whitespace
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 function formatTimeAgo(dateString: string, t: TranslateFunction): string {

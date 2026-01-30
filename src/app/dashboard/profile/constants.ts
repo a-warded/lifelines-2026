@@ -1,5 +1,12 @@
 // profile feature constants. the identity constants
 
+export const FARM_EMOJI_OPTIONS = [
+    "🌱", "🌿", "🌻", "🌺", "🌷", "🌹", "🪻", "🌸",
+    "🥕", "🥬", "🍅", "🌽", "🥒", "🍆", "🫑", "🧅",
+    "🍎", "🍊", "🍋", "🍇", "🍓", "🫐", "🥭", "🍑",
+    "🏡", "🏠", "🌳", "🌴", "🪴", "🌵", "🍀", "☘️",
+];
+
 export const SPACE_TYPE_OPTIONS = [
     { value: "rooftop", label: "🏢 Rooftop" },
     { value: "balcony", label: "🏠 Balcony" },
