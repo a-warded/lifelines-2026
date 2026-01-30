@@ -1,12 +1,48 @@
 "use client";
 
-import { AssistantSidebar } from "@/components/sidebar/assistant-sidebar";
+import { AssistantSidebar, AssistantSidebarProvider, useAssistantSidebar } from "@/components/sidebar/assistant-sidebar";
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import AilaRealtimeAssistant from "./assistant/page";
+
+function DashboardContent({ children }: { children: React.ReactNode }) {
+    const { i18n } = useTranslation();
+    const isRTL = i18n.dir() === "rtl";
+    const { isCollapsed } = useAssistantSidebar();
+
+    return (
+        <main 
+            className={`transition-all duration-500 ease-in-out ${
+                isRTL 
+                    ? `md:mr-64 ${isCollapsed ? "lg:ml-0" : "lg:ml-96 xl:ml-[28rem]"}` 
+                    : `md:ml-64 ${isCollapsed ? "lg:mr-0" : "lg:mr-96 xl:mr-[28rem]"}`
+            }`}
+        >
+            <div 
+                className={`p-4 md:p-8 relative transition-all duration-500 ease-in-out ${
+                    isCollapsed ? "max-w-6xl mx-auto" : ""
+                }`}
+            >
+                {children}
+            </div>
+        </main>
+    );
+}
+
+function DashboardInner({ children }: { children: React.ReactNode }) {
+    return (
+        <>
+            <Sidebar />
+            <AssistantSidebar>
+                <AilaRealtimeAssistant />
+            </AssistantSidebar>
+            <DashboardContent>{children}</DashboardContent>
+        </>
+    );
+}
 
 export default function DashboardLayout({
     children,
@@ -15,8 +51,6 @@ export default function DashboardLayout({
 }) {
     const { status } = useSession();
     const router = useRouter();
-    const { i18n } = useTranslation();
-    const isRTL = i18n.dir() === "rtl";
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -37,14 +71,10 @@ export default function DashboardLayout({
     }
 
     return (
-        <div className="min-h-screen bg-background">
-            <Sidebar />
-            <main className={`${isRTL ? "md:mr-64 lg:ml-96 xl:ml-[28rem]" : "md:ml-64 lg:mr-96 xl:mr-[28rem]"}`}>
-                <div className="p-4 md:p-8 relative">{children}</div>
-            </main>
-            <AssistantSidebar>
-                <AilaRealtimeAssistant />
-            </AssistantSidebar>
-        </div>
+        <AssistantSidebarProvider>
+            <div className="min-h-screen bg-background">
+                <DashboardInner>{children}</DashboardInner>
+            </div>
+        </AssistantSidebarProvider>
     );
 }
