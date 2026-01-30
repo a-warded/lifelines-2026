@@ -44,7 +44,7 @@ export default function AilaRealtimeAssistant() {
 
             {/* Call avatars */}
             <div className="flex justify-center items-center space-x-4 mt-auto">
-                <CallAvatar active={audio.isRecording} voiceActivity={audio.inputActivity} />
+                <CallAvatar active={audio.isRecording} voiceActivity={audio.isMuted ? 0 : audio.inputActivity} />
                 <CallAvatar
                     active={audio.isConnected}
                     profilePictureURL="/images/aila_pfp.webp"

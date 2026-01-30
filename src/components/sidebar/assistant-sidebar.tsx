@@ -70,9 +70,10 @@ export function AssistantSidebar({ children }: AssistantSidebarProps) {
                 onClick={toggleCollapse}
                 className={`fixed top-1/2 z-50 hidden -translate-y-1/2 lg:flex items-center justify-center
                     w-10 h-20 rounded-l-xl bg-primary text-primary-foreground shadow-lg
-                    transition-all duration-500 ease-in-out hover:scale-105
+                    transition-all duration-500 hover:scale-105
                     ${isCollapsed ? "opacity-100" : "opacity-0 pointer-events-none"}
                     ${isRTL ? "left-0 rounded-l-none rounded-r-xl" : "right-0"}`}
+                style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
                 aria-label="Open assistant"
             >
                 <div className="flex flex-col items-center gap-1">
@@ -81,17 +82,17 @@ export function AssistantSidebar({ children }: AssistantSidebarProps) {
                     ) : (
                         <ChevronLeft size={20} className="animate-pulse" />
                     )}
-                    <Bot size={18} />
                 </div>
             </button>
 
             {/* Assistant sidebar panel */}
             <aside
-                className={`fixed top-0 z-40 h-screen w-full max-w-md transform bg-sidebar transition-all duration-500 ease-in-out lg:w-96 xl:w-[28rem] ${
+                className={`fixed top-0 z-40 h-screen w-full max-w-md transform bg-sidebar transition-all duration-500 lg:w-96 xl:w-[28rem] ${
                     isRTL
                         ? `left-0 ${isOpen ? "translate-x-0" : "-translate-x-full"} ${isCollapsed ? "lg:-translate-x-full" : "lg:translate-x-0"}`
                         : `right-0 ${isOpen ? "translate-x-0" : "translate-x-full"} ${isCollapsed ? "lg:translate-x-full" : "lg:translate-x-0"}`
                 }`}
+                style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
             >
                 {/* Desktop collapse toggle arrow - top left corner */}
                 <button

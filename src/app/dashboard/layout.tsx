@@ -15,16 +15,18 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
     return (
         <main 
-            className={`transition-all duration-500 ease-in-out ${
+            className={`transition-all duration-500 ${
                 isRTL 
                     ? `md:mr-64 ${isCollapsed ? "lg:ml-0" : "lg:ml-96 xl:ml-[28rem]"}` 
                     : `md:ml-64 ${isCollapsed ? "lg:mr-0" : "lg:mr-96 xl:mr-[28rem]"}`
             }`}
+            style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
         >
             <div 
-                className={`p-4 md:p-8 relative transition-all duration-500 ease-in-out ${
+                className={`p-4 md:p-8 relative transition-all duration-500 ${
                     isCollapsed ? "max-w-6xl mx-auto" : ""
                 }`}
+                style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
             >
                 {children}
             </div>
