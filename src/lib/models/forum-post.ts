@@ -90,6 +90,7 @@ const ForumCommentSchema = new Schema<IForumComment>(
 ForumPostSchema.index({ category: 1, createdAt: -1 });
 ForumPostSchema.index({ isPinned: -1, createdAt: -1 });
 ForumPostSchema.index({ journeyStage: 1 });
+ForumPostSchema.index({ title: "text", content: "text", userName: "text" }); // text search index
 
 export const ForumPost: Model<IForumPost> =
     mongoose.models.ForumPost || mongoose.model<IForumPost>("ForumPost", ForumPostSchema);

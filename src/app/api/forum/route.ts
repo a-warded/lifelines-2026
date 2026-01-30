@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
         
         const category = searchParams.get("category");
         const journeyStage = searchParams.get("journeyStage");
+        const search = searchParams.get("search");
         const page = parseInt(searchParams.get("page") || "1");
         const limit = parseInt(searchParams.get("limit") || "21");
         const postId = searchParams.get("postId"); // for fetching single post
@@ -37,6 +38,16 @@ export async function GET(request: NextRequest) {
         }
         if (journeyStage) {
             query.journeyStage = journeyStage;
+        }
+        
+        // search filter - search in title and content
+        if (search && search.trim()) {
+            const searchRegex = { $regex: search.trim(), $options: "i" };
+            query.$or = [
+                { title: searchRegex },
+                { content: searchRegex },
+                { userName: searchRegex },
+            ];
         }
         
         // fetch posts with pagination

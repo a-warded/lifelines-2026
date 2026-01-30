@@ -31,6 +31,7 @@ export interface FarmProfile {
   userId: string;
   userName?: string;
   farmName?: string;
+  farmEmoji?: string;
   latitude: number;
   longitude: number;
   locationLabel?: string;

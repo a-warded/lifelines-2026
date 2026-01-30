@@ -192,6 +192,7 @@ export default function DashboardPage() {
           userId: farm.userId,
           userName: farm.userName,
           farmName: farm.farmName,
+          farmEmoji: farm.farmEmoji,
           latitude: farm.latitude,
           longitude: farm.longitude,
           locationLabel: farm.locationLabel,
