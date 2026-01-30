@@ -301,19 +301,19 @@ function DeliveryMethodSelector({
             <label className="block text-sm font-medium mb-2">
                 {t("exchange.create.deliveryLabel", "Delivery Method")}
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col gap-2">
                 {DELIVERY_METHODS.map((method) => (
                     <button
                         key={method.value}
                         type="button"
                         onClick={() => onChange(method.value)}
-                        className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${
+                        className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-left ${
                             value === method.value
                                 ? "border-primary bg-primary/10"
                                 : "border-border hover:border-primary/50"
                         }`}
                     >
-                        <span className="text-xs text-center">{t(`exchange.create.deliveryMethods.${method.value}`, method.label)}</span>
+                        <span className="text-xs">{t(`exchange.create.deliveryMethods.${method.value}`, method.label)}</span>
                     </button>
                 ))}
             </div>

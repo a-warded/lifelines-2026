@@ -22,7 +22,7 @@ export function JourneyVisualizer({ t }: JourneyVisualizerProps) {
                 <h3 className="text-sm font-semibold text-foreground tracking-tight">
                     {t("forum.seedToSeed.title", "Seed to Seed")}
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="texheret-xs text-muted-foreground mt-0.5">
                     {t("forum.seedToSeed.description", "The complete cycle of sustainable farming.")}
                 </p>
             </div>
