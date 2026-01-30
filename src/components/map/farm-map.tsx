@@ -68,6 +68,7 @@ export function FarmMap({
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const markersRef = useRef<L.Marker[]>([]);
+    const hasInitializedViewRef = useRef(false);
 
     // store onFarmClick in ref to avoid triggering re-renders. lowkey optimization
     const onFarmClickRef = useRef(onFarmClick);
@@ -207,16 +208,19 @@ export function FarmMap({
             return marker;
         });
 
-        // fit bounds if multiple farms. gotta see them all
-        if (validFarms.length > 1) {
-            try {
-                const bounds = L.latLngBounds(validFarms.map(f => [f.latitude, f.longitude]));
-                map.fitBounds(bounds, { padding: [50, 50] });
-            } catch {
-                // ignore bounds errors. ts pmo sometimes
+        // only fit bounds on initial load, not when toggling layers. stop the map from jumping around
+        if (!hasInitializedViewRef.current && validFarms.length > 0) {
+            hasInitializedViewRef.current = true;
+            if (validFarms.length > 1) {
+                try {
+                    const bounds = L.latLngBounds(validFarms.map(f => [f.latitude, f.longitude]));
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                } catch {
+                    // ignore bounds errors. ts pmo sometimes
+                }
+            } else if (validFarms.length === 1) {
+                map.setView([validFarms[0].latitude, validFarms[0].longitude], 10);
             }
-        } else if (validFarms.length === 1) {
-            map.setView([validFarms[0].latitude, validFarms[0].longitude], 10);
         }
 
         return () => {
@@ -232,11 +236,12 @@ export function FarmMap({
         };
     }, [farms, currentUserId]);
 
-    // update view when user location changes. staying reactive
+    // update view when user location changes, but only on initial load
     useEffect(() => {
         const map = mapInstanceRef.current;
-        if (!map || !currentUserLocation) return;
+        if (!map || !currentUserLocation || hasInitializedViewRef.current) return;
 
+        hasInitializedViewRef.current = true;
         map.setView([currentUserLocation.lat, currentUserLocation.lng], 10);
     }, [currentUserLocation]);
 

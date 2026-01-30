@@ -121,10 +121,21 @@ export async function POST(request: NextRequest) {
         // get country from coordinates. gotta know where youre farming
         const country = await getCountryFromCoords(latitude, longitude);
 
+        // generate a random farm name if not provided. lowkey cute names fr
+        const randomFarmNames = [
+            "Sunny Patch", "Green Haven", "Little Sprout", "Happy Harvest", "Tiny Oasis",
+            "Urban Eden", "Pocket Garden", "Fresh Start", "Bloom Corner", "Leaf Lane",
+            "Veggie Nook", "Garden Joy", "Growth Hub", "Plant Paradise", "Harvest Home",
+            "Seed Dream", "Green Thumb", "Nature's Nook", "Sprout Space", "Micro Meadow"
+        ];
+        const generatedFarmName = farmName?.trim() 
+            ? farmName 
+            : randomFarmNames[Math.floor(Math.random() * randomFarmNames.length)];
+
         const profileData = {
             userId: session.user.id,
             userName: session.user.name || undefined,
-            farmName,
+            farmName: generatedFarmName,
             farmEmoji: farmEmoji || "🌱",
             waterAvailability,
             soilCondition,

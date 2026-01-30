@@ -1,0 +1,404 @@
+@startuml Lifelines 2026 Comprehensive Infrastructure
+
+!define RECTANGLE class
+
+' ==================== STYLING ====================
+skinparam backgroundColor #0d1117
+skinparam defaultFontColor #c9d1d9
+skinparam defaultFontSize 11
+skinparam roundCorner 15
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam padding 3
+skinparam nodesep 50
+skinparam ranksep 40
+
+skinparam component {
+    BackgroundColor #161b22
+    BorderColor #30363d
+    FontColor #c9d1d9
+    ArrowColor #58a6ff
+}
+
+skinparam database {
+    BackgroundColor #0d1117
+    BorderColor #238636
+    FontColor #c9d1d9
+}
+
+skinparam cloud {
+    BackgroundColor #161b22
+    BorderColor #58a6ff
+    FontColor #c9d1d9
+}
+
+skinparam node {
+    BackgroundColor #21262d
+    BorderColor #30363d
+    FontColor #c9d1d9
+}
+
+skinparam package {
+    BackgroundColor #161b22
+    BorderColor #30363d
+    FontColor #c9d1d9
+}
+
+skinparam note {
+    BackgroundColor #161b22
+    BorderColor #f0883e
+    FontColor #c9d1d9
+}
+
+skinparam rectangle {
+    BackgroundColor #21262d
+    BorderColor #30363d
+    FontColor #c9d1d9
+}
+
+skinparam arrow {
+    Color #58a6ff
+    FontColor #8b949e
+}
+
+title **Lifelines 2026 (FADES) - Comprehensive Platform Infrastructure**\n<size:12>Farming Aid & Development Education System - Full Stack Architecture</size>
+
+' ==================== USER LAYER ====================
+rectangle "👥 **User Layer**" as user_layer #1f6feb {
+    actor "Farmers\n(Mobile/Desktop)" as farmers #238636
+    actor "Community\nMembers" as community #238636
+    actor "Educators" as educators #238636
+}
+
+' ==================== CDN & EDGE ====================
+rectangle "🌐 **Edge Layer**" as edge_layer #8957e5 {
+    component "Service Worker\n(PWA Caching)" as sw #8957e5
+    component "Offline Queue\n(IndexedDB)" as offline_queue #8957e5
+    component "Browser Cache\n(LocalStorage)" as browser_cache #8957e5
+}
+
+' ==================== HOSTING INFRASTRUCTURE ====================
+cloud "☁️ **DigitalOcean Infrastructure**" as do_cloud #161b22 {
+    
+    node "🐳 Docker Host (Droplet)" as droplet #21262d {
+        
+        package "📦 Next.js 16 Container" as nextjs_container #0d1117 {
+            
+            ' ==================== FRONTEND LAYER ====================
+            package "🎨 Frontend (React 19)" as frontend #161b22 {
+                component "App Router\n(/app)" as app_router
+                component "Dashboard Pages" as dashboard_pages
+                component "Auth Pages\n(Login/Register)" as auth_pages
+                component "Onboarding Flow" as onboarding
+            }
+            
+            ' ==================== UI COMPONENTS ====================
+            package "🧩 UI Components" as ui_components #161b22 {
+                component "Sidebar Navigation" as sidebar
+                component "Farm Map\n(Leaflet.js)" as farm_map
+                component "Crop Manager" as crop_manager
+                component "Language Switcher\n(i18n)" as lang_switch
+                component "Offline Badge" as offline_badge
+                component "Network Indicator" as network_indicator
+            }
+            
+            ' ==================== PROVIDERS ====================
+            package "🔌 Providers" as providers #161b22 {
+                component "Session Provider\n(NextAuth)" as session_provider
+                component "i18n Provider\n(react-i18next)" as i18n_provider
+                component "Offline Provider\n(Service Worker)" as offline_provider
+            }
+            
+            ' ==================== MIDDLEWARE ====================
+            package "🛡️ Middleware Layer" as middleware_layer #161b22 {
+                component "Auth Middleware\n(JWT Validation)" as auth_middleware
+                component "Route Protection\n(/dashboard, /onboarding)" as route_protection
+            }
+            
+            ' ==================== API LAYER ====================
+            package "📡 API Routes (/api)" as api_layer #161b22 {
+                
+                package "🔐 Auth APIs" as auth_apis #0d1117 {
+                    component "/auth/[...nextauth]\n(NextAuth.js)" as auth_api
+                    component "/register\n(User Creation)" as register_api
+                }
+                
+                package "🌾 Core Feature APIs" as core_apis #0d1117 {
+                    component "/farm\n(Profile CRUD)" as farm_api
+                    component "/plans\n(AI Recommendations)" as plans_api
+                    component "/water\n(Calculator)" as water_api
+                    component "/compost\n(Site Locator)" as compost_api
+                }
+                
+                package "👥 Community APIs" as community_apis #0d1117 {
+                    component "/exchange\n(Listings + Claims)" as exchange_api
+                    component "/forum\n(Posts + Comments)" as forum_api
+                }
+                
+                package "🔧 Utility APIs" as utility_apis #0d1117 {
+                    component "/geo\n(Reverse Geocoding)" as geo_api
+                    component "/ip\n(IP Lookup)" as ip_api
+                    component "/ping\n(Health Check)" as ping_api
+                    component "/demo\n(Demo Login)" as demo_api
+                }
+            }
+            
+            ' ==================== BUSINESS LOGIC ====================
+            package "🧠 Business Logic (/lib/logic)" as logic_layer #161b22 {
+                component "AI Assistant\n(Rule-based + LLM)" as assistant_logic
+                component "Plan Generator\n(Crop Recommendations)" as plan_generator
+                component "Water Calculator\n(Irrigation Logic)" as water_calc_logic
+                component "Compost Calculator\n(Site Finder)" as compost_calc_logic
+            }
+            
+            ' ==================== DATA ACCESS ====================
+            package "💾 Data Access (/lib)" as data_layer #161b22 {
+                component "MongoDB Client\n(Mongoose)" as mongo_client
+                component "Auth Config\n(NextAuth + Credentials)" as auth_config
+                component "Offline Storage\n(LocalStorage Cache)" as offline_storage
+                component "Offline Fetch\n(Cache-First Strategy)" as offline_fetch
+            }
+        }
+        
+    }
+    
+    ' ==================== MONGODB CONTAINER ====================
+    database "🗄️ MongoDB 8.2 Container" as mongo_container #238636
+    
+    component "📁 Volume Mount\n(lifelines_mongo_data)" as volume #f0883e
+}
+
+' ==================== EXTERNAL SERVICES ====================
+cloud "🌍 **External Services**" as external #161b22 {
+    
+    package "🤖 AI Services" as ai_services #0d1117 {
+        component "OpenAI GPT-4o-mini\n(Text Assistant)" as openai_text #f0883e
+        component "OpenAI Realtime API\n(Voice via studyable.app)" as openai_voice #f0883e
+    }
+    
+    package "🗺️ Mapping Services" as map_services #0d1117 {
+        component "OpenStreetMap\nNominatim API" as osm #58a6ff
+        component "Leaflet.js\n(Map Rendering)" as leaflet #58a6ff
+    }
+    
+    package "🔒 Security" as security_services #0d1117 {
+        component "bcryptjs\n(Password Hashing)" as bcrypt #238636
+        component "JWT Tokens\n(Session Management)" as jwt #238636
+    }
+}
+
+' ==================== INTERNATIONALIZATION ====================
+rectangle "🌐 **i18n Support**" as i18n_layer #8957e5 {
+    component "English (LTR)" as en_lang
+    component "Arabic (RTL)" as ar_lang
+    component "Language Detector\n(Browser/Storage)" as lang_detector
+}
+
+' ==================== PWA FEATURES ====================
+rectangle "📱 **PWA Capabilities**" as pwa_layer #238636 {
+    component "Web App Manifest\n(manifest.json)" as manifest
+    component "Service Worker\n(sw.js)" as pwa_sw
+    component "Offline Cache\nStatic: 7 days\nAPI: 5 min" as cache_strategy
+    component "Background Sync" as bg_sync
+}
+
+' ==================== DATA FLOW CONNECTIONS ====================
+
+' User connections
+farmers --> sw : HTTPS
+community --> sw : HTTPS
+educators --> sw : HTTPS
+
+' Edge layer connections
+sw --> app_router : Cache-First
+sw --> offline_queue : Queue Actions
+offline_queue --> browser_cache
+
+' Frontend internal connections
+app_router --> dashboard_pages
+app_router --> auth_pages
+app_router --> onboarding
+dashboard_pages --> ui_components
+ui_components --> providers
+
+' Middleware flow
+app_router --> auth_middleware
+auth_middleware --> route_protection
+
+' API connections
+dashboard_pages --> api_layer : API Calls
+auth_pages --> auth_api
+onboarding --> farm_api
+
+' Logic layer connections
+plans_api --> plan_generator
+plans_api --> assistant_logic
+water_api --> water_calc_logic
+compost_api --> compost_calc_logic
+farm_api --> mongo_client
+
+' Database connections
+mongo_client --> mongo_container : mongoose
+mongo_container --> volume : Persistent Storage
+
+' External API connections
+assistant_logic --> openai_text : Chat Completions
+dashboard_pages --> openai_voice : WebSocket (Voice)
+geo_api --> osm : Reverse Geocoding
+farm_map --> leaflet : Map Tiles
+
+' Auth flow
+auth_api --> auth_config
+auth_config --> bcrypt : Password Verify
+auth_config --> jwt : Token Generation
+
+' i18n connections
+i18n_provider --> lang_detector
+lang_detector --> en_lang
+lang_detector --> ar_lang
+
+' PWA connections
+sw --> manifest
+sw --> pwa_sw
+pwa_sw --> cache_strategy
+
+' ==================== DATA MODEL LEGEND ====================
+note as data_models #161b22
+**📊 MongoDB Data Models**
+════════════════════════════════════
+| Model              | Purpose                    |
+|--------------------|----------------------------|
+| FarmProfile        | User farm configuration    |
+| Plan               | AI crop recommendations    |
+| WaterCalculation   | Irrigation schedules       |
+| CompostSite        | Community compost locations|
+| ExchangeListing    | Seed/tool marketplace      |
+| ExchangeClaim      | Trade requests             |
+| ForumPost          | Community discussions      |
+| ForumComment       | Post replies               |
+| AssistantMessage   | AI chat history            |
+════════════════════════════════════
+end note
+
+' ==================== API ENDPOINTS LEGEND ====================
+note as api_endpoints #161b22
+**📡 API Endpoints Summary**
+════════════════════════════════════════════════════════
+| Endpoint                  | Method    | Purpose                    |
+|---------------------------|-----------|----------------------------|
+| /api/auth/[...nextauth]   | ALL       | Authentication flow        |
+| /api/register             | POST      | User registration          |
+| /api/farm                 | GET/POST  | Farm profile CRUD          |
+| /api/plans                | GET/POST  | AI plan generation         |
+| /api/water                | GET/POST  | Water calculations         |
+| /api/compost              | GET/POST  | Compost site management    |
+| /api/exchange             | GET/POST  | Listing management         |
+| /api/exchange/claim       | POST      | Claim listings             |
+| /api/forum                | GET/POST  | Forum posts & comments     |
+| /api/geo                  | GET       | Reverse geocoding          |
+| /api/ip                   | GET       | IP geolocation             |
+| /api/ping                 | GET       | Health check               |
+| /api/demo                 | POST      | Demo account login         |
+════════════════════════════════════════════════════════
+end note
+
+' ==================== OFFLINE STRATEGY ====================
+note as offline_note #161b22
+**📴 Offline-First Strategy**
+════════════════════════════════════
+**Cache Layers:**
+• Static Cache (FADES-v1-static): 7 days
+• API Cache (FADES-v1-api): 5 minutes
+• Dynamic Cache: 24 hours
+
+**Cached API Routes:**
+✓ /api/farm, /api/plans
+✓ /api/forum, /api/exchange
+✓ /api/compost, /api/water
+
+**Never Cached:**
+✗ /api/auth (security)
+✗ /api/demo, /api/ping
+✗ /api/ip, /api/geo
+
+**Fallback Order:**
+1. Network request
+2. Cache lookup
+3. Offline queue (mutations)
+════════════════════════════════════
+end note
+
+' ==================== DOCKER CONFIGURATION ====================
+note as docker_note #161b22
+**🐳 Docker Configuration**
+════════════════════════════════════
+**docker-compose.yaml:**
+
+services:
+  web (lifelines_web):
+    - Port: 201 → 3000
+    - Image: Custom Dockerfile
+    - Depends: lifelines_mongo
+    
+  lifelines_mongo:
+    - Port: 202 → 27017
+    - Image: mongo:8.2.3
+    - Volume: lifelines_mongo_data
+
+**Environment Variables:**
+• NODE_ENV: production
+• AUTH_SECRET: [secret]
+• AUTH_URL: https://lifelines26.a-warded.org
+• MONGO_INITDB_ROOT_USERNAME
+• MONGO_INITDB_ROOT_PASSWORD
+════════════════════════════════════
+end note
+
+' ==================== SECURITY ARCHITECTURE ====================
+note as security_note #161b22
+**🔐 Security Architecture**
+════════════════════════════════════
+**Authentication:**
+• NextAuth.js with Credentials Provider
+• JWT-based sessions (no server state)
+• bcryptjs password hashing
+• Secure cookies in production
+
+**Route Protection:**
+• Middleware intercepts all requests
+• /dashboard/* → Requires auth
+• /onboarding → Requires auth
+• /login, /register → Redirects if logged in
+
+**API Security:**
+• Session validation on protected routes
+• User ID extraction from JWT
+• MongoDB ObjectId validation
+════════════════════════════════════
+end note
+
+' ==================== TECH STACK SUMMARY ====================
+note as tech_stack #f0883e
+**🛠️ Complete Tech Stack**
+═══════════════════════════════════════════════════════════════════════
+| Layer            | Technology                     | Version/Notes    |
+|------------------|--------------------------------|------------------|
+| **Runtime**      | Node.js                        | v20+ LTS         |
+| **Framework**    | Next.js (App Router)           | 16.x             |
+| **UI Library**   | React                          | 19.x             |
+| **Styling**      | Tailwind CSS                   | 4.x              |
+| **Language**     | TypeScript                     | 5.x              |
+| **Database**     | MongoDB                        | 8.2.3            |
+| **ODM**          | Mongoose                       | Latest           |
+| **Auth**         | NextAuth.js                    | v5 (beta)        |
+| **Mapping**      | Leaflet.js + OSM               | Open Source      |
+| **AI Text**      | OpenAI GPT-4o-mini             | API              |
+| **AI Voice**     | OpenAI Realtime                | via proxy        |
+| **i18n**         | react-i18next                  | EN, AR (RTL)     |
+| **Container**    | Docker + Docker Compose        | Self-hosted      |
+| **Icons**        | Lucide React                   | Latest           |
+| **PWA**          | Service Worker + Manifest      | Custom           |
+═══════════════════════════════════════════════════════════════════════
+end note
+
+@enduml

@@ -278,7 +278,7 @@ export function OnboardingWizard() {
         case "location":
             return data.latitude !== null && data.longitude !== null;
         case "space":
-            return data.spaceType && data.farmName.trim().length > 0;
+            return !!data.spaceType;
         case "conditions":
             return data.waterAvailability && data.soilCondition && data.sunlight;
         case "goals":
@@ -707,7 +707,7 @@ export function OnboardingWizard() {
                                 <div className="grid gap-3 text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">{t("onboarding.welcome.farmName")}</span>
-                                        <span className="font-medium">{data.farmName}</span>
+                                        <span className="font-medium">{data.farmName || t("onboarding.welcome.randomFarmName")}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">{t("onboarding.location.yourLocation")}</span>

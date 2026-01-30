@@ -751,6 +751,7 @@
             "subtitle": "دعنا نُعد ملف مزرعتك. سيساعدنا هذا في تقديم توصيات مخصصة لك.",
             "farmName": "سمِّ مزرعتك",
             "farmNamePlaceholder": "حديقتي",
+            "randomFarmName": "(اسم عشوائي)",
             "chooseEmoji": "اختر رمزاً تعبيرياً",
             "continue": "متابعة"
         },

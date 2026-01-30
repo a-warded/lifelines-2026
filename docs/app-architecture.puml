@@ -1,0 +1,161 @@
+@startuml Lifelines 2026 Application Architecture
+
+!define PRIMARY #58a6ff
+!define SECONDARY #238636
+!define ACCENT #f0883e
+!define DARK #161b22
+!define LIGHT #c9d1d9
+
+skinparam backgroundColor #0d1117
+skinparam defaultFontColor LIGHT
+skinparam defaultFontSize 12
+skinparam roundCorner 12
+skinparam shadowing false
+skinparam linetype ortho
+
+skinparam component {
+    BackgroundColor DARK
+    BorderColor #30363d
+    FontColor LIGHT
+}
+
+skinparam package {
+    BackgroundColor #21262d
+    BorderColor #30363d
+    FontColor LIGHT
+}
+
+skinparam cloud {
+    BackgroundColor DARK
+    BorderColor PRIMARY
+    FontColor LIGHT
+}
+
+skinparam database {
+    BackgroundColor DARK
+    BorderColor SECONDARY
+    FontColor LIGHT
+}
+
+skinparam rectangle {
+    BackgroundColor #21262d
+    BorderColor #30363d
+    FontColor LIGHT
+}
+
+skinparam arrow {
+    Color PRIMARY
+    FontColor #8b949e
+}
+
+title **Lifelines 2026 - Application Architecture**
+
+' ==================== CLIENTS ====================
+rectangle "**Clients**" as clients #1f6feb {
+    component "📱 Mobile Browser\n(PWA)" as mobile
+    component "💻 Desktop Browser" as desktop
+}
+
+' ==================== EDGE / PWA ====================
+rectangle "**Progressive Web App**" as pwa #8957e5 {
+    component "Service Worker" as sw
+    component "Offline Cache" as cache
+    component "Background Sync" as sync
+}
+
+' ==================== NEXT.JS APP ====================
+package "**Next.js 16 Application**" as nextjs #21262d {
+    
+    ' Frontend
+    package "Frontend (React 19)" as frontend {
+        component "Dashboard" as dash
+        component "Farm Planner" as planner
+        component "Water Calculator" as water
+        component "Compost Finder" as compost
+        component "Exchange Market" as exchange
+        component "Community Forum" as forum
+        component "AI Assistant" as assistant
+    }
+    
+    ' Middleware
+    component "Auth Middleware\n(JWT)" as middleware #f0883e
+    
+    ' API Layer
+    package "API Routes" as api {
+        component "/api/auth" as auth_api
+        component "/api/farm" as farm_api
+        component "/api/plans" as plans_api
+        component "/api/water" as water_api
+        component "/api/compost" as compost_api
+        component "/api/exchange" as exchange_api
+        component "/api/forum" as forum_api
+        component "/api/geo" as geo_api
+    }
+    
+    ' Business Logic
+    package "Business Logic" as logic {
+        component "Plan Generator" as plan_logic
+        component "Water Calculator" as water_logic
+        component "Rule-based AI" as rule_ai
+    }
+}
+
+' ==================== DATA LAYER ====================
+database "**MongoDB 8.2**\n(Docker)" as mongodb #238636
+
+' ==================== EXTERNAL SERVICES ====================
+cloud "**External APIs**" as external #161b22 {
+    component "OpenAI\nGPT-4o-mini" as openai #f0883e
+    component "OpenAI\nRealtime Voice" as voice #f0883e
+    component "OpenStreetMap\nNominatim" as osm
+}
+
+' ==================== CONNECTIONS ====================
+
+' Client to PWA
+mobile --> sw
+desktop --> sw
+
+' PWA layer
+sw --> cache : Cache First
+sw --> sync : Queue Mutations
+
+' PWA to App
+sw --> frontend : HTTPS
+
+' Frontend routing
+dash --> planner
+dash --> water
+dash --> compost
+dash --> exchange
+dash --> forum
+dash --> assistant
+
+' Middleware
+frontend --> middleware
+middleware --> api
+
+' API to Logic
+plans_api --> plan_logic
+water_api --> water_logic
+plans_api --> rule_ai
+
+' API to Database
+api --> mongodb : Mongoose
+
+' External connections
+rule_ai --> openai : Fallback LLM
+assistant --> voice : WebSocket
+geo_api --> osm : Geocoding
+
+' ==================== LEGEND ====================
+legend right
+  |= Color |= Layer |
+  | <#1f6feb> | Client Layer |
+  | <#8957e5> | PWA / Edge |
+  | <#21262d> | Application |
+  | <#238636> | Database |
+  | <#f0883e> | External AI |
+endlegend
+
+@enduml

@@ -751,6 +751,7 @@
             "subtitle": "Let's set up your farm profile. This will help us give you personalized recommendations.",
             "farmName": "Give your farm a name",
             "farmNamePlaceholder": "eg: Aura Farm",
+            "randomFarmName": "(Random name)",
             "chooseEmoji": "Choose a farm icon",
             "continue": "Continue"
         },
