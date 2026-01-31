@@ -2,7 +2,7 @@
   "name": "FADES - Food, Agriculture, and Distribution Ecosystem",
   "short_name": "FADES",
   "description": "Smart farming assistant with offline capabilities",
-  "start_url": "/dashboard",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
